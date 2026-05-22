@@ -1,0 +1,113 @@
+
+/* ==============================
+   STAGE HUD CENTER DISPLAY
+   ============================== */
+.stage-display {
+  font-family: var(--font-title);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--xp-color);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px var(--xp-glow);
+}
+
+/* Bigger level badge - override previous */
+.level-badge {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(255,192,72,0.45);
+  padding: 8px 20px;
+  border-radius: 28px;
+  font-family: var(--font-title);
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 14px rgba(255,192,72,0.2);
+}
+.level-badge span {
+  color: var(--xp-color);
+  font-size: 22px;
+  text-shadow: 0 0 10px var(--xp-glow);
+}
+
+/* Bigger timer */
+.timer-display {
+  background: rgba(10, 11, 16, 0.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-glow);
+  padding: 5px 22px;
+  border-radius: 24px;
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: #fff;
+  text-shadow: 0 0 12px rgba(255,255,255,0.35);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+/* ==============================
+   GACHA SLOT MACHINE REEL
+   ============================== */
+.gacha-reel-wrap {
+  position: relative;
+  height: 72px;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 2px solid var(--border-glow);
+  background: rgba(0,0,0,0.45);
+  margin: 10px 0;
+}
+.gacha-reel-marker {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border: 3px solid var(--xp-color);
+  border-radius: 14px;
+  pointer-events: none;
+  animation: reel-glow 1.5s infinite alternate ease-in-out;
+}
+@keyframes reel-glow {
+  from { box-shadow: inset 0 0 12px rgba(255,192,72,0.15); border-color: var(--xp-color); }
+  to   { box-shadow: inset 0 0 28px rgba(255,192,72,0.45); border-color: #ff9f43; }
+}
+.gacha-reel {
+  display: flex;
+  flex-direction: column;
+}
+.gacha-reel-item {
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-title);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  flex-shrink: 0;
+}
+.gacha-reel-item[data-tier="common"]  { color: #2ed573; }
+.gacha-reel-item[data-tier="rare"]    { color: #54a0ff; }
+.gacha-reel-item[data-tier="unique"]  { color: #a55eea; }
+.gacha-reel-item[data-tier="epic"]    { color: #ffd200; text-shadow: 0 0 12px rgba(255,210,0,0.55); }
+
+/* Spin Button */
+.btn-gacha-spin {
+  background: linear-gradient(135deg, #ffd200, #ff9f43);
+  color: #000;
+  border: none;
+  padding: 14px 52px;
+  border-radius: 30px;
+  font-family: var(--font-title);
+  font-weight: 800;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 4px 22px rgba(255,210,0,0.45);
+  transition: all 0.25s ease;
+  letter-spacing: 0.5px;
+}
+.btn-gacha-spin:hover {
+  transform: scale(1.07);
+  box-shadow: 0 6px 30px rgba(255,210,0,0.7);
+}
+.btn-gacha-spin:active { transform: scale(0.96); }

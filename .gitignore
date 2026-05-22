@@ -1,0 +1,15 @@
+# Python scripts (used only during development)
+*.py
+scratch/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor/IDE
+.vscode/
+*.code-workspace
+
+# Logs
+*.log

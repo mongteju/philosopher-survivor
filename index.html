@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>철학의 미궁: 뱀서류 에디션 (Philosophy Quest)</title>
+  <meta name="description" content="철학의 미궁(Philosophy Quest)은 이데아의 불꽃, 중용의 얼음 송곳 등 다양한 철학적 무기와 패시브 스킬을 활용하여 무지와 편견을 물리치는 뱀파이어 서바이벌 장르의 RPG 웹게임입니다.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="game-container">
+    
+    <!-- Flash Overlay for visual transitions -->
+    <div id="flash-overlay" class="screen-flash"></div>
+
+    <!-- MAIN GAME CANVAS -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- HUD Overlay (HUD is absolute positioned) -->
+    <div id="hud" style="display: none;">
+      <div class="hud-top-row">
+        <!-- Lineage Tracker Icons (Top Left) -->
+        <div id="tracker-container" class="lineage-tracker">
+          <!-- Populated by JavaScript based on active lineage -->
+        </div>
+
+        <!-- Center: Stage + Timer stacked -->
+        <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
+          <div id="hud-stage" class="stage-display">고대 그리스</div>
+          <div id="hud-timer" class="timer-display">00:00</div>
+        </div>
+
+        <!-- Right Side: Level Badge and Pedia Button -->
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="level-badge">LV <span id="hud-level">1</span></div>
+          <button id="pedia-open-btn" class="help-corner-btn" title="철학 사전 열기">📖</button>
+        </div>
+      </div>
+
+      <!-- Experience Bar (Top Bottom of HUD) -->
+      <div class="xp-bar-container">
+        <div id="hud-xp-fill" class="xp-bar-fill"></div>
+      </div>
+      
+      <!-- ESC Pause instruction label -->
+      <div style="font-size: 10px; color: var(--text-secondary); font-family: var(--font-mono); margin-top: 2px;">
+        [ESC] 일시정지 / 상태창
+      </div>
+    </div>
+
+    <!-- Virtual Joystick for touch/mobile devices -->
+    <div id="joystick-zone">
+      <div id="joystick-handle"></div>
+    </div>
+
+    <!-- Screen 0: TITLE SCREEN (GAME START) -->
+    <div id="title-screen" class="overlay-screen active" style="cursor: pointer;">
+    </div>
+
+    <!-- Screen 1: MAIN MENU (LINEAGE CHOICE) -->
+    <div id="menu-screen" class="overlay-screen">
+      <div class="modal-content" style="max-width: 700px;">
+        <h1 class="menu-title-glow">철학의 미궁</h1>
+        <p class="menu-subtitle">Philosophy Quest — 무지와 편견을 물리치고 진리에 도달하라</p>
+
+        <div class="lineage-select-box">
+          <!-- Lineage A: Idealism -->
+          <div id="card-idealism" class="lineage-card idealism">
+            <div style="font-size: 44px; margin-bottom: 8px;">🔥</div>
+            <h3 style="font-size: 22px; margin-bottom: 4px;">이상주의</h3>
+            <p style="font-size: 12px; opacity: 0.65; margin-bottom: 14px;">합리론 (Rationalism)</p>
+            <div class="lineage-tags">
+              <span class="tag-badge fire">화염 폭발</span>
+              <span class="tag-badge">범위형</span>
+              <span class="tag-badge">고화력</span>
+            </div>
+            <p style="margin-top: 14px; font-size: 13px; line-height: 1.6; color: rgba(255,255,255,0.85);">
+              이데아의 불꽃으로 광역을 태우는<br><strong>화염 공격 특화</strong> 계열
+            </p>
+          </div>
+
+          <!-- Lineage B: Empiricism -->
+          <div id="card-empiricism" class="lineage-card empiricism">
+            <div style="font-size: 44px; margin-bottom: 8px;">❄️</div>
+            <h3 style="font-size: 22px; margin-bottom: 4px;">경험주의</h3>
+            <p style="font-size: 12px; opacity: 0.65; margin-bottom: 14px;">경험론 (Empiricism)</p>
+            <div class="lineage-tags">
+              <span class="tag-badge ice">냉기 관통</span>
+              <span class="tag-badge">군중 제어</span>
+              <span class="tag-badge">둔화형</span>
+            </div>
+            <p style="margin-top: 14px; font-size: 13px; line-height: 1.6; color: rgba(255,255,255,0.85);">
+              얼음 송곳으로 적을 관통하는<br><strong>냉기 제어 특화</strong> 계열
+            </p>
+          </div>
+        </div>
+
+        <button id="start-game-btn" class="btn-primary" disabled>학파 선택 필수</button>
+        <p style="color: var(--xp-color); font-size: 12px; margin-top: 12px; font-family: var(--font-title);">
+          [←] / [→] 방향키로 학파를 선택하고 [Enter] / [Space]로 시작할 수 있습니다.
+        </p>
+      </div>
+    </div>
+
+    <!-- Screen 2: SOCRATES TUTORIAL (AWARENESS OF IGNORANCE) -->
+    <div id="tutorial-screen" class="overlay-screen">
+      <div class="modal-content socrates-popup">
+        <div class="socrates-avatar">👴</div>
+        <h2 style="font-family: var(--font-title); margin-bottom: 12px; color: var(--xp-color);">무지의 자각 (Aporia)</h2>
+        <div id="socrates-dialogue" class="socrates-quote">
+          "자네는 지금 들고 있는 무기의 본질을 아는가? 스스로 모른다는 사실을 깨닫지 못하면, 그 어떤 진리(대미지)도 적에게 닿지 않네."
+        </div>
+        <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 12px;">
+          방향키 [←]/[→]로 이동하고 [Enter]/[Space]로 선택하십시오.
+        </p>
+        <div class="socrates-choices">
+          <button id="tutorial-yes-btn" class="btn-yes">예, 아무것도 모름을 인정합니다</button>
+          <button id="tutorial-no-btn" class="btn-no">아니요, 저는 다 알고 있습니다</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 3: LEVEL UP CARD SELECTION -->
+    <div id="levelup-screen" class="overlay-screen">
+      <div class="levelup-container">
+        <!-- Sunbeam light rays rotating conic glow -->
+        <div class="ray-light-glow"></div>
+        
+        <!-- Ribbon Banner Title -->
+        <div class="levelup-ribbon-title">스킬 선택</div>
+        
+        <!-- Instructions -->
+        <div class="levelup-instructions">방향키 [↑]/[↓]로 이동하고 [Enter]/[Space]로 선택하십시오.</div>
+        
+        <!-- Card Choices container -->
+        <div id="card-choices-container" class="card-choices-stack">
+          <!-- Populated dynamically via javascript -->
+        </div>
+        
+        <!-- Bottom right Learned Skills button -->
+        <button id="learned-skills-btn" class="learned-skills-btn">
+          <span class="book-icon">📖</span>
+          <span>학습한 스킬</span>
+        </button>
+        
+        <!-- Learned Skills Popup -->
+        <div id="learned-skills-popup" class="learned-skills-popup">
+          <div class="popup-header">
+            <h3>학습한 스킬 목록</h3>
+            <button id="learned-skills-popup-close" class="popup-close-btn">&times;</button>
+          </div>
+          <div id="learned-skills-list" class="popup-content">
+            <!-- Populated dynamically via javascript -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 4: AURA GACHA MODAL -->
+    <div id="gacha-screen" class="overlay-screen">
+      <div class="modal-content" style="max-width: 480px;">
+        <h2 style="font-family: var(--font-title); color: var(--xp-color); margin-bottom: 4px;">사상의 아우라 소환!</h2>
+        <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 16px;">보스를 격파하여 획득한 영혼 에너지를 소환합니다.</p>
+
+        <!-- Slot Machine Reel -->
+        <div id="gacha-reel-container" class="gacha-reel-wrap">
+          <div id="gacha-reel" class="gacha-reel">
+            <div class="gacha-reel-item" data-tier="common">⚡ 보통</div>
+            <div class="gacha-reel-item" data-tier="rare">💎 레어</div>
+            <div class="gacha-reel-item" data-tier="unique">🌟 유니크</div>
+            <div class="gacha-reel-item" data-tier="epic">👑 에픽</div>
+            <div class="gacha-reel-item" data-tier="common">⚡ 보통</div>
+            <div class="gacha-reel-item" data-tier="rare">💎 레어</div>
+            <div class="gacha-reel-item" data-tier="unique">🌟 유니크</div>
+            <div class="gacha-reel-item" data-tier="epic">👑 에픽</div>
+          </div>
+          <div class="gacha-reel-marker"></div>
+        </div>
+
+        <div style="font-size: 11px; color: var(--text-secondary); margin: 10px 0 6px;">소환 확률: 보통 55% | 레어 30% | 유니크 10% | 에픽 5%</div>
+
+        <!-- Result display (hidden until spin done) -->
+        <div id="gacha-result" style="display:none; margin: 12px 0;">
+          <div id="gacha-aura-visual" class="gacha-aura-effect" style="font-size: 56px; animation: chest-bounce 1s infinite alternate ease-in-out;">✨</div>
+          <div id="gacha-tier" style="font-family: var(--font-title); font-size: 26px; font-weight: 800; margin: 6px 0; text-shadow: 0 0 10px rgba(255,255,255,0.2);">[에픽] 영생의 아우라</div>
+          <div id="gacha-desc" style="color: #fff; font-size: 13px; margin-bottom: 8px; line-height: 1.5; font-weight: 600;">효과: 이속 +15%, 공속 +15%, 적 이속 -25%, 흡혈 +10%</div>
+          <div id="gacha-status" style="color: var(--xp-color); font-size: 12px; margin-bottom: 16px; font-family: var(--font-mono); font-weight: bold;">상위 아우라를 장착했습니다!</div>
+          <button id="gacha-close-btn" class="btn-primary">아우라 수락 [Enter]</button>
+        </div>
+
+        <!-- Spin button (shown before spin) -->
+        <div id="gacha-spin-area" style="margin-top: 16px;">
+          <button id="gacha-spin-btn" class="btn-gacha-spin">🎰 소환하기</button>
+          <p style="color: var(--text-secondary); font-size: 11px; margin-top: 8px;">[Enter] / [Space]로 소환</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 5: PHILOSOPHY-PEDIA DICTIONARY -->
+    <div id="pedia-screen" class="overlay-screen">
+      <div class="modal-content pedia-content">
+        <div class="pedia-header">
+          <div class="pedia-title">📘 철학 사전 (Philosophy-pedia)</div>
+          <button id="pedia-close-btn" class="btn-secondary" style="margin-top:0;">닫기</button>
+        </div>
+
+        <div class="pedia-tabs">
+          <button id="tab-all" class="pedia-tab active">전체</button>
+          <button id="tab-idealism" class="pedia-tab">이상주의</button>
+          <button id="tab-empiricism" class="pedia-tab">경험주의</button>
+          <button id="tab-boss" class="pedia-tab">보스/학습</button>
+        </div>
+
+        <div id="pedia-grid" class="pedia-list">
+          <!-- Populated dynamically with unlocked cards and boss descriptions -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 6: FINAL EXAM ENDING QUIZ -->
+    <div id="ending-screen" class="overlay-screen">
+      <div id="exam-paper-container" class="exam-paper">
+        <div class="exam-header">
+          <div class="exam-title">도덕 및 사회 기말고사</div>
+          <div class="exam-info">
+            학년/반: <span>1학년 1반</span><br>
+            이름: <span>주인공</span>
+          </div>
+        </div>
+
+        <div id="exam-overlay-visual" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); pointer-events:none; opacity:0.07; font-size:180px; transition: opacity 0.5s;">🔥</div>
+
+        <!-- Quiz Question 1 -->
+        <div id="q1" class="quiz-question active">
+          <h4>Q1. 다음 중 "나는 생각한다, 고로 존재한다" (Cogito, ergo sum)라고 주장하며, 진리를 찾기 위해 모든 것을 의심해보는 방법적 회의를 거친 근대 철학자는 누구인가?</h4>
+          <div class="quiz-options">
+            <button class="quiz-option-btn" data-correct="false">1) 플라톤 (Plato)</button>
+            <button class="quiz-option-btn" data-correct="true">2) 르네 데카르트 (René Descartes)</button>
+            <button class="quiz-option-btn" data-correct="false">3) 프랜시스 베이컨 (Francis Bacon)</button>
+            <button class="quiz-option-btn" data-correct="false">4) 장 폴 사르트르 (Jean-Paul Sartre)</button>
+          </div>
+        </div>
+
+        <!-- Quiz Question 2 -->
+        <div id="q2" class="quiz-question">
+          <h4>Q2. 도덕적 의무를 중시하며, "언제나 네 의지의 준칙이 보편적 입법의 원리가 될 수 있도록 행동하라"는 정언 명령을 제시한 근대 철학자는 누구인가?</h4>
+          <div class="quiz-options">
+            <button class="quiz-option-btn" data-correct="false">1) 아리스토텔레스 (Aristotle)</button>
+            <button class="quiz-option-btn" data-correct="false">2) 토마스 아퀴나스 (Thomas Aquinas)</button>
+            <button class="quiz-option-btn" data-correct="true">3) 임마누엘 칸트 (Immanuel Kant)</button>
+            <button class="quiz-option-btn" data-correct="false">4) 존 듀이 (John Dewey)</button>
+          </div>
+        </div>
+
+        <!-- Quiz Question 3 -->
+        <div id="q3" class="quiz-question">
+          <h4>Q3. "최대 다수의 최대 행복"을 공리의 원칙으로 삼아 사회적 쾌락과 도덕적 가치를 설계한 공리주의(경험주의 계보의 연장선) 대표 학자는 누구인가?</h4>
+          <div class="quiz-options">
+            <button class="quiz-option-btn" data-correct="true">1) 제레미 벤담 &amp; 존 스튜어트 밀 (Bentham / Mill)</button>
+            <button class="quiz-option-btn" data-correct="false">2) 에피쿠로스 (Epicurus)</button>
+            <button class="quiz-option-btn" data-correct="false">3) 소크라테스 (Socrates)</button>
+            <button class="quiz-option-btn" data-correct="false">4) 아우구스티누스 (Augustine)</button>
+          </div>
+        </div>
+
+        <!-- Exam Result Block -->
+        <div id="exam-result" class="exam-score-sheet">
+          <div id="score-stamp" class="exam-score-stamp">100</div>
+          <h2 style="font-size: 32px; color: #ff4757; margin-bottom: 12px; font-weight: bold;">축하합니다!</h2>
+          <div class="exam-footer-msg">"사냥보다 쉬운 철학 정복!"</div>
+          <p style="margin-top: 15px; font-size: 15px; color: #57606f; font-family: sans-serif; line-height: 1.5; margin-bottom: 15px;">
+            게임 속에서 다루었던 철학적 사상들이 기말고사 문제 풀이에 번뜩이는 영감을 주었습니다.<br>
+            당신은 무지와 편견을 이겨내고 훌륭하게 철학을 습득하였습니다.
+          </p>
+
+          <!-- Clear Time Statistics Panel -->
+          <div class="exam-clear-stats" style="margin: 15px auto; max-width: 320px; text-align: left; font-family: sans-serif; font-size: 14px; color: #2c3e50; border-top: 1.5px dashed #2c3e50; border-bottom: 1.5px dashed #2c3e50; padding: 10px 5px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span>🏆 최종 보스 격파 소요 시간:</span>
+              <strong id="exam-boss-kill-time" style="color: #ff4757;">0초</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>🕒 총 탐구 시간 (실제 시간):</span>
+              <strong id="exam-total-clear-time">0분 0초</strong>
+            </div>
+          </div>
+
+          <button id="restart-game-btn" class="btn-primary" style="margin-top: 16px; padding: 12px 36px;">다시 도전하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 7: PAUSE SCREEN OVERLAY (UPGRADED) -->
+    <div id="pause-screen" class="overlay-screen">
+      <div class="modal-content" style="max-width: 500px; border-color: var(--xp-color); padding: 24px;">
+        <h2 class="pause-title">일시정지</h2>
+        <p style="font-family: var(--font-title); font-size: 16px; color: var(--xp-color); margin-bottom: 16px; font-weight: bold;">PAUSED</p>
+        
+        <!-- Controls Buttons Container -->
+        <div class="pause-btn-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+          <button id="pause-resume-btn" class="btn-primary" style="padding: 10px; font-size: 13px; margin:0; box-shadow:none;">재개하기 [ESC]</button>
+          <button id="pause-restart-btn" class="btn-secondary" style="padding: 10px; font-size: 13px; margin:0;">게임 재시작</button>
+          <button id="pause-bgm-btn" class="btn-secondary" style="padding: 10px; font-size: 13px; margin:0;">음악: 켜짐</button>
+          <button id="pause-sfx-btn" class="btn-secondary" style="padding: 10px; font-size: 13px; margin:0;">효과음: 켜짐</button>
+        </div>
+
+        <button id="pause-status-toggle-btn" class="btn-secondary" style="width: 100%; margin-top: 0; padding: 10px; font-weight: bold; border-color: var(--xp-color); color: var(--xp-color);">
+          📋 캐릭터 상태창 열기
+        </button>
+
+        <!-- Dynamic Status Panel -->
+        <div id="pause-status-panel" class="status-panel" style="display: none; text-align: left; margin-top: 18px; padding: 16px; background: rgba(0,0,0,0.4); border-radius: 12px; border: 1px solid var(--border-light); font-size: 13px; line-height: 1.6; max-height: 240px; overflow-y: auto;">
+          <div style="border-bottom: 1.5px solid var(--border-light); padding-bottom: 6px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <strong style="font-size: 15px; color: #fff;" id="stat-class-name">철학자: 플라톤</strong>
+            <span style="font-size: 11px; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;" id="stat-era-name">고대 그리스</span>
+          </div>
+
+          <!-- Basic Grid Info -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; font-family: var(--font-title);">
+            <div>레벨: <span id="stat-level" style="color: var(--xp-color);">1</span></div>
+            <div>생존 시간: <span id="stat-time">00:00</span></div>
+            <div>체력: <span id="stat-hp" style="color: #2ed573;">100/100</span></div>
+            <div style="grid-column: span 2; margin-top: 4px;">현재 장착 아우라: <span id="stat-aura" style="font-weight:bold;">없음</span></div>
+          </div>
+
+          <!-- Secondary attributes -->
+          <div style="font-size: 11px; color: var(--text-secondary); border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px; margin-bottom: 12px;">
+            <div>🗡️ 공격력 배율: <span id="stat-val-dmg" style="color: #fff;">100%</span></div>
+            <div>🌀 스킬 범위 배율: <span id="stat-val-area" style="color: #fff;">100%</span></div>
+            <div>⚡ 재사용 대기시간 감소: <span id="stat-val-cd" style="color: #fff;">0%</span></div>
+            <div>🦶 이동 속도: <span id="stat-val-speed" style="color: #fff;">3.2</span></div>
+          </div>
+
+          <!-- Acquired Skills -->
+          <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
+            <strong style="color: #fff; display: block; margin-bottom: 6px;">📖 습득한 개념 스킬 목록:</strong>
+            <div id="stat-skills-list" style="display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--text-secondary);">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Screen 8: DETAILED GAME OVER SCREEN -->
+    <div id="gameover-screen" class="overlay-screen">
+      <div class="modal-content" style="max-width: 500px; border-color: var(--idealism-color);">
+        <div class="socrates-avatar" style="background:#4b1520; border-color: var(--idealism-color);">💀</div>
+        <h2 style="font-family: var(--font-title); color: var(--idealism-color); font-size: 26px; font-weight: 800; margin-bottom: 6px;">탐구 실패 (무지에 굴복함)</h2>
+        <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 20px;">사상의 여정이 아쉽게 멈추었습니다.</p>
+        
+        <div class="gameover-stats-panel">
+          <div class="stats-row">
+            <span class="stats-label">최종 달성 전직</span>
+            <span id="go-philosopher" class="stats-value">아리스토텔레스</span>
+          </div>
+          <div class="stats-row">
+            <span class="stats-label">도달한 사상 시대</span>
+            <span id="go-era" class="stats-value">고대 그리스</span>
+          </div>
+          <div class="stats-row">
+            <span class="stats-label">실제 생존 시간</span>
+            <span id="go-time" class="stats-value">02:30</span>
+          </div>
+        </div>
+
+        <div style="font-style: italic; color: rgba(255,255,255,0.4); font-size: 12px; margin: 20px 0; line-height: 1.5;">
+          "실패는 지혜를 얻기 위한 가장 귀중한 토대라네. 다시 한번 진리를 향해 달려보게나."
+        </div>
+
+        <button id="gameover-retry-btn" class="btn-primary" style="background: var(--idealism-color); color: #fff; box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);">
+          진리를 향해 재도전
+        </button>
+      </div>
+    </div>
+
+    <!-- Developer/Debug Panel -->
+    <div id="debug-panel">
+      <h4>⚙️ 개발자 디버그 패널</h4>
+      <div class="debug-row">
+        <button id="dbg-invinc" class="btn-debug">무적: OFF</button>
+        <button id="dbg-speed" class="btn-debug">배속: 1x</button>
+      </div>
+      <div class="debug-row">
+        <button id="dbg-lvlup" class="btn-debug">경험치+ (LvUp)</button>
+        <button id="dbg-evolve" class="btn-debug">즉시 진화</button>
+      </div>
+      <div class="debug-row">
+        <button id="dbg-boss" class="btn-debug">보스 소환</button>
+        <button id="dbg-clear" class="btn-debug">보스 퇴치</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
+
