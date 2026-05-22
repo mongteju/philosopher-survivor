@@ -766,11 +766,11 @@ class Player {
   draw(ctx, camera) {
     if (!Player.spriteImagePlato) {
       Player.spriteImagePlato = new Image();
-      Player.spriteImagePlato.src = 'sprite/plato1.png';
+      Player.spriteImagePlato.src = 'sprite/plato_sprite_sheet_clean.png';
     }
     if (!Player.spriteImageAristotle) {
       Player.spriteImageAristotle = new Image();
-      Player.spriteImageAristotle.src = 'sprite/aristo1.png';
+      Player.spriteImageAristotle.src = 'sprite/aristotle_clean.png';
     }
 
     const rx = this.x - camera.x + ctx.canvas.width / 2;
@@ -882,92 +882,75 @@ class Player {
     const spriteLoaded = drawImg && drawImg.complete && drawImg.naturalWidth !== 0;
 
     if (spriteLoaded) {
-      // Sprite sheet layout (confirmed by inspection):
-      // Row 0: Side walk  (12 frames, default faces RIGHT)
-      // Row 1: Down walk  (12 frames)
-      // Row 2: Up walk    (12 frames)
-      // Row 3: Diagonal/Attack (12 frames) – extra anim
-      // Row 4: Jump/Attack   (12 frames) – extra anim
-      // Row 5: Hurt / Death  (12 frames)
-      let row = 0;
-      let maxFrames = 12;
-      let frozen = false;
-      // flipX: side row faces RIGHT by default; flip when walking LEFT
-      let flipX = (this.lastDirection === 'side' && this.facing === 'left');
-
-      if (this.hp <= 0) {
-        row = 5;
-        maxFrames = 12;
-        flipX = false;
-      } else if (this.invincibilityFlash > 400) {
-        row = 5;
-        maxFrames = 6;
-        flipX = false;
-      } else if (isMoving) {
-        if (this.lastDirection === 'down') {
-          row = 1; flipX = false;
-        } else if (this.lastDirection === 'up') {
-          row = 2; flipX = false;
-        } else {
-          row = 0; // side walk
-        }
-        maxFrames = 12;
-      } else {
-        // Idle: freeze on frame 0 of the matching direction row
-        frozen = true;
-        if (this.lastDirection === 'down') {
-          row = 1; flipX = false;
-        } else if (this.lastDirection === 'up') {
-          row = 2; flipX = false;
-        } else {
-          row = 0; // side idle
-        }
-        maxFrames = 12;
-      }
-
-      const frameRate = 90;
-      let frame;
-      if (frozen) {
-        frame = 0;
-      } else if (this.hp <= 0) {
-        frame = Math.min(Math.floor((this.animTime || 0) / frameRate), 11);
-      } else {
-        frame = Math.floor((this.animTime || 0) / frameRate) % maxFrames;
-      }
-
-      const frameIdx = frame;
-
-      // Use integer cell size to avoid sub-pixel slicing artifacts
+      // 1. Precise 12x8 RPG Maker VX grid calculation
       const cellW = Math.floor(drawImg.naturalWidth / 12);
-      const cellH = Math.floor(drawImg.naturalHeight / 6);
-      const sx = Math.floor(frameIdx * cellW);
-      const sy = Math.floor(row * cellH);
+      const cellH = Math.floor(drawImg.naturalHeight / 8); // 8 rows total
+
+      // Map evolution stage (0 to 5) to 6 dedicated character slots
+      const EVOL_CHAR_MAP = {
+        0: 1, // 1st tier (Plato / Aristotle) -> slot 1 (Col 3..5, Row 0..3)
+        1: 2, // 2nd tier -> slot 2 (Col 6..8, Row 0..3)
+        2: 3, // 3rd tier -> slot 3 (Col 9..11, Row 0..3)
+        3: 5, // 4th tier -> slot 5 (Col 3..5, Row 4..7)
+        4: 6, // 5th tier -> slot 6 (Col 6..8, Row 4..7)
+        5: 7  // 6th tier -> slot 7 (Col 9..11, Row 4..7)
+      };
+
+      const charId = EVOL_CHAR_MAP[Math.min(this.evolutionIndex, 5)] || 1;
+      const colOffset = (charId % 4) * 3;
+      const rowOffset = Math.floor(charId / 4) * 4;
+
+      // 2. Map direction to cell row index within character slot:
+      // Row 0: Down, Row 1: Left, Row 2: Right, Row 3: Up
+      let dirRow = 0;
+      if (this.lastDirection === 'down') {
+        dirRow = 0;
+      } else if (this.lastDirection === 'up') {
+        dirRow = 3;
+      } else {
+        dirRow = (this.facing === 'right') ? 2 : 1;
+      }
+
+      const row = rowOffset + dirRow;
+
+      // 3. Walk cycle or static standing frame within slot (colOffset + [0, 1, 2]):
+      // Col 1 is the standard standing idle frame.
+      // Walk cycle alternates: Col 0 -> Col 1 -> Col 2 -> Col 1
+      let colIdx = colOffset + 1; // default idle
+      if (this.hp > 0 && isMoving) {
+        const walkCycle = [0, 1, 2, 1];
+        const frameRate = 120; // 120ms per walk frame
+        const idx = Math.floor((this.animTime || 0) / frameRate) % 4;
+        colIdx = colOffset + walkCycle[idx];
+      }
+
+      const sx = colIdx * cellW;
+      const sy = row * cellH;
       const sw = cellW;
       const sh = cellH;
       const dw = 72;
       const dh = Math.round(72 * (cellH / cellW));
-      const dx = rx - dw / 2;
-      const dy = ry - dh / 2;
 
       ctx.save();
-      if (flipX) {
-        ctx.scale(-1, 1);
-        ctx.drawImage(
-          drawImg,
-          sx, sy, sw, sh,
-          -dx - dw, dy, dw, dh
-        );
-      } else {
-        ctx.drawImage(
-          drawImg,
-          sx, sy, sw, sh,
-          dx, dy, dw, dh
-        );
+      // Translate to player center to guarantee no shaking/misalignments
+      ctx.translate(rx, ry);
+
+      // If dead, gracefully lie down using 90-degree Canvas rotation
+      if (this.hp <= 0) {
+        ctx.rotate(Math.PI / 2);
+        ctx.translate(0, 10); // push down slightly in dead state
       }
+
+      ctx.drawImage(
+        drawImg,
+        sx, sy, sw, sh,
+        -dw / 2, -dh / 2, dw, dh
+      );
       ctx.restore();
 
       // Render Halo / Crowns over Sprite sheet based on evolution
       if (this.evolutionIndex >= 2) {
+        ctx.save();
         ctx.fillStyle = '#f9ca24';
         for (let i = 0; i < 5; i++) {
           const a = -Math.PI + (i / 4) * Math.PI;
@@ -975,12 +958,14 @@ class Player {
           ctx.ellipse(rx + Math.cos(a) * 10, ry - 31 + Math.sin(a) * 2, 4, 6, a, 0, Math.PI * 2);
           ctx.fill();
         }
+        ctx.restore();
       }
       if (this.evolutionIndex >= 4) {
+        ctx.save();
         ctx.strokeStyle = themeColor; ctx.lineWidth = 2.5;
         ctx.shadowColor = themeColor; ctx.shadowBlur = 15;
         ctx.beginPath(); ctx.arc(rx, ry - 22, 18, -Math.PI, 0); ctx.stroke();
-        ctx.shadowBlur = 0;
+        ctx.restore();
       }
 
     } else {
@@ -2319,6 +2304,13 @@ class Game {
     const titleScr = document.getElementById('title-screen');
     if (titleScr) {
       titleScr.addEventListener('click', () => this.showMenuScreen());
+    }
+    const titleBtn = document.getElementById('title-start-btn');
+    if (titleBtn) {
+      titleBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        this.showMenuScreen();
+      });
     }
     document.getElementById('card-idealism').addEventListener('click', () => { this.menuSelectedIndex = 0; this.selectLineage('idealism'); this.updateMenuKeyboardSelection(); });
     document.getElementById('card-empiricism').addEventListener('click', () => { this.menuSelectedIndex = 1; this.selectLineage('empiricism'); this.updateMenuKeyboardSelection(); });
