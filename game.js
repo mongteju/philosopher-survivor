@@ -882,26 +882,24 @@ class Player {
     const spriteLoaded = drawImg && drawImg.complete && drawImg.naturalWidth !== 0;
 
     if (spriteLoaded) {
-      // 1. Precise 12x8 RPG Maker VX grid calculation
-      const cellW = Math.floor(drawImg.naturalWidth / 12);
-      const cellH = Math.floor(drawImg.naturalHeight / 8); // 8 rows total
+      // 12x8 RPG Maker VX grid calculation (precise floating-point coordinates)
+      const cellW = drawImg.naturalWidth / 12;
+      const cellH = drawImg.naturalHeight / 8;
 
       // Map evolution stage (0 to 5) to 6 dedicated character slots
       const EVOL_CHAR_MAP = {
-        0: 1, // 1st tier (Plato / Aristotle) -> slot 1 (Col 3..5, Row 0..3)
-        1: 2, // 2nd tier -> slot 2 (Col 6..8, Row 0..3)
-        2: 3, // 3rd tier -> slot 3 (Col 9..11, Row 0..3)
-        3: 5, // 4th tier -> slot 5 (Col 3..5, Row 4..7)
-        4: 6, // 5th tier -> slot 6 (Col 6..8, Row 4..7)
-        5: 7  // 6th tier -> slot 7 (Col 9..11, Row 4..7)
+        0: 1, // slot 1
+        1: 2, // slot 2
+        2: 3, // slot 3
+        3: 5, // slot 5
+        4: 6, // slot 6
+        5: 7  // slot 7
       };
 
       const charId = EVOL_CHAR_MAP[Math.min(this.evolutionIndex, 5)] || 1;
       const colOffset = (charId % 4) * 3;
       const rowOffset = Math.floor(charId / 4) * 4;
 
-      // 2. Map direction to cell row index within character slot:
-      // Row 0: Down, Row 1: Left, Row 2: Right, Row 3: Up
       let dirRow = 0;
       if (this.lastDirection === 'down') {
         dirRow = 0;
@@ -913,39 +911,29 @@ class Player {
 
       const row = rowOffset + dirRow;
 
-      // 3. Walk cycle or static standing frame within slot (colOffset + [0, 1, 2]):
-      // Col 1 is the standard standing idle frame.
-      // Walk cycle alternates: Col 0 -> Col 1 -> Col 2 -> Col 1
-      let colIdx = colOffset + 1; // default idle
+      let colIdx = colOffset + 1;
       if (this.hp > 0 && isMoving) {
         const walkCycle = [0, 1, 2, 1];
-        const frameRate = 120; // 120ms per walk frame
+        const frameRate = 120;
         const idx = Math.floor((this.animTime || 0) / frameRate) % 4;
         colIdx = colOffset + walkCycle[idx];
       }
 
-      const sx = colIdx * cellW;
-      const sy = row * cellH;
-      const sw = cellW;
-      const sh = cellH;
+      // Add defensive 0.5px margin to prevent sub-pixel bleeding
+      const sx = colIdx * cellW + 0.5;
+      const sy = row * cellH + 0.5;
+      const sw = cellW - 1.0;
+      const sh = cellH - 1.0;
       const dw = 72;
       const dh = Math.round(72 * (cellH / cellW));
 
       ctx.save();
-      // Translate to player center to guarantee no shaking/misalignments
       ctx.translate(rx, ry);
-
-      // If dead, gracefully lie down using 90-degree Canvas rotation
       if (this.hp <= 0) {
         ctx.rotate(Math.PI / 2);
-        ctx.translate(0, 10); // push down slightly in dead state
+        ctx.translate(0, 10);
       }
-
-      ctx.drawImage(
-        drawImg,
-        sx, sy, sw, sh,
-        -dw / 2, -dh / 2, dw, dh
-      );
+      ctx.drawImage(drawImg, sx, sy, sw, sh, -dw / 2, -dh / 2, dw, dh);
       ctx.restore();
 
       // Render Halo / Crowns over Sprite sheet based on evolution
@@ -1110,6 +1098,12 @@ class Game {
     window.gameInstance = this;
     this.initEvents();
     this.resetFocus();
+    
+    // Highlight title screen start button by default on load
+    const titleBtn = document.getElementById('title-start-btn');
+    if (titleBtn) {
+      titleBtn.classList.add('keyboard-selected');
+    }
   }
 
   resize() {
@@ -1660,6 +1654,12 @@ class Game {
 
     document.getElementById('gacha-screen').classList.add('active');
     sfx.playLevelUp();
+
+    // Set Gacha spin button highlighted by default
+    const spinBtn = document.getElementById('gacha-spin-btn');
+    if (spinBtn) spinBtn.classList.add('keyboard-selected');
+    const closeBtn = document.getElementById('gacha-close-btn');
+    if (closeBtn) closeBtn.classList.remove('keyboard-selected');
   }
 
   triggerGachaSpin() {
@@ -1716,6 +1716,12 @@ class Game {
     const resultEl = document.getElementById('gacha-result');
     if (resultEl) resultEl.style.display = 'block';
     sfx.playLevelUp();
+
+    // Highlight close button when spin result is shown
+    const spinBtn = document.getElementById('gacha-spin-btn');
+    if (spinBtn) spinBtn.classList.remove('keyboard-selected');
+    const closeBtn = document.getElementById('gacha-close-btn');
+    if (closeBtn) closeBtn.classList.add('keyboard-selected');
   }
 
   applyAuraStats() {
@@ -1730,6 +1736,8 @@ class Game {
 
   resumeFromGacha() {
     this.resetFocus();
+    const closeBtn = document.getElementById('gacha-close-btn');
+    if (closeBtn) closeBtn.classList.remove('keyboard-selected');
     document.getElementById('gacha-screen').classList.remove('active');
     this.stageIndex = Math.min(this.stageIndex + 1, TIMELINE.length - 1);
     this.stage = TIMELINE[this.stageIndex];
@@ -2104,6 +2112,10 @@ class Game {
     document.getElementById('go-time').textContent = `${m}:${s}`;
     document.getElementById('gameover-screen').classList.add('active');
     sfx.playAlert();
+
+    // Highlight retry button on game over
+    const retryBtn = document.getElementById('gameover-retry-btn');
+    if (retryBtn) retryBtn.classList.add('keyboard-selected');
   }
 
   triggerEnding() {
@@ -2147,6 +2159,10 @@ class Game {
   updateMenuKeyboardSelection() {
     document.getElementById('card-idealism').classList.toggle('keyboard-selected', this.menuSelectedIndex === 0);
     document.getElementById('card-empiricism').classList.toggle('keyboard-selected', this.menuSelectedIndex === 1);
+    const startBtn = document.getElementById('start-game-btn');
+    if (startBtn) {
+      startBtn.classList.toggle('keyboard-selected', this.menuSelectedIndex === 2);
+    }
   }
   updateTutorialKeyboardSelection() {
     const yesBtn = document.getElementById('tutorial-yes-btn');
@@ -2158,6 +2174,10 @@ class Game {
     document.querySelectorAll('.choice-card').forEach((c, i) => {
       c.classList.toggle('keyboard-selected', i === this.cardSelectedIndex);
     });
+    const learnedBtn = document.getElementById('learned-skills-btn');
+    if (learnedBtn) {
+      learnedBtn.classList.toggle('keyboard-selected', this.cardSelectedIndex === (this.levelChoices.length || 1));
+    }
   }
 
   updateExamKeyboardSelection() {
@@ -2171,8 +2191,18 @@ class Game {
 
   initEvents() {
     window.addEventListener('keydown', e => {
-      this.keys[e.key.toLowerCase()] = true;
-      this.keys[e.code.toLowerCase()] = true;
+      let keyStr = (e.key || '').toLowerCase();
+      let codeStr = (e.code || '').toLowerCase();
+      
+      // Normalize legacy arrow keys
+      if (keyStr === 'right' || codeStr === 'arrowright') keyStr = 'arrowright';
+      if (keyStr === 'left' || codeStr === 'arrowleft') keyStr = 'arrowleft';
+      if (keyStr === 'up' || codeStr === 'arrowup') keyStr = 'arrowup';
+      if (keyStr === 'down' || codeStr === 'arrowdown') keyStr = 'arrowdown';
+
+      if (keyStr) this.keys[keyStr] = true;
+      if (codeStr) this.keys[codeStr] = true;
+      
       // Title screen Enter/Space to start
       const titleScreen = document.getElementById('title-screen');
       if (titleScreen && titleScreen.classList.contains('active')) {
@@ -2183,7 +2213,7 @@ class Game {
         return;
       }
 
-      const k = e.key.toLowerCase();
+      const k = keyStr;
 
       // Gameover screen Space/Enter restart
       const gameoverScreen = document.getElementById('gameover-screen');
@@ -2249,9 +2279,26 @@ class Game {
       // Menu screen
       const menuScreen = document.getElementById('menu-screen');
       if (menuScreen.classList.contains('active')) {
-        if (k === 'arrowleft' || k === 'a') { e.preventDefault(); this.menuSelectedIndex = 0; this.selectLineage('idealism'); this.updateMenuKeyboardSelection(); sfx.playTick(); }
-        else if (k === 'arrowright' || k === 'd') { e.preventDefault(); this.menuSelectedIndex = 1; this.selectLineage('empiricism'); this.updateMenuKeyboardSelection(); sfx.playTick(); }
-        else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (this.player && this.player.lineage) this.startGame(); }
+        if (k === 'arrowleft' || k === 'a') {
+          e.preventDefault();
+          this.menuSelectedIndex = 0;
+          this.selectLineage('idealism');
+          this.updateMenuKeyboardSelection();
+          if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
+        } else if (k === 'arrowright' || k === 'd') {
+          e.preventDefault();
+          this.menuSelectedIndex = 1;
+          this.selectLineage('empiricism');
+          this.updateMenuKeyboardSelection();
+          if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
+        } else if (k === 'arrowup' || k === 'w' || k === 'arrowdown' || k === 's') {
+          e.preventDefault();
+        } else if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          if (this.player && this.player.lineage) {
+            this.startGame();
+          }
+        }
         return;
       }
 
@@ -2266,10 +2313,44 @@ class Game {
       // Level up card selection
       const lvlScreen = document.getElementById('levelup-screen');
       if (lvlScreen.classList.contains('active')) {
-        const total = this.levelChoices.length || 1;
-        if (k === 'arrowup' || k === 'w') { e.preventDefault(); this.cardSelectedIndex = (this.cardSelectedIndex - 1 + total) % total; this.updateKeyboardCardSelection(); sfx.playTick(); }
-        else if (k === 'arrowdown' || k === 's') { e.preventDefault(); this.cardSelectedIndex = (this.cardSelectedIndex + 1) % total; this.updateKeyboardCardSelection(); sfx.playTick(); }
-        else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); const cards = document.querySelectorAll('.choice-card'); if (cards[this.cardSelectedIndex]) cards[this.cardSelectedIndex].click(); }
+        const popup = document.getElementById('learned-skills-popup');
+        if (popup && popup.classList.contains('active')) {
+          if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') {
+            e.preventDefault();
+            const closeBtn = document.getElementById('learned-skills-popup-close');
+            if (closeBtn) closeBtn.click();
+            this.cardSelectedIndex = this.levelChoices.length || 1;
+            this.updateKeyboardCardSelection();
+            sfx.playTick();
+          }
+          return;
+        }
+
+        const totalChoices = this.levelChoices.length || 1;
+        const totalItems = totalChoices + 1;
+
+        if (k === 'arrowup' || k === 'w') {
+          e.preventDefault();
+          this.cardSelectedIndex = (this.cardSelectedIndex - 1 + totalItems) % totalItems;
+          this.updateKeyboardCardSelection();
+          sfx.playTick();
+        } else if (k === 'arrowdown' || k === 's') {
+          e.preventDefault();
+          this.cardSelectedIndex = (this.cardSelectedIndex + 1) % totalItems;
+          this.updateKeyboardCardSelection();
+          sfx.playTick();
+        } else if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          if (this.cardSelectedIndex === totalChoices) {
+            document.getElementById('learned-skills-btn').click();
+            const closeBtn = document.getElementById('learned-skills-popup-close');
+            if (closeBtn) closeBtn.classList.add('keyboard-selected');
+            sfx.playTick();
+          } else {
+            const cards = document.querySelectorAll('.choice-card');
+            if (cards[this.cardSelectedIndex]) cards[this.cardSelectedIndex].click();
+          }
+        }
         return;
       }
 
@@ -2278,8 +2359,25 @@ class Game {
       if (gachaScreen && gachaScreen.classList.contains('active')) {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          if (!this._gachaSpun) this.triggerGachaSpin();
-          else { const closeBtn = document.getElementById('gacha-close-btn'); if (closeBtn && document.getElementById('gacha-result').style.display !== 'none') closeBtn.click(); }
+          if (!this._gachaSpun) {
+            this.triggerGachaSpin();
+          } else {
+            const closeBtn = document.getElementById('gacha-close-btn');
+            if (closeBtn && document.getElementById('gacha-result').style.display !== 'none') {
+              closeBtn.click();
+            }
+          }
+        }
+        return;
+      }
+
+      // Pedia screen
+      const pediaScreen = document.getElementById('pedia-screen');
+      if (pediaScreen && pediaScreen.classList.contains('active')) {
+        if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          const pediaClose = document.getElementById('pedia-close-btn');
+          if (pediaClose) pediaClose.click();
         }
         return;
       }
@@ -2288,8 +2386,17 @@ class Game {
     });
 
     window.addEventListener('keyup', e => {
-      this.keys[e.key.toLowerCase()] = false;
-      this.keys[e.code.toLowerCase()] = false;
+      let keyStr = (e.key || '').toLowerCase();
+      let codeStr = (e.code || '').toLowerCase();
+      
+      // Normalize legacy arrow keys
+      if (keyStr === 'right' || codeStr === 'arrowright') keyStr = 'arrowright';
+      if (keyStr === 'left' || codeStr === 'arrowleft') keyStr = 'arrowleft';
+      if (keyStr === 'up' || codeStr === 'arrowup') keyStr = 'arrowup';
+      if (keyStr === 'down' || codeStr === 'arrowdown') keyStr = 'arrowdown';
+
+      if (keyStr) this.keys[keyStr] = false;
+      if (codeStr) this.keys[codeStr] = false;
     });
 
     window.addEventListener('blur', () => {
@@ -2403,6 +2510,10 @@ class Game {
           const examResult = document.getElementById('exam-result');
           if (examResult) examResult.style.display = 'block';
           if (typeof sfx !== 'undefined' && sfx.playExamBell) sfx.playExamBell();
+
+          // Highlight the restart button when the exam result displays
+          const restartBtn = document.getElementById('restart-game-btn');
+          if (restartBtn) restartBtn.classList.add('keyboard-selected');
         }
       });
     });
