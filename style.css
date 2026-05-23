@@ -421,16 +421,16 @@ body {
 
 /* Category-specific card background styling */
 .choice-card-horizontal.choice-card-weapon {
-  background: linear-gradient(135deg, rgba(231, 76, 60, 0.15), rgba(28, 14, 16, 0.82)) !important;
-  border: 3px solid rgba(231, 76, 60, 0.38) !important;
-  border-left: 6px solid #e74c3c !important;
-  color: #ffffff !important;
+  background: linear-gradient(135deg, #fff0f0, #ffe5e5) !important;
+  border: 2px solid rgba(255, 107, 107, 0.45) !important;
+  border-left: 6px solid #ff6b6b !important;
+  color: #2d3436 !important;
 }
 .choice-card-horizontal.choice-card-passive {
-  background: linear-gradient(135deg, rgba(52, 152, 219, 0.15), rgba(12, 20, 36, 0.82)) !important;
-  border: 3px solid rgba(52, 152, 219, 0.38) !important;
-  border-left: 6px solid #2980b9 !important;
-  color: #ffffff !important;
+  background: linear-gradient(135deg, #f0f8ff, #e6f2ff) !important;
+  border: 2px solid rgba(116, 185, 255, 0.45) !important;
+  border-left: 6px solid #74b9ff !important;
+  color: #2d3436 !important;
 }
 
 .choice-card-horizontal.heal-card {
@@ -440,29 +440,29 @@ body {
 /* Hover and active glow states */
 .choice-card-horizontal.choice-card-weapon:hover,
 .choice-card-horizontal.choice-card-weapon.keyboard-selected {
-  background: linear-gradient(135deg, rgba(231, 76, 60, 0.38), rgba(45, 18, 20, 0.9)) !important;
-  border-color: #ff4757 !important;
-  box-shadow: 0 0 25px rgba(255, 71, 87, 0.45), inset 0 0 12px rgba(255, 71, 87, 0.15) !important;
-  transform: translateY(-2px) scale(1.025);
+  background: linear-gradient(135deg, #ffe5e5, #ffd3d3) !important;
+  border-color: #ff6b6b !important;
+  box-shadow: 0 0 15px rgba(255, 107, 107, 0.35) !important;
+  transform: translateY(-2px) scale(1.015);
   animation: pulse-border-weapon 1.5s infinite alternate ease-in-out;
 }
 
 .choice-card-horizontal.choice-card-passive:hover,
 .choice-card-horizontal.choice-card-passive.keyboard-selected {
-  background: linear-gradient(135deg, rgba(52, 152, 219, 0.38), rgba(20, 30, 55, 0.9)) !important;
-  border-color: #54a0ff !important;
-  box-shadow: 0 0 25px rgba(84, 160, 255, 0.45), inset 0 0 12px rgba(84, 160, 255, 0.15) !important;
-  transform: translateY(-2px) scale(1.025);
+  background: linear-gradient(135deg, #e6f2ff, #d9ebff) !important;
+  border-color: #74b9ff !important;
+  box-shadow: 0 0 15px rgba(116, 185, 255, 0.35) !important;
+  transform: translateY(-2px) scale(1.015);
   animation: pulse-border-passive 1.5s infinite alternate ease-in-out;
 }
 
 @keyframes pulse-border-weapon {
-  0% { border-color: rgba(231, 76, 60, 0.5); box-shadow: 0 0 10px rgba(255, 71, 87, 0.25); }
-  100% { border-color: #ff4757; box-shadow: 0 0 22px rgba(255, 71, 87, 0.5); }
+  0% { border-color: rgba(255, 107, 107, 0.5); box-shadow: 0 0 8px rgba(255, 107, 107, 0.2); }
+  100% { border-color: #ff6b6b; box-shadow: 0 0 16px rgba(255, 107, 107, 0.4); }
 }
 @keyframes pulse-border-passive {
-  0% { border-color: rgba(52, 152, 219, 0.5); box-shadow: 0 0 10px rgba(84, 160, 255, 0.25); }
-  100% { border-color: #54a0ff; box-shadow: 0 0 22px rgba(84, 160, 255, 0.5); }
+  0% { border-color: rgba(116, 185, 255, 0.5); box-shadow: 0 0 8px rgba(116, 185, 255, 0.2); }
+  100% { border-color: #74b9ff; box-shadow: 0 0 16px rgba(116, 185, 255, 0.4); }
 }
 
 .card-left-section {
@@ -492,8 +492,15 @@ body {
 .card-icon-box.epic { background: linear-gradient(135deg, #f1c40f, #e67e22); }
 
 .card-skill-icon {
-  font-size: 78px;
-  filter: drop-shadow(0 2px 5px rgba(0,0,0,0.4)) drop-shadow(0 0 10px rgba(255,255,255,0.25));
+  font-size: 78px !important;
+  line-height: 100px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  box-sizing: border-box !important;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25)) drop-shadow(0 0 8px rgba(255,255,255,0.15));
   transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -2127,20 +2134,20 @@ button.keyboard-selected,
    ============================== */
 .choice-card-weapon .card-skill-name,
 .choice-card-passive .card-skill-name {
-  color: #ffffff !important;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.75) !important;
+  color: #2d3436 !important;
+  text-shadow: none !important;
 }
 
 .choice-card-weapon .card-skill-desc,
 .choice-card-passive .card-skill-desc {
-  color: rgba(255, 255, 255, 0.85) !important;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
+  color: #4e342e !important;
+  text-shadow: none !important;
 }
 
 .choice-card-weapon .stat-compare,
 .choice-card-passive .stat-compare {
-  background: rgba(0, 0, 0, 0.35) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
 
 /* Rarity Bonus Pill styled with vibrant glowing colors */
@@ -2158,74 +2165,74 @@ button.keyboard-selected,
   text-shadow: none !important;
 }
 .rarity-bonus-pill.rare {
-  background-color: rgba(52, 152, 219, 0.25) !important;
-  color: #54a0ff !important;
-  border: 1px solid rgba(84, 160, 255, 0.4) !important;
+  background-color: rgba(9, 132, 227, 0.12) !important;
+  color: #0984e3 !important;
+  border: 1px solid rgba(9, 132, 227, 0.25) !important;
 }
 .rarity-bonus-pill.unique {
-  background-color: rgba(155, 89, 182, 0.25) !important;
-  color: #e0a7ff !important;
-  border: 1px solid rgba(224, 167, 255, 0.4) !important;
+  background-color: rgba(108, 92, 231, 0.12) !important;
+  color: #6c5ce7 !important;
+  border: 1px solid rgba(108, 92, 231, 0.25) !important;
 }
 .rarity-bonus-pill.epic {
-  background-color: rgba(231, 76, 60, 0.25) !important;
-  color: #ff6b6b !important;
-  border: 1px solid rgba(255, 107, 107, 0.4) !important;
+  background-color: rgba(225, 112, 85, 0.12) !important;
+  color: #d63031 !important;
+  border: 1px solid rgba(225, 112, 85, 0.25) !important;
 }
 
 .choice-card-weapon .stat-compare-row,
 .choice-card-passive .stat-compare-row {
-  color: rgba(255, 255, 255, 0.85) !important;
+  color: #2d3436 !important;
 }
 
 .choice-card-weapon .stat-label-item,
 .choice-card-passive .stat-label-item {
-  color: rgba(255, 255, 255, 0.6) !important;
+  color: rgba(0, 0, 0, 0.55) !important;
   font-weight: 700 !important;
 }
 
 .choice-card-weapon .stat-val-old,
 .choice-card-passive .stat-val-old {
-  color: rgba(255, 255, 255, 0.45) !important;
+  color: rgba(0, 0, 0, 0.35) !important;
   text-decoration: line-through;
 }
 
 .choice-card-weapon .card-lv-badge,
 .choice-card-passive .card-lv-badge {
-  color: rgba(255, 255, 255, 0.85) !important;
-  background: rgba(255, 255, 255, 0.15) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #7d6b63 !important;
+  background: rgba(0,0,0,0.06) !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
 }
 
 /* Beautiful High-Contrast Gold-Sparkling Awakening Card Override */
 .choice-card-horizontal.awakening-card {
-  border: 3px dashed #ffd200 !important;
-  box-shadow: 0 0 25px rgba(255, 210, 0, 0.55), inset 0 0 15px rgba(255, 210, 0, 0.15) !important;
-  background: linear-gradient(135deg, rgba(255, 210, 0, 0.22), rgba(20, 20, 30, 0.95)) !important;
-  color: #ffffff !important;
+  border: 3px dashed #e67e22 !important;
+  box-shadow: 0 0 20px rgba(230, 126, 34, 0.35), inset 0 0 10px rgba(230, 126, 34, 0.08) !important;
+  background: linear-gradient(135deg, #fff9f0, #ffebd1) !important;
+  color: #2d3436 !important;
   animation: awakening-pulse-new 1.8s infinite alternate ease-in-out !important;
 }
 
 .choice-card-horizontal.awakening-card .card-skill-name {
-  color: #ffd200 !important;
-  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.95) !important;
+  color: #d35400 !important;
+  text-shadow: none !important;
 }
 
 .choice-card-horizontal.awakening-card .card-skill-desc {
-  color: rgba(255, 255, 255, 0.9) !important;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
+  color: #4e342e !important;
+  text-shadow: none !important;
 }
 
 .choice-card-horizontal.awakening-card .stat-compare-row {
-  color: #ffffff !important;
+  color: #2d3436 !important;
 }
 
 .choice-card-horizontal.awakening-card .stat-val-new.highlight {
-  color: #ffd200 !important;
-  text-shadow: 0 0 8px rgba(255, 210, 0, 0.6) !important;
+  color: #d35400 !important;
+  text-shadow: none !important;
 }
 
 @keyframes awakening-pulse-new {
-  from { box-shadow: 0 0 15px rgba(255,210,0,0.35), inset 0 0 8px rgba(255,210,0,0.08); }
-  to   { box-shadow: 0 0 30px rgba(255,210,0,0.7), inset 0 0 22px rgba(255,210,0,0.2); }
+  from { box-shadow: 0 0 10px rgba(230,126,34,0.25), inset 0 0 5px rgba(230,126,34,0.05); }
+  to   { box-shadow: 0 0 20px rgba(230,126,34,0.5), inset 0 0 12px rgba(230,126,34,0.12); }
 }

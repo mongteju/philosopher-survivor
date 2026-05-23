@@ -324,12 +324,6 @@ export function triggerLevelUp() {
           <span class="card-lv-badge">즉시</span>
         </div>
         <div class="card-skill-desc">즉시 최대 체력의 40%를 회복합니다. 배움의 길 끝에 잠시 휴식을 취합니다.</div>
-        <div class="stat-compare">
-          <div class="stat-compare-row">
-            <span class="stat-label-item">회복량</span>
-            <span class="stat-val-new highlight">HP +40%</span>
-          </div>
-        </div>
       </div>
     `;
     el.onclick = () => { this.player.heal(Math.floor(this.player.maxHp * 0.4)); this.closeLevelUp(); };
@@ -364,47 +358,7 @@ export function triggerLevelUp() {
       const percentMap = { rare: '+25%', unique: '+55%', epic: '+90%' };
       const bonusSpan = tier !== 'normal' ? ` <span class="rarity-bonus-pill ${tier}">${percentMap[tier]} 보너스</span>` : '';
 
-      let statBlock = '<div class="stat-compare">';
-      if (upgrade.type === 'weapon' && upgrade.stats) {
-        const cur = curLvl > 0 ? upgrade.stats[curLvl - 1] : null;
-        const nxt = upgrade.stats[nextLvl - 1];
-        if (nxt && nxt.dmg !== undefined) {
-          const prevEffDmg = cur ? Math.floor(cur.dmg * (curLvl >= upgrade.maxLevel ? 1.5 : 1.0) * curTm) : 0;
-          const nextEffDmg = Math.floor(nxt.dmg * (isAwakening ? 1.5 : 1.0) * tm);
-          statBlock += `<div class="stat-compare-row"><span class="stat-label-item">공격력</span><span><span class="stat-val-old">${prevEffDmg}</span><span class="stat-val-arrow">→</span><span class="stat-val-new highlight">${nextEffDmg}</span>${bonusSpan}</span></div>`;
-        }
-        if (nxt && (nxt.cd || nxt.interval)) {
-          const cd = nxt.cd || nxt.interval;
-          const curCd = cur ? (cur.cd || cur.interval) : 0;
-          const prevEffCd = cur ? (curCd * (curLvl >= upgrade.maxLevel ? 0.5 : 1.0) * (1 - this.player.cooldownReduction - this.player.auraCooldownReduction)) : 0;
-          const nextEffCd = cd * (isAwakening ? 0.5 : 1.0) * (1 - this.player.cooldownReduction - this.player.auraCooldownReduction);
-          statBlock += `<div class="stat-compare-row"><span class="stat-label-item">쿨타임</span><span><span class="stat-val-old">${cur ? (prevEffCd / 1000).toFixed(1) + 's' : '-'}</span><span class="stat-val-arrow">→</span><span class="stat-val-new">${(nextEffCd / 1000).toFixed(1)}s</span></span></div>`;
-        }
-      } else if (upgrade.type === 'passive') {
-        const steps = {
-          passive_idealism_dmg: [15, '%', '공격력'],
-          passive_idealism_area: [15, '%', '범위'],
-          passive_speed: [15, '%', '이동속도'],
-          passive_cooldown: [12, '%', '쿨감소'],
-          passive_regen: [1, 'HP', '초당회복'],
-          passive_empiricism_slow: [15, '%', '적감속'],
-          passive_empiricism_xp: [15, '%', '경험치'],
-          passive_max_hp: [25, 'HP', '최대체력'],
-          passive_armor: [15, '%', '피해감쇄'],
-          passive_crit_dmg: [25, '%', '크리배율']
-        };
-        const info = steps[upgrade.id];
-        if (info) {
-          const [step, suffix, label] = info;
-          const prevVal = curLvl * step * curTm;
-          const nextVal = nextLvl * step * tm;
-          statBlock += `<div class="stat-compare-row"><span class="stat-label-item">${label}</span><span><span class="stat-val-old">+${Math.round(prevVal)}${suffix}</span><span class="stat-val-arrow">→</span><span class="stat-val-new highlight">+${Math.round(nextVal)}${suffix}</span>${bonusSpan}</span></div>`;
-        }
-      }
-      statBlock += '</div>';
-
       const lvLabel = isAwakening ? '각성' : `Lv.${nextLvl}`;
-      const typeLabel = upgrade.type === 'weapon' ? '액티브' : '패시브';
       el.innerHTML = `
         <div class="card-left-section">
           <div class="card-icon-box ${tier}">
@@ -415,11 +369,10 @@ export function triggerLevelUp() {
         <div class="card-right-section">
           <div class="card-title-row">
             <span class="card-skill-name">${upgrade.name}</span>
-            <span class="card-type-badge ${upgrade.type}">${typeLabel}</span>
             <span class="card-lv-badge ${isAwakening ? 'awakening' : ''}">${lvLabel}</span>
+            ${bonusSpan}
           </div>
           <div class="card-skill-desc">${upgrade.desc || ''}</div>
-          ${statBlock}
           ${isAwakening ? '<div class="awakening-badge-line">🔥 각성 특수 효과 발현!</div>' : ''}
         </div>
       `;
