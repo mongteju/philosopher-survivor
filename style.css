@@ -421,9 +421,9 @@ body {
 
 /* Category-specific card background styling */
 .choice-card-horizontal.choice-card-weapon {
-  background: linear-gradient(135deg, rgba(74, 20, 140, 0.5), rgba(15, 12, 30, 0.95)) !important;
-  border: 3px solid rgba(142, 68, 173, 0.65) !important;
-  border-left: 6px solid #9b59b6 !important;
+  background: linear-gradient(135deg, rgba(178, 34, 34, 0.45), rgba(15, 8, 12, 0.96)) !important;
+  border: 3px solid rgba(231, 76, 60, 0.6) !important;
+  border-left: 6px solid #e74c3c !important;
   color: #ffffff !important;
 }
 .choice-card-horizontal.choice-card-passive {
@@ -440,9 +440,9 @@ body {
 /* Hover and active glow states */
 .choice-card-horizontal.choice-card-weapon:hover,
 .choice-card-horizontal.choice-card-weapon.keyboard-selected {
-  background: linear-gradient(135deg, rgba(142, 68, 173, 0.65), rgba(20, 15, 45, 0.98)) !important;
-  border-color: #a55eea !important;
-  box-shadow: 0 0 25px rgba(165, 94, 234, 0.75), inset 0 0 12px rgba(165, 94, 234, 0.2) !important;
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.65), rgba(25, 10, 12, 0.98)) !important;
+  border-color: #ff4757 !important;
+  box-shadow: 0 0 25px rgba(255, 71, 87, 0.75), inset 0 0 12px rgba(255, 71, 87, 0.2) !important;
   transform: translateY(-2px) scale(1.025);
   animation: pulse-border-weapon 1.5s infinite alternate ease-in-out;
 }
@@ -457,8 +457,8 @@ body {
 }
 
 @keyframes pulse-border-weapon {
-  0% { border-color: rgba(155, 89, 182, 0.7); box-shadow: 0 0 10px rgba(165, 94, 234, 0.35); }
-  100% { border-color: #a55eea; box-shadow: 0 0 22px rgba(165, 94, 234, 0.7); }
+  0% { border-color: rgba(231, 76, 60, 0.7); box-shadow: 0 0 10px rgba(255, 71, 87, 0.35); }
+  100% { border-color: #ff4757; box-shadow: 0 0 22px rgba(255, 71, 87, 0.7); }
 }
 @keyframes pulse-border-passive {
   0% { border-color: rgba(52, 152, 219, 0.7); box-shadow: 0 0 10px rgba(84, 160, 255, 0.35); }
@@ -474,15 +474,16 @@ body {
 
 .card-icon-box {
   position: relative;
-  width: 90px;
-  height: 90px;
+  width: 100px;
+  height: 100px;
   background: linear-gradient(135deg, #f39c12, #d35400);
   border: 3px solid #5c4033;
-  border-radius: 16px;
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: inset 0 2px 5px rgba(0,0,0,0.25);
+  transition: all 0.25s ease;
 }
 
 .card-icon-box.normal { background: linear-gradient(135deg, #7f8c8d, #34495e); }
@@ -491,9 +492,13 @@ body {
 .card-icon-box.epic { background: linear-gradient(135deg, #f1c40f, #e67e22); }
 
 .card-skill-icon {
-  font-size: 48px;
+  font-size: 56px;
   filter: drop-shadow(0 2px 5px rgba(0,0,0,0.4)) drop-shadow(0 0 10px rgba(255,255,255,0.25));
-  transition: transform 0.25s ease;
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.choice-card-horizontal:hover .card-skill-icon {
+  transform: scale(1.15) rotate(4deg);
 }
 
 .tier-ribbon {
@@ -552,7 +557,7 @@ body {
   border-radius: 4px;
   color: #fff;
 }
-.card-type-badge.weapon { background: #d35400; }
+.card-type-badge.weapon { background: #ff4757; }
 .card-type-badge.passive { background: #16a085; }
 
 .card-lv-badge {
@@ -589,6 +594,7 @@ body {
   padding: 3px 8px;
   margin-top: 1px;
   border: 1px solid rgba(92, 64, 51, 0.1);
+  max-width: 320px;
 }
 
 .choice-card-horizontal .stat-compare-row {
@@ -2136,6 +2142,37 @@ button.keyboard-selected,
 .choice-card-passive .stat-compare {
   background: rgba(0, 0, 0, 0.35) !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  max-width: 320px !important;
+}
+
+/* Rarity Bonus Pill styled with vibrant glowing colors */
+.rarity-bonus-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+  display: inline-block;
+  vertical-align: middle;
+}
+.choice-card-weapon .rarity-bonus-pill,
+.choice-card-passive .rarity-bonus-pill {
+  text-shadow: none !important;
+}
+.rarity-bonus-pill.rare {
+  background-color: rgba(52, 152, 219, 0.25) !important;
+  color: #54a0ff !important;
+  border: 1px solid rgba(84, 160, 255, 0.4) !important;
+}
+.rarity-bonus-pill.unique {
+  background-color: rgba(155, 89, 182, 0.25) !important;
+  color: #e0a7ff !important;
+  border: 1px solid rgba(224, 167, 255, 0.4) !important;
+}
+.rarity-bonus-pill.epic {
+  background-color: rgba(231, 76, 60, 0.25) !important;
+  color: #ff6b6b !important;
+  border: 1px solid rgba(255, 107, 107, 0.4) !important;
 }
 
 .choice-card-weapon .stat-compare-row,

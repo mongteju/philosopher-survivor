@@ -348,7 +348,7 @@ export function triggerLevelUp() {
       else tier = 'normal';
       upgrade.rolledTier = tier;
 
-      const tierNames = { normal: '보통', rare: '레어 (+25%)', unique: '유니크 (+55%)', epic: '에픽 (+90%)' };
+      const tierNames = { normal: '보통', rare: '레어', unique: '유니크', epic: '에픽' };
       const tierName = tierNames[tier];
       const tierMuls = { normal: 1.0, rare: 1.25, unique: 1.55, epic: 1.9 };
       const tm = tierMuls[tier];
@@ -361,6 +361,9 @@ export function triggerLevelUp() {
       el.className = `choice-card choice-card-horizontal ${categoryClass} ${this.player.lineage}-card ${tier}-card${isAwakening ? ' awakening-card' : ''}`;
       if (idx === 0) el.classList.add('keyboard-selected');
 
+      const percentMap = { rare: '+25%', unique: '+55%', epic: '+90%' };
+      const bonusSpan = tier !== 'normal' ? ` <span class="rarity-bonus-pill ${tier}">${percentMap[tier]} 보너스</span>` : '';
+
       let statBlock = '<div class="stat-compare">';
       if (upgrade.type === 'weapon' && upgrade.stats) {
         const cur = curLvl > 0 ? upgrade.stats[curLvl - 1] : null;
@@ -368,7 +371,7 @@ export function triggerLevelUp() {
         if (nxt && nxt.dmg !== undefined) {
           const prevEffDmg = cur ? Math.floor(cur.dmg * (curLvl >= upgrade.maxLevel ? 1.5 : 1.0) * curTm) : 0;
           const nextEffDmg = Math.floor(nxt.dmg * (isAwakening ? 1.5 : 1.0) * tm);
-          statBlock += `<div class="stat-compare-row"><span class="stat-label-item">공격력</span><span><span class="stat-val-old">${prevEffDmg}</span><span class="stat-val-arrow">→</span><span class="stat-val-new highlight">${nextEffDmg}</span></span></div>`;
+          statBlock += `<div class="stat-compare-row"><span class="stat-label-item">공격력</span><span><span class="stat-val-old">${prevEffDmg}</span><span class="stat-val-arrow">→</span><span class="stat-val-new highlight">${nextEffDmg}</span>${bonusSpan}</span></div>`;
         }
         if (nxt && (nxt.cd || nxt.interval)) {
           const cd = nxt.cd || nxt.interval;
@@ -395,13 +398,13 @@ export function triggerLevelUp() {
           const [step, suffix, label] = info;
           const prevVal = curLvl * step * curTm;
           const nextVal = nextLvl * step * tm;
-          statBlock += `<div class="stat-compare-row"><span class="stat-label-item">${label}</span><span><span class="stat-val-old">+${Math.round(prevVal)}${suffix}</span><span class="stat-val-arrow">→</span><span class="stat-val-new highlight">+${Math.round(nextVal)}${suffix}</span></span></div>`;
+          statBlock += `<div class="stat-compare-row"><span class="stat-label-item">${label}</span><span><span class="stat-val-old">+${Math.round(prevVal)}${suffix}</span><span class="stat-val-arrow">→</span><span class="stat-val-new highlight">+${Math.round(nextVal)}${suffix}</span>${bonusSpan}</span></div>`;
         }
       }
       statBlock += '</div>';
 
       const lvLabel = isAwakening ? '각성' : `Lv.${nextLvl}`;
-      const typeLabel = upgrade.type === 'weapon' ? '무기' : '패시브';
+      const typeLabel = upgrade.type === 'weapon' ? '액티브' : '패시브';
       el.innerHTML = `
         <div class="card-left-section">
           <div class="card-icon-box ${tier}">
