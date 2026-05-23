@@ -289,7 +289,19 @@ export function resumeFromGacha() {
 export function triggerLevelUp() {
   this.isPlaying = false;
   const linCards = PHILOSOPHY_DB[this.player.lineage];
-  const available = linCards.filter(c => (this.player.activeSkills[c.id] || 0) < c.maxLevel);
+  
+  // Check if player has already awakened any weapon (active skill)
+  const hasAwakenedWeapon = Object.entries(this.player.activeSkills).some(([id, lvl]) => {
+    const card = linCards.find(c => c.id === id);
+    return card && card.type === 'weapon' && lvl >= card.maxLevel;
+  });
+
+  const available = linCards.filter(c => {
+    const curLvl = this.player.activeSkills[c.id] || 0;
+    const effectiveMaxLvl = (c.type === 'weapon' && hasAwakenedWeapon) ? Math.min(c.maxLevel, 3) : c.maxLevel;
+    return curLvl < effectiveMaxLvl;
+  });
+
   available.sort(() => Math.random() - 0.5);
   this.levelChoices = available.slice(0, 3);
   this.cardSelectedIndex = 0;
@@ -336,7 +348,7 @@ export function triggerLevelUp() {
       else tier = 'normal';
       upgrade.rolledTier = tier;
 
-      const tierNames = { normal: '보통', rare: '레어', unique: '유니크', epic: '에픽' };
+      const tierNames = { normal: '보통', rare: '레어 (+25%)', unique: '유니크 (+55%)', epic: '에픽 (+90%)' };
       const tierName = tierNames[tier];
       const tierMuls = { normal: 1.0, rare: 1.25, unique: 1.55, epic: 1.9 };
       const tm = tierMuls[tier];
@@ -344,8 +356,9 @@ export function triggerLevelUp() {
       const curTier = this.player.skillTiers[upgrade.id] || 'normal';
       const curTm = tierMuls[curTier];
 
+      const categoryClass = upgrade.type === 'weapon' ? 'choice-card-weapon' : 'choice-card-passive';
       const el = document.createElement('div');
-      el.className = `choice-card choice-card-horizontal ${this.player.lineage}-card ${tier}-card${isAwakening ? ' awakening-card' : ''}`;
+      el.className = `choice-card choice-card-horizontal ${categoryClass} ${this.player.lineage}-card ${tier}-card${isAwakening ? ' awakening-card' : ''}`;
       if (idx === 0) el.classList.add('keyboard-selected');
 
       let statBlock = '<div class="stat-compare">';
@@ -407,7 +420,14 @@ export function triggerLevelUp() {
           ${isAwakening ? '<div class="awakening-badge-line">🔥 각성 특수 효과 발현!</div>' : ''}
         </div>
       `;
-      el.onclick = () => { this.applyCardSelection(upgrade, isAwakening); this.closeLevelUp(); };
+      el.onclick = () => {
+        if (isAwakening && upgrade.type === 'weapon') {
+          const confirmAwake = confirm("🔥 정말로 이 스킬을 각성하시겠습니까?\n\n(한 번 각성하면 다른 액티브 스킬은 각성할 수 없으며 최대 레벨이 3으로 제한됩니다!)");
+          if (!confirmAwake) return;
+        }
+        this.applyCardSelection(upgrade, isAwakening);
+        this.closeLevelUp();
+      };
       grid.appendChild(el);
     });
   }
