@@ -2032,6 +2032,10 @@ function game_addDamageText_local(game, x, y, val, color, size) {
 }
 
 // ─── BOOT ────────────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', () => {
+    window.gameInstance = new Game();
+  });
+} else {
   window.gameInstance = new Game();
-});
+}
