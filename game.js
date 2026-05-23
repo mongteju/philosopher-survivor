@@ -1,6 +1,13 @@
 import { TIMELINE } from './db.js';
 import { sfx } from './audio.js';
-import { gameUpdate } from './game/update.js';
+import {
+  gameUpdate,
+  handleWeaponTriggers,
+  getNearestEnemy,
+  fireWeapon,
+  handleCombatCollisions,
+  dealDamageToEnemy
+} from './game/update.js';
 import { gameDraw, drawStageBackground } from './game/draw.js';
 import {
   gameEvents,
@@ -175,6 +182,11 @@ class Game {
   }
 
   update(dt) { gameUpdate.call(this, dt); }
+  handleWeaponTriggers(dt) { handleWeaponTriggers.call(this, dt); }
+  getNearestEnemy() { return getNearestEnemy.call(this); }
+  fireWeapon(id, lvl, stats, awakening) { fireWeapon.call(this, id, lvl, stats, awakening); }
+  handleCombatCollisions() { handleCombatCollisions.call(this); }
+  dealDamageToEnemy(e, dmg, proj) { dealDamageToEnemy.call(this, e, dmg, proj); }
   draw() { gameDraw.call(this); }
   drawStageBackground(cx, cy, w, h) { drawStageBackground.call(this, cx, cy, w, h); }
   initEvents() { gameEvents.call(this); }
