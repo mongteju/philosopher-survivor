@@ -134,9 +134,39 @@ export function gameDraw() {
       for (let i = 0; i < count; i++) {
         const a = this.orbitAngle + (Math.PI * 2 / count) * i;
         const ox = prx + Math.cos(a) * radius, oy = pry + Math.sin(a) * radius;
+        
         ctx.save();
-        ctx.fillStyle = '#a8e6f0'; ctx.shadowColor = '#00d2d3'; ctx.shadowBlur = 10;
-        ctx.beginPath(); ctx.arc(ox, oy, 10, 0, Math.PI * 2); ctx.fill();
+        ctx.translate(ox, oy);
+        ctx.rotate(this.orbitAngle * 2.5 + i); // Spinning individual snowflakes
+        
+        ctx.strokeStyle = '#00d2d3';
+        ctx.lineWidth = 1.8;
+        ctx.shadowColor = '#00d2d3';
+        ctx.shadowBlur = 12;
+
+        // Draw delicate 6-pointed snowflake barbs
+        for (let k = 0; k < 6; k++) {
+          ctx.rotate(Math.PI / 3);
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(0, 9.5);
+          ctx.stroke();
+          
+          ctx.beginPath();
+          ctx.moveTo(0, 4.5);
+          ctx.lineTo(-3, 7.5);
+          ctx.moveTo(0, 4.5);
+          ctx.lineTo(3, 7.5);
+          ctx.stroke();
+        }
+        
+        // Inner shining ice core
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = '#ffffff'; ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.arc(0, 0, 3, 0, Math.PI * 2);
+        ctx.fill();
+        
         ctx.restore();
       }
     }

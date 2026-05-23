@@ -428,144 +428,413 @@ export class Player {
       ctx.restore();
     }
 
-    const drawImg = this.lineage === 'idealism' ? Player.spriteImagePlato : Player.spriteImageAristotle;
-    const spriteLoaded = drawImg && drawImg.complete && drawImg.naturalWidth !== 0;
-
-    if (spriteLoaded) {
-      // 12x8 RPG Maker VX grid calculation (precise floating-point coordinates)
-      const cellW = drawImg.naturalWidth / 12;
-      const cellH = drawImg.naturalHeight / 8;
-
-      // Map evolution stage (0 to 5) to 6 dedicated character slots
-      const EVOL_CHAR_MAP = {
-        0: 1, // slot 1
-        1: 2, // slot 2
-        2: 3, // slot 3
-        3: 5, // slot 5
-        4: 6, // slot 6
-        5: 7  // slot 7
-      };
-
-      const charId = EVOL_CHAR_MAP[Math.min(this.evolutionIndex, 5)] || 1;
-      const colOffset = (charId % 4) * 3;
-      const rowOffset = Math.floor(charId / 4) * 4;
-
-      let dirRow = 0;
-      if (this.lastDirection === 'down') {
-        dirRow = 0;
-      } else if (this.lastDirection === 'up') {
-        dirRow = 3;
-      } else {
-        dirRow = (this.facing === 'right') ? 2 : 1;
-      }
-
-      const row = rowOffset + dirRow;
-
-      let colIdx = colOffset + 1;
-      if (this.hp > 0 && isMoving) {
-        const walkCycle = [0, 1, 2, 1];
-        const frameRate = 120;
-        const idx = Math.floor((this.animTime || 0) / frameRate) % 4;
-        colIdx = colOffset + walkCycle[idx];
-      }
-
-      // Add defensive 0.5px margin to prevent sub-pixel bleeding
-      const sx = colIdx * cellW + 0.5;
-      const sy = row * cellH + 0.5;
-      const sw = cellW - 1.0;
-      const sh = cellH - 1.0;
-      const dw = 72;
-      const dh = Math.round(72 * (cellH / cellW));
-
+    // ─── CUSTOM PROCEDURAL CHARACTER DRAWING ────────────────────────────
+    const evIdx = Math.min(this.evolutionIndex, 5);
+    const themeColor = ev ? ev.color : '#fff';
+    const isMoving = Math.hypot(this.vx, this.vy) > 0.1;
+    const sway = isMoving ? Math.sin(t * 0.012) * 4 : 0;
+    
+    // Bounce/bobbing effect
+    const bounce = isMoving ? Math.abs(Math.sin(t * 0.015)) * 3.5 : Math.sin(t * 0.003) * 1.5;
+    
+    ctx.save();
+    ctx.translate(rx, ry + bounce);
+    
+    // Face direction mirroring: If player is looking left, mirror horizontally
+    const faceDir = (this.facing === 'left') ? -1 : 1;
+    ctx.scale(faceDir, 1);
+    
+    // 1. Draw back wings or floating particles for final stages
+    if (this.lineage === 'idealism' && evIdx === 5) {
+      // Sartre (Idealism 5): Spectacular Fire Wings
       ctx.save();
-      ctx.translate(rx, ry);
-      if (this.hp <= 0) {
-        ctx.rotate(Math.PI / 2);
-        ctx.translate(0, 10);
-      }
-      ctx.drawImage(drawImg, sx, sy, sw, sh, -dw / 2, -dh / 2, dw, dh);
-      ctx.restore();
-
-      // Render Halo / Crowns over Sprite sheet based on evolution
-      if (this.evolutionIndex >= 2) {
-        ctx.save();
-        ctx.fillStyle = '#f9ca24';
-        for (let i = 0; i < 5; i++) {
-          const a = -Math.PI + (i / 4) * Math.PI;
-          ctx.beginPath();
-          ctx.ellipse(rx + Math.cos(a) * 10, ry - 31 + Math.sin(a) * 2, 4, 6, a, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.restore();
-      }
-      if (this.evolutionIndex >= 4) {
-        ctx.save();
-        ctx.strokeStyle = themeColor; ctx.lineWidth = 2.5;
-        ctx.shadowColor = themeColor; ctx.shadowBlur = 15;
-        ctx.beginPath(); ctx.arc(rx, ry - 22, 18, -Math.PI, 0); ctx.stroke();
-        ctx.restore();
-      }
-
-    } else {
-      // Fallback original vector art
-      // Legs
-      ctx.fillStyle = '#8B6914';
-      ctx.beginPath(); ctx.ellipse(rx - 5 + sway * 0.4, ry + 20, 5, 10, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.ellipse(rx + 5 - sway * 0.4, ry + 20, 5, 10, 0, 0, Math.PI * 2); ctx.fill();
-      // Robe
-      ctx.fillStyle = this.lineage === 'idealism' ? '#c0392b' : '#2471a3';
+      ctx.fillStyle = 'rgba(255, 71, 87, 0.55)';
+      ctx.shadowBlur = 18;
+      ctx.shadowColor = '#ff4757';
+      // Left wing (drawn relative to mirrored space)
       ctx.beginPath();
-      ctx.moveTo(rx - 15 + sway, ry + 14); ctx.lineTo(rx + 15 + sway, ry + 14);
-      ctx.lineTo(rx + 12, ry - 8); ctx.lineTo(rx - 12, ry - 8); ctx.closePath(); ctx.fill();
-      // Robe stripe
-      ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(rx + sway * 0.4, ry - 6); ctx.lineTo(rx + sway * 0.4, ry + 13); ctx.stroke();
-      // Belt
-      ctx.fillStyle = themeColor; ctx.globalAlpha *= 0.8;
-      ctx.fillRect(rx - 13 + sway, ry + 2, 26, 5);
-      ctx.globalAlpha = flashVisible ? 0.35 : 1;
-      // Arms
-      const armSwing = isMoving ? Math.sin(t * 0.015) * 10 : 0;
-      ctx.strokeStyle = this.lineage === 'idealism' ? '#c0392b' : '#2471a3';
-      ctx.lineWidth = 7; ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(rx - 10 + sway, ry - 3); ctx.lineTo(rx - 17 + sway + armSwing, ry + 8); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(rx + 10 + sway, ry - 3); ctx.lineTo(rx + 17 + sway - armSwing, ry + 8); ctx.stroke();
-      // Hands
-      ctx.fillStyle = '#f0c080';
-      ctx.beginPath(); ctx.arc(rx - 17 + sway + armSwing, ry + 8, 4, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.arc(rx + 17 + sway - armSwing, ry + 8, 4, 0, Math.PI * 2); ctx.fill();
-      // Neck
-      ctx.fillStyle = '#f0c080';
-      ctx.beginPath(); ctx.ellipse(rx + sway * 0.2, ry - 10, 5, 6, 0, 0, Math.PI * 2); ctx.fill();
-      // Head
-      ctx.fillStyle = '#f0c080'; ctx.shadowColor = themeColor; ctx.shadowBlur = 8;
-      ctx.beginPath(); ctx.arc(rx + sway * 0.2, ry - 22, 13, 0, Math.PI * 2); ctx.fill();
-      ctx.shadowBlur = 0;
-      // Eyes
-      const eyeDir = Math.cos(this.faceAngle) >= 0 ? 1 : -1;
-      ctx.fillStyle = '#2d3436';
-      ctx.beginPath(); ctx.arc(rx + sway * 0.2 + eyeDir * 4, ry - 22, 2, 0, Math.PI * 2); ctx.fill();
-      // Beard
-      ctx.fillStyle = this.evolutionIndex >= 3 ? '#fff' : '#8B7355';
-      ctx.beginPath(); ctx.ellipse(rx + sway * 0.2, ry - 12, 7, 5, 0, 0, Math.PI); ctx.fill();
-      // Laurel crown (ev >= 2)
-      if (this.evolutionIndex >= 2) {
-        ctx.fillStyle = '#f9ca24';
-        for (let i = 0; i < 5; i++) {
-          const a = -Math.PI + (i / 4) * Math.PI;
-          ctx.beginPath();
-          ctx.ellipse(rx + Math.cos(a) * 10 + sway * 0.2, ry - 31 + Math.sin(a) * 2, 4, 6, a, 0, Math.PI * 2);
-          ctx.fill();
-        }
+      ctx.moveTo(-8, -8);
+      ctx.quadraticCurveTo(-45, -35, -55, -12);
+      ctx.quadraticCurveTo(-32, 8, -8, 8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(-8, 2);
+      ctx.quadraticCurveTo(-38, -8, -42, 12);
+      ctx.quadraticCurveTo(-22, 22, -8, 12);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    } else if (this.lineage === 'empiricism' && evIdx === 5) {
+      // Dewey (Empiricism 5): Elegant Cyan Digital Wings
+      ctx.save();
+      ctx.fillStyle = 'rgba(0, 210, 211, 0.55)';
+      ctx.shadowBlur = 18;
+      ctx.shadowColor = '#00d2d3';
+      ctx.beginPath();
+      ctx.moveTo(-8, -8);
+      ctx.lineTo(-48, -22);
+      ctx.lineTo(-38, -4);
+      ctx.lineTo(-52, 6);
+      ctx.lineTo(-8, 8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+    
+    // 2. Legs/Feet with walking sway
+    ctx.fillStyle = '#2d3436';
+    const footOffset = isMoving ? Math.sin(t * 0.015) * 7 : 0;
+    ctx.beginPath();
+    ctx.ellipse(-5 + footOffset, 20 - bounce, 4.5, 6.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(5 - footOffset, 20 - bounce, 4.5, 6.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 3. Robe/Coat
+    ctx.save();
+    let bodyColor = '#c0392b';
+    let stripeColor = 'rgba(255,255,255,0.2)';
+    let beltColor = themeColor;
+    
+    if (this.lineage === 'idealism') {
+      if (evIdx === 0) bodyColor = '#c0392b'; // Plato: Classic Red
+      else if (evIdx === 1) bodyColor = '#e67e22'; // Stoic: Orange
+      else if (evIdx === 2) { bodyColor = '#d35400'; beltColor = '#ffd200'; } // Augustine: Divine Orange & Gold
+      else if (evIdx === 3) bodyColor = '#2c3e50'; // Descartes: Dark Rose coat style
+      else if (evIdx === 4) bodyColor = '#2c003e'; // Kant: Imperial Clockwork Dark Purple
+      else if (evIdx === 5) bodyColor = '#1e0505'; // Sartre: Heavy existentialist black-red coat
+    } else {
+      if (evIdx === 0) bodyColor = '#2471a3'; // Aristotle: Pure Blue
+      else if (evIdx === 1) bodyColor = '#16a085'; // Epicurus: Forest Greenish-Teal
+      else if (evIdx === 2) { bodyColor = '#2980b9'; beltColor = '#bdc3c7'; } // Aquinas: Sacred White/Silver-Blue
+      else if (evIdx === 3) bodyColor = '#27ae60'; // Bacon: Rich Emerald Scholar
+      else if (evIdx === 4) bodyColor = '#130f40'; // Bentham/Mill: Deep Indigo Utilitarian robe
+      else if (evIdx === 5) bodyColor = '#0f172a'; // Dewey: Infinite Cosmos Slate Navy
+    }
+    
+    ctx.shadowBlur = evIdx >= 3 ? 12 : 0;
+    ctx.shadowColor = themeColor;
+    ctx.fillStyle = bodyColor;
+    
+    ctx.beginPath();
+    ctx.moveTo(-16, 16);
+    ctx.quadraticCurveTo(-14, -10, -10, -10);
+    ctx.lineTo(10, -10);
+    ctx.quadraticCurveTo(14, -10, 16, 16);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Robe golden/silver outer trims
+    ctx.strokeStyle = evIdx >= 2 ? themeColor : 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = evIdx >= 3 ? 2.5 : 1.5;
+    ctx.stroke();
+    
+    // Belt
+    ctx.fillStyle = beltColor;
+    ctx.fillRect(-12, 3, 24, 4);
+    
+    // Robe vertical stripe
+    ctx.strokeStyle = stripeColor;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(0, -10);
+    ctx.lineTo(0, 16);
+    ctx.stroke();
+    ctx.restore();
+    
+    // 4. Head & Face
+    ctx.fillStyle = '#f0c080'; // Skin
+    ctx.beginPath();
+    ctx.arc(0, -20, 11, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Hair & Facial features (Beards, Specs, Hats)
+    ctx.fillStyle = evIdx >= 4 ? '#f1f2f6' : (evIdx >= 2 ? '#ffffff' : '#57606f');
+    if (this.lineage === 'idealism') {
+      if (evIdx === 0) {
+        // Plato: curly philosopher hair & beard
+        ctx.beginPath(); ctx.arc(-6, -27, 4.5, 0, Math.PI*2); ctx.arc(6, -27, 4.5, 0, Math.PI*2); ctx.arc(-9, -22, 4, 0, Math.PI*2); ctx.arc(9, -22, 4, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, -12, 7, 6, 0, 0, Math.PI); ctx.fill();
+      } else if (evIdx === 1) {
+        // Stoic: orange bandana headband, neat beard
+        ctx.fillStyle = '#e67e22'; ctx.fillRect(-10, -27, 20, 3.5);
+        ctx.fillStyle = '#57606f'; ctx.beginPath(); ctx.arc(-8, -21, 3.5, 0, Math.PI*2); ctx.arc(8, -21, 3.5, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, -11, 6, 5, 0, 0, Math.PI); ctx.fill();
+      } else if (evIdx === 2) {
+        // Augustine: golden bishop cowl/hood, long flowing white beard
+        ctx.fillStyle = '#ffd200';
+        ctx.beginPath(); ctx.moveTo(-9, -27); ctx.lineTo(0, -40); ctx.lineTo(9, -27); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.ellipse(0, -8, 6.5, 10, 0, 0, Math.PI); ctx.fill();
+      } else if (evIdx === 3) {
+        // Descartes: long black curly hair, elegant thin French moustache
+        ctx.fillStyle = '#2d3436';
+        ctx.beginPath(); ctx.arc(-9, -22, 5.5, 0, Math.PI*2); ctx.arc(-11, -16, 4.5, 0, Math.PI*2); ctx.arc(9, -22, 5.5, 0, Math.PI*2); ctx.arc(11, -16, 4.5, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(-4.5, -15); ctx.quadraticCurveTo(0, -13, 4.5, -15); ctx.stroke();
+      } else if (evIdx === 4) {
+        // Kant: 18th-century powdered white wig (rolled wig at sides), thin wire specs
+        ctx.fillStyle = '#f1f2f6';
+        ctx.beginPath(); ctx.arc(-9, -22, 5.5, 0, Math.PI*2); ctx.arc(9, -22, 5.5, 0, Math.PI*2); ctx.arc(0, -27, 6.5, 0, Math.PI*2); ctx.fill();
+        // Wire spectacles
+        ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(3.5, -20, 2.5, 0, Math.PI*2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(1, -20); ctx.stroke();
+      } else if (evIdx === 5) {
+        // Sartre: modern slicked-back grey hair, thick black specs, modern goatee
+        ctx.fillStyle = '#7f8c8d';
+        ctx.beginPath(); ctx.ellipse(0, -28, 9, 4, 0, 0, Math.PI*2); ctx.fill();
+        // Heavy horn-rimmed specs
+        ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 2;
+        ctx.strokeRect(2, -22, 5.5, 4.5);
+        // Modern Goatee
+        ctx.fillStyle = '#7f8c8d';
+        ctx.beginPath(); ctx.moveTo(-2.5, -12); ctx.lineTo(2.5, -12); ctx.lineTo(0, -6); ctx.closePath(); ctx.fill();
       }
-      // Halo (ev >= 4)
-      if (this.evolutionIndex >= 4) {
-        ctx.strokeStyle = themeColor; ctx.lineWidth = 2.5;
-        ctx.shadowColor = themeColor; ctx.shadowBlur = 15;
-        ctx.beginPath(); ctx.arc(rx + sway * 0.2, ry - 22, 18, -Math.PI, 0); ctx.stroke();
-        ctx.shadowBlur = 0;
+    } else {
+      if (evIdx === 0) {
+        // Aristotle: short tidy brown curls, classic scholar beard
+        ctx.fillStyle = '#8e7054';
+        ctx.beginPath(); ctx.arc(-8, -25, 4.5, 0, Math.PI*2); ctx.arc(8, -25, 4.5, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, -11, 6, 4.5, 0, 0, Math.PI); ctx.fill();
+      } else if (evIdx === 1) {
+        // Epicurus: laurel leaf crown, neat long brown beard
+        ctx.fillStyle = '#2ecc71';
+        ctx.beginPath(); ctx.arc(-7, -28, 3.5, 0, Math.PI*2); ctx.arc(0, -30, 3.5, 0, Math.PI*2); ctx.arc(7, -28, 3.5, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#8e7054';
+        ctx.beginPath(); ctx.ellipse(0, -9, 6.5, 8.5, 0, 0, Math.PI); ctx.fill();
+      } else if (evIdx === 2) {
+        // Aquinas: tidy silver-white monk tonsure hood
+        ctx.fillStyle = '#f1f2f6';
+        ctx.beginPath(); ctx.arc(0, -22, 13, Math.PI, 0); ctx.lineTo(13, -14); ctx.lineTo(-13, -14); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#8e7054';
+        ctx.beginPath(); ctx.ellipse(0, -11, 5.5, 4, 0, 0, Math.PI); ctx.fill();
+      } else if (evIdx === 3) {
+        // Bacon: Elizabethan velvet cap, dark brown beard
+        ctx.fillStyle = '#2d3436';
+        ctx.fillRect(-12, -30, 24, 3.5); ctx.beginPath(); ctx.ellipse(0, -31, 8.5, 5, 0, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#8e7054';
+        ctx.beginPath(); ctx.ellipse(0, -10, 6, 6, 0, 0, Math.PI); ctx.fill();
+      } else if (evIdx === 4) {
+        // Bentham/Mill: white scholar hair on the sides, balding head
+        ctx.fillStyle = '#f1f2f6';
+        ctx.beginPath(); ctx.arc(-9, -19, 4, 0, Math.PI*2); ctx.arc(9, -19, 4, 0, Math.PI*2); ctx.arc(-10, -24, 3.5, 0, Math.PI*2); ctx.arc(10, -24, 3.5, 0, Math.PI*2); ctx.fill();
+      } else if (evIdx === 5) {
+        // Dewey: slick white 20th-century hair, thick white moustache
+        ctx.fillStyle = '#f1f2f6';
+        ctx.beginPath(); ctx.arc(-8, -25, 4.5, 0, Math.PI*2); ctx.arc(8, -25, 4.5, 0, Math.PI*2); ctx.arc(0, -27, 5, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, -15, 5.5, 2.5, 0, 0, Math.PI*2); ctx.fill();
       }
     }
+    
+    // Single forward-facing dark eye
+    ctx.fillStyle = '#2d3436';
+    ctx.beginPath(); ctx.arc(4, -20, 1.5, 0, Math.PI * 2); ctx.fill();
+    
+    // 5. Halos & Crowns (evIdx >= 2)
+    if (evIdx >= 2) {
+      ctx.save();
+      ctx.strokeStyle = themeColor;
+      ctx.lineWidth = 2;
+      ctx.shadowBlur = 12;
+      ctx.shadowColor = themeColor;
+      ctx.beginPath();
+      ctx.ellipse(0, -32, 10, 3, 0.1, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+    if (evIdx >= 4) {
+      ctx.save();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.5;
+      ctx.shadowBlur = 16;
+      ctx.shadowColor = themeColor;
+      ctx.beginPath();
+      ctx.ellipse(0, -35, 14, 4, -0.1, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+    
+    // 6. Draw Arms & Weapons
+    // Back arm (swinging)
+    ctx.strokeStyle = this.lineage === 'idealism' ? '#c0392b' : '#2471a3';
+    ctx.lineWidth = 5.5;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-8, -2);
+    ctx.lineTo(-14 + (isMoving ? Math.sin(t * 0.015) * 4.5 : 0), 5);
+    ctx.stroke();
+    
+    // Front arm (holding weapon, slightly extended)
+    const armSwing = isMoving ? Math.sin(t * 0.015) * 3 : 0;
+    const handX = 12 + armSwing;
+    const handY = 1.5;
+    
+    ctx.beginPath();
+    ctx.moveTo(8, -2);
+    ctx.lineTo(handX, handY);
+    ctx.stroke();
+    
+    // Hand
+    ctx.fillStyle = '#f0c080';
+    ctx.beginPath();
+    ctx.arc(handX, handY, 3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Draw holding weapon
+    ctx.save();
+    ctx.translate(handX, handY);
+    
+    // Weapon dynamic bobbing rotation
+    const weaponSway = Math.sin(t * 0.005) * 0.08;
+    ctx.rotate(-Math.PI / 4 + weaponSway);
+    
+    if (this.lineage === 'idealism') {
+      // ─── SWORDS ───
+      ctx.shadowBlur = evIdx >= 2 ? 10 + evIdx * 3.5 : 0;
+      ctx.shadowColor = themeColor;
+      
+      // Hilt / Crossguard
+      ctx.strokeStyle = evIdx >= 2 ? themeColor : '#8e7054';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(-6, 0); ctx.lineTo(6, 0);
+      ctx.moveTo(0, 0); ctx.lineTo(0, -4);
+      ctx.stroke();
+      
+      let bladeLen = 22 + evIdx * 3.5;
+      let bladeWidth = 3 + evIdx * 0.5;
+      
+      if (evIdx === 3) {
+        // Descartes: Sleek energizing pink laser rapier
+        ctx.strokeStyle = '#ff9ff3';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(0, bladeLen + 6);
+        ctx.stroke();
+        // Protective basket hilt
+        ctx.fillStyle = 'rgba(255, 159, 243, 0.45)';
+        ctx.beginPath(); ctx.arc(0, 0, 6.5, 0, Math.PI, true); ctx.fill();
+      } 
+      else if (evIdx === 5) {
+        // Sartre (Ultimate): Floating red existentialist crystal claymore shards
+        ctx.fillStyle = 'rgba(255, 71, 87, 0.82)';
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        // Base crystal shard
+        ctx.beginPath(); ctx.moveTo(-4.5, 2); ctx.lineTo(4.5, 2); ctx.lineTo(3.5, 10); ctx.lineTo(-3.5, 10); ctx.closePath(); ctx.fill(); ctx.stroke();
+        // Mid crystal shard
+        ctx.beginPath(); ctx.moveTo(-4, 13); ctx.lineTo(4, 13); ctx.lineTo(2.8, 24); ctx.lineTo(-2.8, 24); ctx.closePath(); ctx.fill(); ctx.stroke();
+        // Tip shard
+        ctx.beginPath(); ctx.moveTo(-2.5, 27); ctx.lineTo(2.5, 27); ctx.lineTo(0, 38); ctx.closePath(); ctx.fill(); ctx.stroke();
+        
+        // Neon core path linking the shards
+        ctx.strokeStyle = '#ff4757'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, 38); ctx.stroke();
+      }
+      else {
+        // Progression swords
+        const grad = ctx.createLinearGradient(-bladeWidth, 0, bladeWidth, 0);
+        if (evIdx === 0) { grad.addColorStop(0, '#cd7f32'); grad.addColorStop(1, '#8c5a2b'); } // Bronze
+        else if (evIdx === 1) { grad.addColorStop(0, '#dfe4ea'); grad.addColorStop(1, '#707070'); } // Steel
+        else if (evIdx === 2) { grad.addColorStop(0, '#ffd200'); grad.addColorStop(1, '#ffa502'); } // Golden
+        else if (evIdx === 4) { grad.addColorStop(0, '#c56cf0'); grad.addColorStop(1, '#7d5fff'); } // Clockwork Purple
+        
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(-bladeWidth/2, 0);
+        ctx.lineTo(-bladeWidth/2, bladeLen - 4);
+        ctx.lineTo(0, bladeLen);
+        ctx.lineTo(bladeWidth/2, bladeLen - 4);
+        ctx.lineTo(bladeWidth/2, 0);
+        ctx.closePath();
+        ctx.fill();
+        
+        if (evIdx === 4) {
+          // Kant Guard: Golden gear
+          ctx.fillStyle = '#ffd200';
+          ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+    } else {
+      // ─── STAVES ───
+      ctx.strokeStyle = evIdx >= 2 ? '#ced6e0' : '#8e7054';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(0, -8);
+      ctx.lineTo(0, 24);
+      ctx.stroke();
+      
+      ctx.save();
+      ctx.translate(0, 24); // Move to head
+      ctx.shadowBlur = 10 + evIdx * 3.5;
+      ctx.shadowColor = themeColor;
+      
+      if (evIdx === 0) {
+        // Aristotle: Wooden staff with glowing cyan orb
+        ctx.fillStyle = '#00d2d3';
+        ctx.beginPath(); ctx.arc(0, 3, 5, 0, Math.PI*2); ctx.fill();
+      }
+      else if (evIdx === 1) {
+        // Epicurus: Vine staff with glowing emerald leaf gem
+        ctx.fillStyle = '#2ecc71';
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(-6, 4, 0, 10);
+        ctx.quadraticCurveTo(6, 4, 0, 0);
+        ctx.closePath(); ctx.fill();
+      }
+      else if (evIdx === 2) {
+        // Aquinas: Silver-cross sacred staff
+        ctx.strokeStyle = '#48dbfb'; ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(0, 0); ctx.lineTo(0, 10);
+        ctx.moveTo(-4, 7); ctx.lineTo(4, 7);
+        ctx.stroke();
+      }
+      else if (evIdx === 3) {
+        // Bacon: Concentric astrolabe/gyro rings
+        ctx.strokeStyle = '#fdcb6e'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(0, 4, 5, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(0, 4, 3, 0, Math.PI * 2); ctx.stroke();
+      }
+      else if (evIdx === 4) {
+        // Bentham/Mill: Dual balance scale staff head
+        ctx.strokeStyle = '#00d2d3'; ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-6, 5); ctx.lineTo(6, 5);
+        ctx.moveTo(0, 0); ctx.lineTo(0, 5);
+        ctx.stroke();
+        ctx.fillStyle = '#ffd200';
+        ctx.beginPath(); ctx.arc(-6, 1.5, 2.5, 0, Math.PI*2); ctx.arc(6, 1.5, 2.5, 0, Math.PI*2); ctx.fill();
+      }
+      else if (evIdx === 5) {
+        // Dewey (Ultimate): Cosmic swirling nebula orb & dust rings
+        const time = performance.now();
+        const coreGrd = ctx.createRadialGradient(0, 6, 0, 0, 6, 7.5);
+        coreGrd.addColorStop(0, '#ffffff');
+        coreGrd.addColorStop(0.5, '#00d2d3');
+        coreGrd.addColorStop(1, 'rgba(0, 210, 211, 0)');
+        ctx.fillStyle = coreGrd;
+        ctx.beginPath(); ctx.arc(0, 6, 7.5, 0, Math.PI*2); ctx.fill();
+        
+        ctx.strokeStyle = 'rgba(84, 160, 255, 0.85)'; ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.ellipse(0, 6, 12, 3, time * 0.003, 0, Math.PI*2);
+        ctx.stroke();
+        ctx.strokeStyle = 'rgba(0, 210, 211, 0.65)';
+        ctx.beginPath();
+        ctx.ellipse(0, 6, 10, 2.5, -time * 0.002, 0, Math.PI*2);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+    ctx.restore(); // Weapon restore
+    
+    ctx.restore(); // Character base restore
+    ctx.restore(); // HP bar alignment restore (balance translation)
 
     // HP bar below
     const bw = 40, bh = 5, bx = rx - 20, by = ry + 34;

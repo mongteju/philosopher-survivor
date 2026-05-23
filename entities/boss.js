@@ -29,11 +29,63 @@ export class BossBullet {
     const rx = this.x - camera.x + ctx.canvas.width / 2;
     const ry = this.y - camera.y + ctx.canvas.height / 2;
     ctx.save();
-    ctx.beginPath();
-    ctx.arc(rx, ry, this.size, 0, Math.PI * 2);
-    ctx.fillStyle = this.color;
-    ctx.shadowColor = this.color; ctx.shadowBlur = 10;
-    ctx.fill();
+    
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = this.color;
+    
+    if (this.type === 'spiral') {
+      // Spinning dark magic vortex
+      ctx.translate(rx, ry);
+      ctx.rotate(this.time * 0.008);
+      ctx.fillStyle = this.color;
+      for (let i = 0; i < 3; i++) {
+        ctx.rotate((Math.PI * 2) / 3);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(this.size * 1.1, -this.size * 0.6, this.size * 1.5, 0);
+        ctx.quadraticCurveTo(this.size * 0.7, this.size * 0.5, 0, 0);
+        ctx.fill();
+      }
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(0, 0, 3.5, 0, Math.PI * 2); ctx.fill();
+    }
+    else if (this.type === 'curve') {
+      // Comet-like wavy bullet with long tail aligned with movement angle
+      ctx.translate(rx, ry);
+      ctx.rotate(this.angle);
+      
+      const grd = ctx.createLinearGradient(-this.size * 2, 0, 0, 0);
+      grd.addColorStop(0, 'rgba(162, 155, 254, 0)');
+      grd.addColorStop(1, this.color);
+      ctx.fillStyle = grd;
+      ctx.beginPath();
+      ctx.moveTo(-this.size * 2.5, 0);
+      ctx.lineTo(0, -this.size * 0.85);
+      ctx.lineTo(0, this.size * 0.85);
+      ctx.closePath();
+      ctx.fill();
+      
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(0, 0, this.size * 0.7, 0, Math.PI * 2); ctx.fill();
+    }
+    else {
+      // Straight: moral razor needle (golden/crimson shard)
+      ctx.translate(rx, ry);
+      ctx.rotate(this.angle);
+      
+      ctx.fillStyle = this.color;
+      ctx.beginPath();
+      ctx.moveTo(-this.size * 1.5, 0);
+      ctx.lineTo(0, -this.size * 0.4);
+      ctx.lineTo(this.size * 1.5, 0); // sharp tip
+      ctx.lineTo(0, this.size * 0.4);
+      ctx.closePath();
+      ctx.fill();
+      
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(0, 0, 3, 0, Math.PI * 2); ctx.fill();
+    }
+    
     ctx.restore();
   }
 }
@@ -629,17 +681,189 @@ export class Boss {
     }
     ctx.fillStyle = grd; ctx.beginPath(); ctx.arc(rx, ry, this.size * 2.5, 0, Math.PI * 2); ctx.fill();
     
-    // Body
-    if (this.frozenTime > 0) {
-      ctx.fillStyle = '#a8e6f0'; ctx.shadowColor = '#00d2d3'; ctx.shadowBlur = 20;
-    } else if (this.slowMul < 1) {
-      ctx.fillStyle = '#54a0ff'; ctx.shadowColor = '#00d2d3'; ctx.shadowBlur = 15;
-    } else {
-      ctx.fillStyle = this.isStunned ? '#2e86de' : (this.phase2 ? '#ff0000' : this.color);
-      ctx.shadowColor = this.isStunned ? '#54a0ff' : this.color; ctx.shadowBlur = 20;
-    }
-    ctx.beginPath(); ctx.arc(rx, ry, this.size, 0, Math.PI * 2); ctx.fill();
+    // ─── STAGE SPECIFIC BOSS VISUALS ────────────────────────────────────
+    let baseColor = this.color;
+    let isFrozen = this.frozenTime > 0;
+    let isSlowed = this.slowMul < 1;
     
+    ctx.save();
+    ctx.translate(rx, ry);
+
+    let mainColor = this.isStunned ? '#2e86de' : (this.phase2 ? '#ff4757' : this.color);
+    if (isFrozen) mainColor = '#a8e6f0';
+    else if (isSlowed) mainColor = '#54a0ff';
+
+    ctx.fillStyle = mainColor;
+    ctx.shadowBlur = this.isStunned ? 10 : 25;
+    ctx.shadowColor = mainColor;
+
+    const si = this.stageIndex;
+
+    if (si === 0) {
+      // 1. Sophist: Purple Sophistic scholar & giant floating scales
+      ctx.beginPath();
+      ctx.moveTo(-this.size, this.size);
+      ctx.quadraticCurveTo(-this.size * 0.4, -this.size * 0.8, 0, -this.size);
+      ctx.quadraticCurveTo(this.size * 0.4, -this.size * 0.8, this.size, this.size);
+      ctx.closePath();
+      ctx.fill();
+      
+      ctx.strokeStyle = '#ffd200'; ctx.lineWidth = 3;
+      ctx.stroke();
+
+      ctx.save();
+      const tilt = this.isClone ? Math.sin(this.swayPhase * 1.2) * 0.35 : Math.sin(t * 0.003) * 0.15;
+      ctx.translate(0, -this.size - 22);
+      ctx.rotate(tilt);
+      
+      ctx.strokeStyle = '#ffd200'; ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(-28, 6); ctx.lineTo(28, 6);
+      ctx.moveTo(0, -12); ctx.lineTo(0, 6);
+      ctx.stroke();
+      
+      ctx.fillStyle = '#ff7675';
+      ctx.beginPath(); ctx.arc(-28, 16, 6, 0, Math.PI*2); ctx.arc(28, 16, 6, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+    else if (si === 1) {
+      // 2. Guardian of Apatheia: Tranquil teal crystal knight & wings
+      ctx.save();
+      ctx.fillStyle = 'rgba(76, 209, 149, 0.4)';
+      ctx.shadowBlur = 15; ctx.shadowColor = '#4cd137';
+      ctx.beginPath();
+      ctx.moveTo(0, 0); ctx.quadraticCurveTo(-45, -45, -65, -15); ctx.quadraticCurveTo(-35, 15, 0, 10); ctx.closePath(); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(0, 0); ctx.quadraticCurveTo(45, -45, 65, -15); ctx.quadraticCurveTo(35, 15, 0, 10); ctx.closePath(); ctx.fill();
+      ctx.restore();
+
+      ctx.beginPath();
+      ctx.moveTo(-this.size, 0);
+      ctx.lineTo(-this.size * 0.4, -this.size * 0.9);
+      ctx.lineTo(0, -this.size * 1.1);
+      ctx.lineTo(this.size * 0.4, -this.size * 0.9);
+      ctx.lineTo(this.size, 0);
+      ctx.lineTo(0, this.size * 0.8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.stroke();
+
+      const shieldAngle = t * 0.0035;
+      const shieldDist = this.size * 1.55;
+      ctx.fillStyle = 'rgba(76, 209, 149, 0.75)';
+      ctx.shadowBlur = 10; ctx.shadowColor = '#4cd137';
+      for (let i = 0; i < 2; i++) {
+        const a = shieldAngle + i * Math.PI;
+        const sx = Math.cos(a) * shieldDist;
+        const sy = Math.sin(a) * shieldDist;
+        ctx.save();
+        ctx.translate(sx, sy);
+        ctx.rotate(a + Math.PI/2);
+        ctx.beginPath();
+        ctx.moveTo(-7, -4); ctx.lineTo(7, -4); ctx.lineTo(5, 6); ctx.lineTo(0, 10); ctx.lineTo(-5, 6);
+        ctx.closePath(); ctx.fill();
+        ctx.restore();
+      }
+    }
+    else if (si === 2) {
+      // 3. Specter of Dogmatism: Dark bishop lich & purple magic book
+      ctx.beginPath();
+      ctx.moveTo(-this.size, this.size);
+      ctx.quadraticCurveTo(-this.size * 1.1, -this.size, 0, -this.size * 1.1);
+      ctx.quadraticCurveTo(this.size * 1.1, -this.size, this.size, this.size);
+      ctx.closePath();
+      ctx.fill();
+      
+      ctx.fillStyle = '#1e272e';
+      ctx.beginPath(); ctx.arc(0, -this.size*0.3, this.size*0.5, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#a55eea';
+      ctx.beginPath(); ctx.arc(-5, -this.size*0.3, 3.5, 0, Math.PI*2); ctx.arc(5, -this.size*0.3, 3.5, 0, Math.PI*2); ctx.fill();
+
+      ctx.save();
+      const bookBob = Math.sin(t * 0.004) * 5;
+      ctx.translate(0, this.size * 0.8 + bookBob);
+      ctx.rotate(Math.sin(t * 0.002) * 0.1);
+      ctx.fillStyle = '#4b6584';
+      ctx.shadowBlur = 15; ctx.shadowColor = '#a55eea';
+      ctx.beginPath();
+      ctx.roundRect(-22, -14, 44, 28, 3);
+      ctx.fill();
+      ctx.fillStyle = '#ffd200';
+      ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+    else if (si === 3) {
+      // 4. Giant of Prejudice: Rocky titan with 4 idol gems & fists
+      ctx.beginPath();
+      ctx.moveTo(-this.size * 1.1, 0);
+      ctx.lineTo(-this.size * 0.8, -this.size * 0.8);
+      ctx.lineTo(0, -this.size * 1.1);
+      ctx.lineTo(this.size * 0.8, -this.size * 0.8);
+      ctx.lineTo(this.size * 1.1, 0);
+      ctx.lineTo(this.size * 0.7, this.size * 1.0);
+      ctx.lineTo(-this.size * 0.7, this.size * 1.0);
+      ctx.closePath();
+      ctx.fill();
+
+      const gemColors = ['#81ecec', '#ff7675', '#fdcb6e', '#a29bfe'];
+      for (let i = 0; i < 4; i++) {
+        ctx.fillStyle = gemColors[i];
+        ctx.shadowBlur = 8; ctx.shadowColor = gemColors[i];
+        ctx.beginPath();
+        ctx.arc(-15 + i * 10, -this.size * 0.4, 3.5, 0, Math.PI*2);
+        ctx.fill();
+      }
+
+      ctx.save();
+      const fistBob = Math.sin(t * 0.006) * 6;
+      ctx.fillStyle = mainColor;
+      ctx.shadowBlur = 10; ctx.shadowColor = mainColor;
+      ctx.beginPath(); ctx.roundRect(-this.size * 1.7, -10 + fistBob, 14, 20, 4); ctx.fill();
+      ctx.beginPath(); ctx.roundRect(this.size * 1.7 - 14, -10 - fistBob, 14, 20, 4); ctx.fill();
+      ctx.restore();
+    }
+    else if (si === 4) {
+      // 5. Judge of Morality (Kant): Clockwork categorical imperative
+      ctx.save();
+      ctx.rotate(-t * 0.001);
+      ctx.strokeStyle = '#ffd200'; ctx.lineWidth = 3.5;
+      ctx.beginPath(); ctx.arc(0, 0, this.size * 0.95, 0, Math.PI*2); ctx.stroke();
+      
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(0, 0, this.size * 0.65, 0, Math.PI*2); ctx.stroke();
+      
+      ctx.fillStyle = '#ffd200';
+      ctx.fillRect(-2, -this.size * 0.9, 4, this.size * 1.8);
+      ctx.fillRect(-this.size * 0.9, -2, this.size * 1.8, 4);
+      ctx.restore();
+      
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(0, 0, 7, 0, Math.PI*2); ctx.fill();
+    }
+    else if (si === 5) {
+      // 6. Nietzsche Relic/Shadow: Void Blackhole sphere absorbing static
+      ctx.save();
+      ctx.shadowBlur = 30; ctx.shadowColor = '#000000';
+      ctx.fillStyle = '#0a0a0c';
+      ctx.beginPath(); ctx.arc(0, 0, this.size, 0, Math.PI*2); ctx.fill();
+      
+      ctx.strokeStyle = 'rgba(220, 220, 220, 0.7)'; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, this.size * 1.35, this.size * 0.5, t * 0.002, 0, Math.PI*2);
+      ctx.stroke();
+      
+      ctx.fillStyle = '#ff4757'; ctx.shadowBlur = 15; ctx.shadowColor = '#ff4757';
+      ctx.beginPath();
+      ctx.ellipse(-8, -4, 4, 2, 0.1, 0, Math.PI*2);
+      ctx.ellipse(8, -4, 4, 2, -0.1, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+    else {
+      ctx.beginPath(); ctx.arc(0, 0, this.size, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+
     // Pattern active border
     if (this.isPatternActive && !this.isStunned) {
       ctx.strokeStyle = '#a4b0be';
@@ -647,36 +871,6 @@ export class Boss {
       ctx.beginPath();
       ctx.arc(rx, ry, this.size + 3, 0, Math.PI * 2);
       ctx.stroke();
-    }
-    
-    // Inner ring
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.globalAlpha = 0.5;
-    ctx.beginPath(); ctx.arc(rx, ry, this.size * 0.65, 0, Math.PI * 2); ctx.stroke();
-    ctx.globalAlpha = 1;
-    
-    // Horns
-    ctx.fillStyle = '#2d3436';
-    ctx.beginPath(); ctx.moveTo(rx - 12, ry - this.size); ctx.lineTo(rx - 18, ry - this.size - 16); ctx.lineTo(rx - 4, ry - this.size); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(rx + 12, ry - this.size); ctx.lineTo(rx + 18, ry - this.size - 16); ctx.lineTo(rx + 4, ry - this.size); ctx.fill();
-    
-    // Sophist Scale indicator
-    if (this.stageIndex === 0) {
-      let scaleSize = 21;
-      let angleOffset = 0;
-      let yOffset = -this.size - 26;
-      
-      if (this.isClone) {
-        scaleSize = 20 + Math.sin(this.swayPhase) * 6;
-        angleOffset = Math.sin(this.swayPhase * 1.5) * 0.4;
-      }
-      
-      ctx.save();
-      ctx.font = `${scaleSize}px sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.translate(rx, ry + yOffset);
-      ctx.rotate(angleOffset);
-      ctx.fillText('⚖️', 0, 0);
-      ctx.restore();
     }
     
     // Guard shield indicator

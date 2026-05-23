@@ -56,19 +56,228 @@ export class Enemy {
     const rx = this.x - camera.x + ctx.canvas.width / 2;
     const ry = this.y - camera.y + ctx.canvas.height / 2;
     ctx.save();
-    if (this.frozenTime > 0) {
-      ctx.fillStyle = '#a8e6f0'; ctx.shadowColor = '#00d2d3'; ctx.shadowBlur = 10;
-    } else if (this.slowMul < 1) {
-      ctx.fillStyle = '#54a0ff'; ctx.shadowColor = '#00d2d3'; ctx.shadowBlur = 8;
+    let baseColor = this.color;
+    let isFrozen = this.frozenTime > 0;
+    let isSlowed = this.slowMul < 1;
+    
+    if (isFrozen) {
+      ctx.fillStyle = '#a8e6f0'; ctx.shadowColor = '#00d2d3'; ctx.shadowBlur = 12;
+    } else if (isSlowed) {
+      ctx.fillStyle = '#54a0ff'; ctx.shadowColor = '#00d2d3'; ctx.shadowBlur = 9;
     } else {
-      ctx.fillStyle = this.color;
+      ctx.fillStyle = baseColor;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = baseColor;
     }
-    ctx.beginPath(); ctx.arc(rx, ry, this.size, 0, Math.PI * 2); ctx.fill();
-    // Eyes
-    ctx.fillStyle = '#fff';
-    const ex = Math.cos(this.angle) * this.size * 0.5;
-    const ey = Math.sin(this.angle) * this.size * 0.5;
-    ctx.beginPath(); ctx.arc(rx + ex, ry + ey, 3, 0, Math.PI * 2); ctx.fill();
+
+    const t = Date.now();
+    ctx.save();
+    ctx.translate(rx, ry);
+    ctx.rotate(this.angle);
+
+    if (this.mobType === 'orc') {
+      // Orc: Purple Shadow Demon
+      ctx.beginPath();
+      ctx.moveTo(-this.size, 0);
+      ctx.lineTo(-this.size * 0.7, -this.size * 0.5);
+      ctx.lineTo(-this.size * 0.4, -this.size * 0.8);
+      ctx.lineTo(0, -this.size);
+      ctx.lineTo(this.size * 0.5, -this.size * 0.7);
+      ctx.lineTo(this.size, 0);
+      ctx.lineTo(this.size * 0.5, this.size * 0.7);
+      ctx.lineTo(0, this.size);
+      ctx.lineTo(-this.size * 0.4, this.size * 0.8);
+      ctx.lineTo(-this.size * 0.7, this.size * 0.5);
+      ctx.closePath();
+      ctx.fill();
+      
+      ctx.fillStyle = isFrozen ? '#a8e6f0' : (isSlowed ? '#54a0ff' : '#8854d0');
+      ctx.beginPath();
+      ctx.moveTo(-this.size * 0.3, -this.size * 0.8);
+      ctx.lineTo(-this.size * 0.8, -this.size * 1.3);
+      ctx.lineTo(-this.size * 0.1, -this.size * 0.9);
+      ctx.closePath(); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(-this.size * 0.3, this.size * 0.8);
+      ctx.lineTo(-this.size * 0.8, this.size * 1.3);
+      ctx.lineTo(-this.size * 0.1, this.size * 0.9);
+      ctx.closePath(); ctx.fill();
+      
+      ctx.fillStyle = isFrozen ? '#ffffff' : '#ff4757';
+      ctx.beginPath();
+      ctx.arc(this.size * 0.35, -this.size * 0.25, 3.5, 0, Math.PI * 2);
+      ctx.arc(this.size * 0.35, this.size * 0.25, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+    } 
+    else if (this.mobType === 'beast') {
+      // Beast: Orange Shadow Wolf
+      ctx.beginPath();
+      ctx.moveTo(-this.size, 0);
+      ctx.quadraticCurveTo(-this.size * 0.5, -this.size * 0.8, 0, -this.size * 0.7);
+      ctx.lineTo(this.size * 0.6, -this.size * 0.3);
+      ctx.lineTo(this.size, 0);
+      ctx.lineTo(this.size * 0.6, this.size * 0.3);
+      ctx.lineTo(0, this.size * 0.7);
+      ctx.quadraticCurveTo(-this.size * 0.5, this.size * 0.8, -this.size, 0);
+      ctx.closePath();
+      ctx.fill();
+      
+      ctx.fillStyle = isFrozen ? '#a8e6f0' : (isSlowed ? '#54a0ff' : '#e58e26');
+      ctx.beginPath();
+      ctx.moveTo(-this.size * 0.4, -this.size * 0.6);
+      ctx.lineTo(-this.size * 0.9, -this.size * 1.1);
+      ctx.lineTo(-this.size * 0.1, -this.size * 0.7);
+      ctx.closePath(); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(-this.size * 0.4, this.size * 0.6);
+      ctx.lineTo(-this.size * 0.9, this.size * 1.1);
+      ctx.lineTo(-this.size * 0.1, this.size * 0.7);
+      ctx.closePath(); ctx.fill();
+      
+      ctx.fillStyle = isFrozen ? '#ffffff' : '#ffd200';
+      ctx.beginPath();
+      ctx.arc(this.size * 0.3, -this.size * 0.22, 3.5, 0, Math.PI * 2);
+      ctx.arc(this.size * 0.3, this.size * 0.22, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Fangs
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(this.size * 0.65, -this.size * 0.1); ctx.lineTo(this.size * 0.8, -this.size * 0.2);
+      ctx.moveTo(this.size * 0.65, this.size * 0.1); ctx.lineTo(this.size * 0.8, this.size * 0.2);
+      ctx.stroke();
+      
+      // Swaying tail
+      ctx.save();
+      ctx.strokeStyle = isFrozen ? '#a8e6f0' : (isSlowed ? '#54a0ff' : baseColor);
+      ctx.lineWidth = 3.5;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(-this.size * 0.8, 0);
+      const tailSway = Math.sin(t * 0.015) * 8;
+      ctx.quadraticCurveTo(-this.size * 1.4, tailSway, -this.size * 1.8, tailSway * 0.5);
+      ctx.stroke();
+      ctx.restore();
+    }
+    else if (this.mobType === 'undead') {
+      // Undead: Grey Hooded Wraith
+      ctx.beginPath();
+      ctx.moveTo(this.size, 0);
+      ctx.quadraticCurveTo(0, -this.size, -this.size * 0.7, -this.size * 0.8);
+      ctx.quadraticCurveTo(-this.size * 1.2, 0, -this.size * 0.7, this.size * 0.8);
+      ctx.quadraticCurveTo(0, this.size, this.size, 0);
+      ctx.closePath();
+      ctx.fill();
+      
+      ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 1.5;
+      ctx.stroke();
+      
+      ctx.fillStyle = '#1e272e';
+      ctx.beginPath();
+      ctx.arc(this.size * 0.2, 0, this.size * 0.52, -Math.PI/2, Math.PI/2);
+      ctx.fill();
+      
+      ctx.fillStyle = isFrozen ? '#a8e6f0' : '#ffffff';
+      ctx.beginPath();
+      ctx.arc(this.size * 0.35, -this.size * 0.18, 3, 0, Math.PI * 2);
+      ctx.arc(this.size * 0.35, this.size * 0.18, 3, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Wraith sway tail
+      ctx.save();
+      ctx.strokeStyle = isFrozen ? '#a8e6f0' : (isSlowed ? '#54a0ff' : baseColor);
+      ctx.lineWidth = 5;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(-this.size * 0.8, 0);
+      const ghostSway = Math.sin(t * 0.01) * 6;
+      ctx.quadraticCurveTo(-this.size * 1.3, ghostSway, -this.size * 1.7, -ghostSway);
+      ctx.stroke();
+      ctx.restore();
+    }
+    else if (this.mobType === 'golem') {
+      // Golem: Cracked rocky stone giant
+      ctx.beginPath();
+      ctx.moveTo(-this.size, 0);
+      ctx.lineTo(-this.size * 0.6, -this.size * 0.8);
+      ctx.lineTo(0, -this.size);
+      ctx.lineTo(this.size * 0.6, -this.size * 0.8);
+      ctx.lineTo(this.size, 0);
+      ctx.lineTo(this.size * 0.6, this.size * 0.8);
+      ctx.lineTo(0, this.size);
+      ctx.lineTo(-this.size * 0.6, this.size * 0.8);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Rocky cracks
+      ctx.strokeStyle = isFrozen ? '#a8e6f0' : '#ff7675'; ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.moveTo(-this.size * 0.5, -this.size * 0.3); ctx.lineTo(this.size * 0.3, this.size * 0.4);
+      ctx.moveTo(-this.size * 0.2, this.size * 0.5); ctx.lineTo(this.size * 0.5, -this.size * 0.2);
+      ctx.stroke();
+      
+      // Monocle red light
+      ctx.fillStyle = isFrozen ? '#ffffff' : '#ff7675';
+      ctx.beginPath();
+      ctx.arc(this.size * 0.5, 0, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+    else if (this.mobType === 'steam') {
+      // Steam: Steampunk Copper Gear Mech
+      ctx.beginPath();
+      ctx.arc(0, 0, this.size * 0.9, 0, Math.PI * 2);
+      ctx.fill();
+      
+      ctx.fillStyle = 'rgba(255,255,255,0.2)';
+      for (let i = 0; i < 6; i++) {
+        const a = (Math.PI * 2 / 6) * i;
+        ctx.beginPath();
+        ctx.arc(Math.cos(a) * (this.size * 0.75), Math.sin(a) * (this.size * 0.75), 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      
+      ctx.fillStyle = isFrozen ? '#ffffff' : '#ff9f43';
+      ctx.beginPath();
+      ctx.arc(this.size * 0.4, 0, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 1.8;
+      ctx.stroke();
+      
+      // Rotating gear
+      ctx.save();
+      ctx.rotate(t * 0.002);
+      ctx.strokeStyle = isFrozen ? '#a8e6f0' : '#fdcb6e'; ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(0, 0, this.size * 0.6, 0, Math.PI*2);
+      ctx.stroke();
+      for (let i = 0; i < 8; i++) {
+        const a = (Math.PI * 2 / 8) * i;
+        ctx.fillStyle = isFrozen ? '#a8e6f0' : '#fdcb6e';
+        ctx.fillRect(Math.cos(a) * (this.size * 0.58) - 2.5, Math.sin(a) * (this.size * 0.58) - 2.5, 5, 5);
+      }
+      ctx.restore();
+    }
+    else if (this.mobType === 'machine') {
+      // Machine: Glitched cyber cube
+      const glitchX = Math.sin(t * 0.05) * 2;
+      ctx.translate(glitchX, 0);
+      ctx.fillRect(-this.size * 0.8, -this.size * 0.8, this.size * 1.6, this.size * 1.6);
+      
+      ctx.strokeStyle = isFrozen ? '#a8e6f0' : '#00d2d3'; ctx.lineWidth = 1.2;
+      ctx.strokeRect(-this.size * 0.6, -this.size * 0.6, this.size * 1.2, this.size * 1.2);
+      
+      // Slit eyes
+      ctx.fillStyle = isFrozen ? '#ffffff' : '#00d2d3';
+      ctx.fillRect(this.size * 0.35, -this.size * 0.4, 3, 7);
+      ctx.fillRect(this.size * 0.35, this.size * 0.1, 3, 7);
+    }
+    else {
+      ctx.beginPath(); ctx.arc(0, 0, this.size, 0, Math.PI * 2); ctx.fill();
+    }
+
+    ctx.restore();
     // HP bar
     if (this.hp < this.maxHp) {
       const bw = this.size * 2, bh = 4, bx = rx - this.size, by = ry - this.size - 8;
