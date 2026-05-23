@@ -5,6 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>철학의 미궁: 뱀서류 에디션 (Philosophy Quest)</title>
   <meta name="description" content="철학의 미궁(Philosophy Quest)은 이데아의 불꽃, 중용의 얼음 송곳 등 다양한 철학적 무기와 패시브 스킬을 활용하여 무지와 편견을 물리치는 뱀파이어 서바이벌 장르의 RPG 웹게임입니다.">
+  <script>
+    window.addEventListener('error', function(e) {
+      var errBox = document.createElement('div');
+      errBox.style = 'position:fixed; top:20px; left:20px; right:20px; background:rgba(235, 77, 75, 0.95); color:white; padding:24px; border-radius:16px; z-index:9999999; font-family:monospace; white-space:pre-wrap; border:2px solid #ff7675; box-shadow:0 10px 30px rgba(0,0,0,0.5); font-size:14px; line-height:1.5;';
+      errBox.innerHTML = '<h3 style="margin-top:0; color:#ffd200; font-size:18px;">🚨 런타임 에러 감지 (Runtime Error)</h3><strong>메시지:</strong> ' + e.message + '<br><br><strong>발생 위치:</strong> ' + e.filename + ' <strong>(라인 ' + e.lineno + ', 열 ' + e.colno + ')</strong><br><br><div style="font-size:12px; color:rgba(255,255,255,0.7);">해당 오류의 파일 및 라인 위치를 파악하여 즉시 조치하겠습니다.</div>';
+      document.body.appendChild(errBox);
+    });
+    window.addEventListener('unhandledrejection', function(e) {
+      var errBox = document.createElement('div');
+      errBox.style = 'position:fixed; top:20px; left:20px; right:20px; background:rgba(235, 77, 75, 0.95); color:white; padding:24px; border-radius:16px; z-index:9999999; font-family:monospace; white-space:pre-wrap; border:2px solid #ff7675; box-shadow:0 10px 30px rgba(0,0,0,0.5); font-size:14px; line-height:1.5;';
+      errBox.innerHTML = '<h3 style="margin-top:0; color:#ffd200; font-size:18px;">🚨 프로미스 비동기 에러 감지 (Unhandled Rejection)</h3><strong>이유:</strong> ' + e.reason;
+      document.body.appendChild(errBox);
+    });
+  </script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
