@@ -421,14 +421,14 @@ body {
 
 /* Category-specific card background styling */
 .choice-card-horizontal.choice-card-weapon {
-  background: linear-gradient(135deg, rgba(178, 34, 34, 0.45), rgba(15, 8, 12, 0.96)) !important;
-  border: 3px solid rgba(231, 76, 60, 0.6) !important;
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.15), rgba(28, 14, 16, 0.82)) !important;
+  border: 3px solid rgba(231, 76, 60, 0.38) !important;
   border-left: 6px solid #e74c3c !important;
   color: #ffffff !important;
 }
 .choice-card-horizontal.choice-card-passive {
-  background: linear-gradient(135deg, rgba(15, 76, 129, 0.5), rgba(8, 15, 30, 0.95)) !important;
-  border: 3px solid rgba(41, 128, 185, 0.65) !important;
+  background: linear-gradient(135deg, rgba(52, 152, 219, 0.15), rgba(12, 20, 36, 0.82)) !important;
+  border: 3px solid rgba(52, 152, 219, 0.38) !important;
   border-left: 6px solid #2980b9 !important;
   color: #ffffff !important;
 }
@@ -440,29 +440,29 @@ body {
 /* Hover and active glow states */
 .choice-card-horizontal.choice-card-weapon:hover,
 .choice-card-horizontal.choice-card-weapon.keyboard-selected {
-  background: linear-gradient(135deg, rgba(231, 76, 60, 0.65), rgba(25, 10, 12, 0.98)) !important;
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.38), rgba(45, 18, 20, 0.9)) !important;
   border-color: #ff4757 !important;
-  box-shadow: 0 0 25px rgba(255, 71, 87, 0.75), inset 0 0 12px rgba(255, 71, 87, 0.2) !important;
+  box-shadow: 0 0 25px rgba(255, 71, 87, 0.45), inset 0 0 12px rgba(255, 71, 87, 0.15) !important;
   transform: translateY(-2px) scale(1.025);
   animation: pulse-border-weapon 1.5s infinite alternate ease-in-out;
 }
 
 .choice-card-horizontal.choice-card-passive:hover,
 .choice-card-horizontal.choice-card-passive.keyboard-selected {
-  background: linear-gradient(135deg, rgba(52, 152, 219, 0.65), rgba(10, 20, 45, 0.98)) !important;
+  background: linear-gradient(135deg, rgba(52, 152, 219, 0.38), rgba(20, 30, 55, 0.9)) !important;
   border-color: #54a0ff !important;
-  box-shadow: 0 0 25px rgba(84, 160, 255, 0.75), inset 0 0 12px rgba(84, 160, 255, 0.2) !important;
+  box-shadow: 0 0 25px rgba(84, 160, 255, 0.45), inset 0 0 12px rgba(84, 160, 255, 0.15) !important;
   transform: translateY(-2px) scale(1.025);
   animation: pulse-border-passive 1.5s infinite alternate ease-in-out;
 }
 
 @keyframes pulse-border-weapon {
-  0% { border-color: rgba(231, 76, 60, 0.7); box-shadow: 0 0 10px rgba(255, 71, 87, 0.35); }
-  100% { border-color: #ff4757; box-shadow: 0 0 22px rgba(255, 71, 87, 0.7); }
+  0% { border-color: rgba(231, 76, 60, 0.5); box-shadow: 0 0 10px rgba(255, 71, 87, 0.25); }
+  100% { border-color: #ff4757; box-shadow: 0 0 22px rgba(255, 71, 87, 0.5); }
 }
 @keyframes pulse-border-passive {
-  0% { border-color: rgba(52, 152, 219, 0.7); box-shadow: 0 0 10px rgba(84, 160, 255, 0.35); }
-  100% { border-color: #54a0ff; box-shadow: 0 0 22px rgba(84, 160, 255, 0.7); }
+  0% { border-color: rgba(52, 152, 219, 0.5); box-shadow: 0 0 10px rgba(84, 160, 255, 0.25); }
+  100% { border-color: #54a0ff; box-shadow: 0 0 22px rgba(84, 160, 255, 0.5); }
 }
 
 .card-left-section {
@@ -492,13 +492,13 @@ body {
 .card-icon-box.epic { background: linear-gradient(135deg, #f1c40f, #e67e22); }
 
 .card-skill-icon {
-  font-size: 56px;
+  font-size: 78px;
   filter: drop-shadow(0 2px 5px rgba(0,0,0,0.4)) drop-shadow(0 0 10px rgba(255,255,255,0.25));
   transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .choice-card-horizontal:hover .card-skill-icon {
-  transform: scale(1.15) rotate(4deg);
+  transform: scale(1.1) rotate(4deg);
 }
 
 .tier-ribbon {
@@ -594,7 +594,6 @@ body {
   padding: 3px 8px;
   margin-top: 1px;
   border: 1px solid rgba(92, 64, 51, 0.1);
-  max-width: 320px;
 }
 
 .choice-card-horizontal .stat-compare-row {
@@ -2142,7 +2141,6 @@ button.keyboard-selected,
 .choice-card-passive .stat-compare {
   background: rgba(0, 0, 0, 0.35) !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  max-width: 320px !important;
 }
 
 /* Rarity Bonus Pill styled with vibrant glowing colors */
