@@ -547,81 +547,117 @@ export class Player {
     ctx.arc(0, -20, 11, 0, Math.PI * 2);
     ctx.fill();
     
-    // Hair & Facial features (Beards, Specs, Hats)
-    ctx.fillStyle = evIdx >= 4 ? '#f1f2f6' : (evIdx >= 2 ? '#ffffff' : '#57606f');
+    // Hair & Facial features (Beards, Specs, Hats) - REDESIGNED FOR YOUTHFUL VERSIONS (No beards, rich colors)
     if (this.lineage === 'idealism') {
       if (evIdx === 0) {
-        // Plato: curly philosopher hair & beard
-        ctx.beginPath(); ctx.arc(-6, -27, 4.5, 0, Math.PI*2); ctx.arc(6, -27, 4.5, 0, Math.PI*2); ctx.arc(-9, -22, 4, 0, Math.PI*2); ctx.arc(9, -22, 4, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.ellipse(0, -12, 7, 6, 0, 0, Math.PI); ctx.fill();
+        // Plato: curly philosopher hair (shaved beard) - rich dark brown
+        ctx.fillStyle = '#4a3728';
+        ctx.beginPath();
+        ctx.arc(-8, -26, 5, 0, Math.PI*2); ctx.arc(8, -26, 5, 0, Math.PI*2);
+        ctx.arc(-11, -21, 4.5, 0, Math.PI*2); ctx.arc(11, -21, 4.5, 0, Math.PI*2);
+        ctx.arc(0, -29, 5.5, 0, Math.PI*2);
+        ctx.fill();
       } else if (evIdx === 1) {
-        // Stoic: orange bandana headband, neat beard
-        ctx.fillStyle = '#e67e22'; ctx.fillRect(-10, -27, 20, 3.5);
-        ctx.fillStyle = '#57606f'; ctx.beginPath(); ctx.arc(-8, -21, 3.5, 0, Math.PI*2); ctx.arc(8, -21, 3.5, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.ellipse(0, -11, 6, 5, 0, 0, Math.PI); ctx.fill();
+        // Stoic: orange bandana headband, sporty dark cyan hair (no beard)
+        ctx.fillStyle = '#e67e22'; ctx.fillRect(-10, -26, 20, 3.5);
+        ctx.fillStyle = '#2c3e50';
+        ctx.beginPath();
+        ctx.arc(-8, -22, 4, 0, Math.PI*2); ctx.arc(8, -22, 4, 0, Math.PI*2);
+        // Spiky hair tufts on top
+        ctx.moveTo(-7, -26); ctx.lineTo(-10, -32); ctx.lineTo(-3, -27);
+        ctx.moveTo(7, -26); ctx.lineTo(10, -32); ctx.lineTo(3, -27);
+        ctx.closePath();
+        ctx.fill();
       } else if (evIdx === 2) {
-        // Augustine: golden bishop cowl/hood, long flowing white beard
+        // Augustine: golden bishop cowl/hood, sleek royal violet hair (no beard)
         ctx.fillStyle = '#ffd200';
         ctx.beginPath(); ctx.moveTo(-9, -27); ctx.lineTo(0, -40); ctx.lineTo(9, -27); ctx.closePath(); ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath(); ctx.ellipse(0, -8, 6.5, 10, 0, 0, Math.PI); ctx.fill();
+        ctx.fillStyle = '#3a1a4a';
+        ctx.beginPath();
+        ctx.arc(-9, -22, 5, 0, Math.PI*2); ctx.arc(9, -22, 5, 0, Math.PI*2);
+        ctx.fillRect(-13, -22, 4, 11); ctx.fillRect(9, -22, 4, 11);
+        ctx.fill();
       } else if (evIdx === 3) {
-        // Descartes: long black curly hair, elegant thin French moustache
-        ctx.fillStyle = '#2d3436';
-        ctx.beginPath(); ctx.arc(-9, -22, 5.5, 0, Math.PI*2); ctx.arc(-11, -16, 4.5, 0, Math.PI*2); ctx.arc(9, -22, 5.5, 0, Math.PI*2); ctx.arc(11, -16, 4.5, 0, Math.PI*2); ctx.fill();
-        ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(-4.5, -15); ctx.quadraticCurveTo(0, -13, 4.5, -15); ctx.stroke();
+        // Descartes: wavy navy blue hair, clean shaved face (no mustache)
+        ctx.fillStyle = '#1e272e';
+        ctx.beginPath();
+        ctx.arc(-9, -22, 5.5, 0, Math.PI*2); ctx.arc(-11, -16, 4.5, 0, Math.PI*2);
+        ctx.arc(9, -22, 5.5, 0, Math.PI*2); ctx.arc(11, -16, 4.5, 0, Math.PI*2);
+        ctx.arc(-12, -10, 4, 0, Math.PI*2); ctx.arc(12, -10, 4, 0, Math.PI*2);
+        ctx.fill();
       } else if (evIdx === 4) {
-        // Kant: 18th-century powdered white wig (rolled wig at sides), thin wire specs
-        ctx.fillStyle = '#f1f2f6';
-        ctx.beginPath(); ctx.arc(-9, -22, 5.5, 0, Math.PI*2); ctx.arc(9, -22, 5.5, 0, Math.PI*2); ctx.arc(0, -27, 6.5, 0, Math.PI*2); ctx.fill();
+        // Kant: romantic light golden blonde dandy cut, wire specs (no wig)
+        ctx.fillStyle = '#fed330';
+        ctx.beginPath();
+        ctx.arc(-9, -23, 5, 0, Math.PI*2); ctx.arc(9, -23, 5, 0, Math.PI*2);
+        ctx.arc(0, -28, 6.5, 0, Math.PI*2);
+        ctx.arc(-4, -26, 4, 0, Math.PI*2); ctx.arc(4, -26, 4, 0, Math.PI*2);
+        ctx.fill();
         // Wire spectacles
         ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.arc(3.5, -20, 2.5, 0, Math.PI*2); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(1, -20); ctx.stroke();
       } else if (evIdx === 5) {
-        // Sartre: modern slicked-back grey hair, thick black specs, modern goatee
-        ctx.fillStyle = '#7f8c8d';
-        ctx.beginPath(); ctx.ellipse(0, -28, 9, 4, 0, 0, Math.PI*2); ctx.fill();
+        // Sartre: spiky dark ash grey volume cut, thick black specs (no goatee)
+        ctx.fillStyle = '#57606f';
+        ctx.beginPath();
+        ctx.arc(-9, -26, 5, 0, Math.PI*2); ctx.arc(9, -26, 5, 0, Math.PI*2);
+        ctx.arc(0, -29, 6.5, 0, Math.PI*2);
+        ctx.arc(-11, -21, 4, 0, Math.PI*2); ctx.arc(11, -21, 4, 0, Math.PI*2);
+        ctx.fill();
         // Heavy horn-rimmed specs
         ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 2;
         ctx.strokeRect(2, -22, 5.5, 4.5);
-        // Modern Goatee
-        ctx.fillStyle = '#7f8c8d';
-        ctx.beginPath(); ctx.moveTo(-2.5, -12); ctx.lineTo(2.5, -12); ctx.lineTo(0, -6); ctx.closePath(); ctx.fill();
       }
     } else {
       if (evIdx === 0) {
-        // Aristotle: short tidy brown curls, classic scholar beard
-        ctx.fillStyle = '#8e7054';
-        ctx.beginPath(); ctx.arc(-8, -25, 4.5, 0, Math.PI*2); ctx.arc(8, -25, 4.5, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.ellipse(0, -11, 6, 4.5, 0, 0, Math.PI); ctx.fill();
+        // Aristotle: smart brown baby perm coils (no beard)
+        ctx.fillStyle = '#6f4e37';
+        ctx.beginPath();
+        ctx.arc(-8, -25, 4.5, 0, Math.PI*2); ctx.arc(8, -25, 4.5, 0, Math.PI*2);
+        ctx.arc(0, -27, 5, 0, Math.PI*2);
+        ctx.fill();
       } else if (evIdx === 1) {
-        // Epicurus: laurel leaf crown, neat long brown beard
+        // Epicurus: laurel leaf crown, warm milk chocolate wavy hair (no beard)
         ctx.fillStyle = '#2ecc71';
-        ctx.beginPath(); ctx.arc(-7, -28, 3.5, 0, Math.PI*2); ctx.arc(0, -30, 3.5, 0, Math.PI*2); ctx.arc(7, -28, 3.5, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#8e7054';
-        ctx.beginPath(); ctx.ellipse(0, -9, 6.5, 8.5, 0, 0, Math.PI); ctx.fill();
+        ctx.beginPath(); ctx.arc(-7, -29, 3.5, 0, Math.PI*2); ctx.arc(0, -31, 3.5, 0, Math.PI*2); ctx.arc(7, -29, 3.5, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#7f5f40';
+        ctx.beginPath();
+        ctx.arc(-9, -23, 5, 0, Math.PI*2); ctx.arc(9, -23, 5, 0, Math.PI*2);
+        ctx.fillRect(-12, -22, 3.5, 8); ctx.fillRect(8.5, -22, 3.5, 8);
+        ctx.fill();
       } else if (evIdx === 2) {
-        // Aquinas: tidy silver-white monk tonsure hood
-        ctx.fillStyle = '#f1f2f6';
-        ctx.beginPath(); ctx.arc(0, -22, 13, Math.PI, 0); ctx.lineTo(13, -14); ctx.lineTo(-13, -14); ctx.closePath(); ctx.fill();
-        ctx.fillStyle = '#8e7054';
-        ctx.beginPath(); ctx.ellipse(0, -11, 5.5, 4, 0, 0, Math.PI); ctx.fill();
+        // Aquinas: full rich chocolate brown pageboy cut (tonsure cured! no beard)
+        ctx.fillStyle = '#543a20';
+        ctx.beginPath();
+        ctx.arc(-9, -24, 5, 0, Math.PI*2); ctx.arc(9, -24, 5, 0, Math.PI*2);
+        ctx.arc(0, -27, 6, 0, Math.PI*2);
+        ctx.fillRect(-12.5, -23, 4, 11); ctx.fillRect(8.5, -23, 4, 11);
+        ctx.fill();
       } else if (evIdx === 3) {
-        // Bacon: Elizabethan velvet cap, dark brown beard
+        // Bacon: Elizabethan velvet cap, sharp dark brown short crop (no beard)
         ctx.fillStyle = '#2d3436';
         ctx.fillRect(-12, -30, 24, 3.5); ctx.beginPath(); ctx.ellipse(0, -31, 8.5, 5, 0, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#8e7054';
-        ctx.beginPath(); ctx.ellipse(0, -10, 6, 6, 0, 0, Math.PI); ctx.fill();
+        ctx.fillStyle = '#211810';
+        ctx.beginPath();
+        ctx.arc(-9, -23, 4.5, 0, Math.PI*2); ctx.arc(9, -23, 4.5, 0, Math.PI*2);
+        ctx.fill();
       } else if (evIdx === 4) {
-        // Bentham/Mill: white scholar hair on the sides, balding head
-        ctx.fillStyle = '#f1f2f6';
-        ctx.beginPath(); ctx.arc(-9, -19, 4, 0, Math.PI*2); ctx.arc(9, -19, 4, 0, Math.PI*2); ctx.arc(-10, -24, 3.5, 0, Math.PI*2); ctx.arc(10, -24, 3.5, 0, Math.PI*2); ctx.fill();
+        // Bentham/Mill: soft platinum silver-blonde dandy curls (balding cured!)
+        ctx.fillStyle = '#d1d8e0';
+        ctx.beginPath();
+        ctx.arc(-8, -25, 5, 0, Math.PI*2); ctx.arc(8, -25, 5, 0, Math.PI*2);
+        ctx.arc(0, -28, 6, 0, Math.PI*2);
+        ctx.arc(-10, -20, 4.5, 0, Math.PI*2); ctx.arc(10, -20, 4.5, 0, Math.PI*2);
+        ctx.fill();
       } else if (evIdx === 5) {
-        // Dewey: slick white 20th-century hair, thick white moustache
-        ctx.fillStyle = '#f1f2f6';
-        ctx.beginPath(); ctx.arc(-8, -25, 4.5, 0, Math.PI*2); ctx.arc(8, -25, 4.5, 0, Math.PI*2); ctx.arc(0, -27, 5, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.ellipse(0, -15, 5.5, 2.5, 0, 0, Math.PI*2); ctx.fill();
+        // Dewey: solid black modern slicked back pompadour (mustache shaved!)
+        ctx.fillStyle = '#111111';
+        ctx.beginPath();
+        ctx.arc(-8, -26, 4.5, 0, Math.PI*2); ctx.arc(8, -26, 4.5, 0, Math.PI*2);
+        ctx.arc(0, -28, 6, 0, Math.PI*2);
+        ctx.fillRect(-10, -25, 20, 4);
+        ctx.fill();
       }
     }
     
