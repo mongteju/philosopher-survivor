@@ -397,6 +397,8 @@ body {
   gap: 12px;
   margin: 18px 0;
   width: 100%;
+  perspective: 1200px;
+  transform-style: preserve-3d;
 }
 
 /* Cream-toned RPG Horizontal Skill Choice Card Layout - 2D Casual Cartoon Style */
@@ -411,12 +413,13 @@ body {
   padding: 18px 22px;
   cursor: pointer;
   text-align: left;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s ease;
   position: relative;
   overflow: visible;
   box-sizing: border-box;
   width: 100%;
   box-shadow: 4px 4px 0px #231F20 !important;
+  transform-style: preserve-3d;
 }
 
 /* =============================================================
@@ -515,11 +518,13 @@ body {
   border-left: 8px solid #2ecc71 !important;
 }
 
-/* Hover and active flat comic offset translation states */
+/* Hover and active 3D perspective tilt & lift cartoon states */
 .choice-card-horizontal:hover,
 .choice-card-horizontal.keyboard-selected {
-  transform: translate(-2px, -2px) !important;
-  box-shadow: 6px 6px 0px #231F20 !important;
+  transform: translateY(-8px) translateZ(40px) rotateX(5deg) rotateY(-1.5deg) !important;
+  box-shadow: 12px 16px 0px #231F20, 0 10px 20px rgba(0,0,0,0.1) !important;
+  border-color: #ff9f43 !important;
+  z-index: 10 !important;
 }
 
 .card-left-section {
