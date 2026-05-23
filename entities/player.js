@@ -430,9 +430,6 @@ export class Player {
 
     // ─── CUSTOM PROCEDURAL CHARACTER DRAWING ────────────────────────────
     const evIdx = Math.min(this.evolutionIndex, 5);
-    const themeColor = ev ? ev.color : '#fff';
-    const isMoving = Math.hypot(this.vx, this.vy) > 0.1;
-    const sway = isMoving ? Math.sin(t * 0.012) * 4 : 0;
     
     // Bounce/bobbing effect
     const bounce = isMoving ? Math.abs(Math.sin(t * 0.015)) * 3.5 : Math.sin(t * 0.003) * 1.5;
