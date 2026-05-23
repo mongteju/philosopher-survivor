@@ -115,6 +115,50 @@ const TIMELINE = [
   {name:'현대 사회',mobType:'machine',bossName:'허무주의의 그림자'}
 ];
 
+// ─── AURA DATABASE ─────────────────────────────────────────────────
+const AURA_DB = {
+  brilliance: {
+    name:'브릴리언스 오라', icon:'💠', color:'#54a0ff',
+    desc:'공격 시 적을 밀쳐냅니다.',
+    effect:{ knockback: true }
+  },
+  devotion: {
+    name:'디보션 오라', icon:'🛡️', color:'#ffd200',
+    desc:'받는 피해를 감소시킵니다.',
+    effect:{ defense: true }
+  },
+  endurance: {
+    name:'인듀어런스 오라', icon:'⚡', color:'#2ed573',
+    desc:'이동속도와 쿨타임을 감소시킵니다.',
+    effect:{ speed: true, cooldown: true }
+  },
+  warsong: {
+    name:'워송 오라', icon:'⚔️', color:'#ff6b35',
+    desc:'기본 공격력을 증가시킵니다.',
+    effect:{ damage: true }
+  },
+  unholy: {
+    name:'언홀리 오라', icon:'🦇', color:'#a55eea',
+    desc:'이동속도를 높이고 매초 체력을 회복합니다.',
+    effect:{ speed: true, regen: true }
+  },
+  vampiric: {
+    name:'뱀피릭 오라', icon:'🧛', color:'#ff4757',
+    desc:'근접 공격 시 가한 대미지 비례 체력을 흡수합니다.',
+    effect:{ lifesteal: true }
+  },
+  thorns: {
+    name:'손스 오라', icon:'🌵', color:'#1dd1a1',
+    desc:'피해를 받으면 일부를 반사합니다.',
+    effect:{ reflect: true }
+  },
+  trueshot: {
+    name:'트루샷 오라', icon:'🎯', color:'#ffd200',
+    desc:'원거리 공격의 공격력이 증가합니다.',
+    effect:{ rangedDmg: true }
+  }
+};
+
 // ─── BOSS BULLET ────────────────────────────────────────────────────
 class BossBullet {
   constructor(x, y, angle, speed, type) {
