@@ -1,4 +1,4 @@
-﻿// ==========================================
+// ==========================================
 // 철학의 미궁 (Philosophy Quest) - Full Rebuild
 // ==========================================
 
@@ -3672,10 +3672,6 @@ class Game {
       ctx.filter = 'contrast(140%) sepia(85%)';
     } else {
       ctx.filter = 'none';
-    }
-
-      ctx.translate((Math.random() - 0.5) * this.screenShake, (Math.random() - 0.5) * this.screenShake);
-      this.screenShake *= 0.8; if (this.screenShake < 0.5) this.screenShake = 0;
     }
 
     // Draw stage background
