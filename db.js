@@ -54,7 +54,7 @@ export const PHILOSOPHY_DB = {
 export const EVOLUTION_STAGES = {
   idealism: [
     {title:'플라톤',era:'고대 그리스',color:'#ff4757'},
-    {title:'스토아 학파',era:'헬레니즘',color:'#ff6b35'},
+    {title:'에픽테토스',era:'헬레니즘',color:'#ff6b35'},
     {title:'아우구스티누스',era:'중세 시대',color:'#ffd200'},
     {title:'데카르트',era:'근대 시작',color:'#ff9ff3'},
     {title:'칸트',era:'근대 성숙',color:'#c56cf0'},
@@ -65,7 +65,7 @@ export const EVOLUTION_STAGES = {
     {title:'에피쿠로스',era:'헬레니즘',color:'#54a0ff'},
     {title:'토마스 아퀴나스',era:'중세 시대',color:'#48dbfb'},
     {title:'베이컨',era:'근대 시작',color:'#1dd1a1'},
-    {title:'벤담/밀',era:'근대 성숙',color:'#00d2d3'},
+    {title:'밀',era:'근대 성숙',color:'#00d2d3'},
     {title:'듀이',era:'현대 사회',color:'#54a0ff'}
   ]
 };
