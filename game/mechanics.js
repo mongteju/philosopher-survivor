@@ -325,7 +325,6 @@ export function triggerLevelUp() {
         </div>
         <div class="card-skill-desc">즉시 최대 체력의 40%를 회복합니다. 배움의 길 끝에 잠시 휴식을 취합니다.</div>
       </div>
-      <div class="card-glitter-overlay"></div>
     `;
     el.onclick = () => { this.player.heal(Math.floor(this.player.maxHp * 0.4)); this.closeLevelUp(); };
     grid.appendChild(el);
@@ -378,7 +377,6 @@ export function triggerLevelUp() {
           <div class="card-skill-desc">${upgrade.desc || ''}</div>
           ${isAwakening ? '<div class="awakening-badge-line">🔥 각성 특수 효과 발현!</div>' : ''}
         </div>
-        <div class="card-glitter-overlay"></div>
       `;
       el.onclick = () => {
         if (isAwakening && upgrade.type === 'weapon') {
