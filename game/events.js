@@ -166,14 +166,18 @@ export function gameEvents() {
 
       if (k === 'arrowup' || k === 'w') {
         e.preventDefault();
-        this.cardSelectedIndex = (this.cardSelectedIndex - 1 + totalChoices) % totalChoices;
-        this.updateKeyboardCardSelection();
-        sfx.playTick();
+        if (this.cardSelectedIndex > 0) {
+          this.cardSelectedIndex--;
+          this.updateKeyboardCardSelection();
+          sfx.playTick();
+        }
       } else if (k === 'arrowdown' || k === 's') {
         e.preventDefault();
-        this.cardSelectedIndex = (this.cardSelectedIndex + 1) % totalChoices;
-        this.updateKeyboardCardSelection();
-        sfx.playTick();
+        if (this.cardSelectedIndex < totalChoices - 1) {
+          this.cardSelectedIndex++;
+          this.updateKeyboardCardSelection();
+          sfx.playTick();
+        }
       } else if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         const cards = document.querySelectorAll('.choice-card');

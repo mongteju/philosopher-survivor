@@ -683,56 +683,60 @@ export class Player {
     ctx.save();
     ctx.translate(handX, handY);
     
-    // Weapon dynamic bobbing rotation
+    // Weapon dynamic bobbing rotation: change to positive PI/4 to point top-right
     const weaponSway = Math.sin(t * 0.005) * 0.08;
-    ctx.rotate(-Math.PI / 4 + weaponSway);
+    ctx.rotate(Math.PI / 4 + weaponSway);
     
     if (this.lineage === 'idealism') {
       // ─── SWORDS ───
       ctx.shadowBlur = evIdx >= 2 ? 10 + evIdx * 3.5 : 0;
       ctx.shadowColor = themeColor;
       
-      // Hilt / Crossguard
+      // Hilt / Crossguard (drawn downward locally, towards +Y)
       ctx.strokeStyle = evIdx >= 2 ? themeColor : '#8e7054';
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.moveTo(-6, 0); ctx.lineTo(6, 0);
-      ctx.moveTo(0, 0); ctx.lineTo(0, -4);
+      ctx.moveTo(0, 0); ctx.lineTo(0, 4);
       ctx.stroke();
+      
+      // Pommel
+      ctx.fillStyle = evIdx >= 2 ? themeColor : '#8e7054';
+      ctx.beginPath(); ctx.arc(0, 4, 1.5, 0, Math.PI * 2); ctx.fill();
       
       let bladeLen = 22 + evIdx * 3.5;
       let bladeWidth = 3 + evIdx * 0.5;
       
       if (evIdx === 3) {
-        // Descartes: Sleek energizing pink laser rapier
+        // Descartes: Sleek energizing pink laser rapier (pointing upward locally, towards -Y)
         ctx.strokeStyle = '#ff9ff3';
         ctx.lineWidth = 2.5;
         ctx.beginPath();
         ctx.moveTo(0, 0);
-        ctx.lineTo(0, bladeLen + 6);
+        ctx.lineTo(0, -bladeLen - 6);
         ctx.stroke();
-        // Protective basket hilt
+        // Protective basket hilt (pointing downward clockwise)
         ctx.fillStyle = 'rgba(255, 159, 243, 0.45)';
-        ctx.beginPath(); ctx.arc(0, 0, 6.5, 0, Math.PI, true); ctx.fill();
+        ctx.beginPath(); ctx.arc(0, 0, 6.5, 0, Math.PI, false); ctx.fill();
       } 
       else if (evIdx === 5) {
-        // Sartre (Ultimate): Floating red existentialist crystal claymore shards
+        // Sartre (Ultimate): Floating red existentialist crystal claymore shards (pointing upward locally, towards -Y)
         ctx.fillStyle = 'rgba(255, 71, 87, 0.82)';
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 1;
         // Base crystal shard
-        ctx.beginPath(); ctx.moveTo(-4.5, 2); ctx.lineTo(4.5, 2); ctx.lineTo(3.5, 10); ctx.lineTo(-3.5, 10); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(-4.5, -2); ctx.lineTo(4.5, -2); ctx.lineTo(3.5, -10); ctx.lineTo(-3.5, -10); ctx.closePath(); ctx.fill(); ctx.stroke();
         // Mid crystal shard
-        ctx.beginPath(); ctx.moveTo(-4, 13); ctx.lineTo(4, 13); ctx.lineTo(2.8, 24); ctx.lineTo(-2.8, 24); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(-4, -13); ctx.lineTo(4, -13); ctx.lineTo(2.8, -24); ctx.lineTo(-2.8, -24); ctx.closePath(); ctx.fill(); ctx.stroke();
         // Tip shard
-        ctx.beginPath(); ctx.moveTo(-2.5, 27); ctx.lineTo(2.5, 27); ctx.lineTo(0, 38); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(-2.5, -27); ctx.lineTo(2.5, -27); ctx.lineTo(0, -38); ctx.closePath(); ctx.fill(); ctx.stroke();
         
         // Neon core path linking the shards
         ctx.strokeStyle = '#ff4757'; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, 38); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -38); ctx.stroke();
       }
       else {
-        // Progression swords
+        // Progression swords (pointing upward locally, towards -Y)
         const grad = ctx.createLinearGradient(-bladeWidth, 0, bladeWidth, 0);
         if (evIdx === 0) { grad.addColorStop(0, '#cd7f32'); grad.addColorStop(1, '#8c5a2b'); } // Bronze
         else if (evIdx === 1) { grad.addColorStop(0, '#dfe4ea'); grad.addColorStop(1, '#707070'); } // Steel
@@ -742,9 +746,9 @@ export class Player {
         ctx.fillStyle = grad;
         ctx.beginPath();
         ctx.moveTo(-bladeWidth/2, 0);
-        ctx.lineTo(-bladeWidth/2, bladeLen - 4);
-        ctx.lineTo(0, bladeLen);
-        ctx.lineTo(bladeWidth/2, bladeLen - 4);
+        ctx.lineTo(-bladeWidth/2, -bladeLen + 4);
+        ctx.lineTo(0, -bladeLen);
+        ctx.lineTo(bladeWidth/2, -bladeLen + 4);
         ctx.lineTo(bladeWidth/2, 0);
         ctx.closePath();
         ctx.fill();
@@ -757,73 +761,74 @@ export class Player {
       }
     } else {
       // ─── STAVES ───
+      // Staff shaft (pointing upward locally, towards -Y)
       ctx.strokeStyle = evIdx >= 2 ? '#ced6e0' : '#8e7054';
       ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.moveTo(0, -8);
-      ctx.lineTo(0, 24);
+      ctx.moveTo(0, 8);
+      ctx.lineTo(0, -24);
       ctx.stroke();
       
       ctx.save();
-      ctx.translate(0, 24); // Move to head
+      ctx.translate(0, -24); // Move to head (upward locally, towards -Y)
       ctx.shadowBlur = 10 + evIdx * 3.5;
       ctx.shadowColor = themeColor;
       
       if (evIdx === 0) {
         // Aristotle: Wooden staff with glowing cyan orb
         ctx.fillStyle = '#00d2d3';
-        ctx.beginPath(); ctx.arc(0, 3, 5, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(0, -3, 5, 0, Math.PI*2); ctx.fill();
       }
       else if (evIdx === 1) {
         // Epicurus: Vine staff with glowing emerald leaf gem
         ctx.fillStyle = '#2ecc71';
         ctx.beginPath();
         ctx.moveTo(0, 0);
-        ctx.quadraticCurveTo(-6, 4, 0, 10);
-        ctx.quadraticCurveTo(6, 4, 0, 0);
+        ctx.quadraticCurveTo(-6, -4, 0, -10);
+        ctx.quadraticCurveTo(6, -4, 0, 0);
         ctx.closePath(); ctx.fill();
       }
       else if (evIdx === 2) {
         // Aquinas: Silver-cross sacred staff
         ctx.strokeStyle = '#48dbfb'; ctx.lineWidth = 2.5;
         ctx.beginPath();
-        ctx.moveTo(0, 0); ctx.lineTo(0, 10);
-        ctx.moveTo(-4, 7); ctx.lineTo(4, 7);
+        ctx.moveTo(0, 0); ctx.lineTo(0, -10);
+        ctx.moveTo(-4, -7); ctx.lineTo(4, -7);
         ctx.stroke();
       }
       else if (evIdx === 3) {
         // Bacon: Concentric astrolabe/gyro rings
         ctx.strokeStyle = '#fdcb6e'; ctx.lineWidth = 1.5;
-        ctx.beginPath(); ctx.arc(0, 4, 5, 0, Math.PI * 2); ctx.stroke();
-        ctx.beginPath(); ctx.arc(0, 4, 3, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(0, -4, 5, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(0, -4, 3, 0, Math.PI * 2); ctx.stroke();
       }
       else if (evIdx === 4) {
         // Bentham/Mill: Dual balance scale staff head
         ctx.strokeStyle = '#00d2d3'; ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(-6, 5); ctx.lineTo(6, 5);
-        ctx.moveTo(0, 0); ctx.lineTo(0, 5);
+        ctx.moveTo(-6, -5); ctx.lineTo(6, -5);
+        ctx.moveTo(0, 0); ctx.lineTo(0, -5);
         ctx.stroke();
         ctx.fillStyle = '#ffd200';
-        ctx.beginPath(); ctx.arc(-6, 1.5, 2.5, 0, Math.PI*2); ctx.arc(6, 1.5, 2.5, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(-6, -1.5, 2.5, 0, Math.PI*2); ctx.arc(6, -1.5, 2.5, 0, Math.PI*2); ctx.fill();
       }
       else if (evIdx === 5) {
         // Dewey (Ultimate): Cosmic swirling nebula orb & dust rings
         const time = performance.now();
-        const coreGrd = ctx.createRadialGradient(0, 6, 0, 0, 6, 7.5);
+        const coreGrd = ctx.createRadialGradient(0, -6, 0, 0, -6, 7.5);
         coreGrd.addColorStop(0, '#ffffff');
         coreGrd.addColorStop(0.5, '#00d2d3');
         coreGrd.addColorStop(1, 'rgba(0, 210, 211, 0)');
         ctx.fillStyle = coreGrd;
-        ctx.beginPath(); ctx.arc(0, 6, 7.5, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(0, -6, 7.5, 0, Math.PI*2); ctx.fill();
         
         ctx.strokeStyle = 'rgba(84, 160, 255, 0.85)'; ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.ellipse(0, 6, 12, 3, time * 0.003, 0, Math.PI*2);
+        ctx.ellipse(0, -6, 12, 3, time * 0.003, 0, Math.PI*2);
         ctx.stroke();
         ctx.strokeStyle = 'rgba(0, 210, 211, 0.65)';
         ctx.beginPath();
-        ctx.ellipse(0, 6, 10, 2.5, -time * 0.002, 0, Math.PI*2);
+        ctx.ellipse(0, -6, 10, 2.5, -time * 0.002, 0, Math.PI*2);
         ctx.stroke();
       }
       ctx.restore();
@@ -850,7 +855,15 @@ export class Player {
     ctx.font = 'bold 20px Outfit, sans-serif';
     ctx.strokeStyle = 'rgba(0,0,0,0.95)'; ctx.lineWidth = 5;
     ctx.strokeText(name, rx + sway * 0.2, ry - 36);
-    ctx.fillStyle = '#fff'; ctx.shadowBlur = 0;
+    // Set dynamic name color based on evolution stage
+    let nameColor = '#fff';
+    if (evIdx === 0) nameColor = '#ffffff';
+    else if (evIdx === 1 || evIdx === 2) nameColor = '#54a0ff'; // 2,3차 파란색
+    else if (evIdx === 3) nameColor = '#c56cf0'; // 4차 보라색
+    else if (evIdx === 4) nameColor = '#ff9ff3'; // 5차 분홍색
+    else if (evIdx === 5) nameColor = '#ffd200'; // 6차 노란색
+    
+    ctx.fillStyle = nameColor; ctx.shadowBlur = 0;
     ctx.fillText(name, rx + sway * 0.2, ry - 36);
     ctx.restore();
   }
