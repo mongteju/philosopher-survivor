@@ -2274,3 +2274,42 @@ button.keyboard-selected,
   from { box-shadow: 0 0 10px rgba(230,126,34,0.25), inset 0 0 5px rgba(230,126,34,0.05); }
   to   { box-shadow: 0 0 20px rgba(230,126,34,0.5), inset 0 0 12px rgba(230,126,34,0.12); }
 }
+
+/* Sparkling animated text glitter keyframes and tier rules */
+@keyframes text-glitter {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+.rare-card .card-skill-name {
+  background: linear-gradient(90deg, #0984e3 0%, #00cec9 50%, #0984e3 100%) !important;
+  background-size: 200% auto !important;
+  color: transparent !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  text-shadow: 0 0 8px rgba(9, 132, 227, 0.2) !important;
+  animation: text-glitter 2.5s infinite linear !important;
+  display: inline-block !important;
+}
+
+.unique-card .card-skill-name {
+  background: linear-gradient(90deg, #6c5ce7 0%, #e0a7ff 50%, #6c5ce7 100%) !important;
+  background-size: 200% auto !important;
+  color: transparent !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  text-shadow: 0 0 8px rgba(108, 92, 231, 0.2) !important;
+  animation: text-glitter 2.5s infinite linear !important;
+  display: inline-block !important;
+}
+
+.epic-card .card-skill-name {
+  background: linear-gradient(90deg, #d35400 0%, #fdcb6e 50%, #d35400 100%) !important;
+  background-size: 200% auto !important;
+  color: transparent !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  text-shadow: 0 0 10px rgba(230, 126, 34, 0.3) !important;
+  animation: text-glitter 2.5s infinite linear !important;
+  display: inline-block !important;
+}
