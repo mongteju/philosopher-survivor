@@ -162,7 +162,7 @@
 
     <!-- Screen 4: AURA GACHA MODAL -->
     <div id="gacha-screen" class="overlay-screen">
-      <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-content" style="max-width: 620px;">
         <h2 style="font-family: var(--font-title); color: var(--xp-color); margin-bottom: 4px;">사상의 아우라 소환!</h2>
         <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 16px;">보스를 격파하여 획득한 영혼 에너지를 소환합니다.</p>
 
@@ -196,6 +196,30 @@
         <div id="gacha-spin-area" style="margin-top: 16px;">
           <button id="gacha-spin-btn" class="btn-gacha-spin">🎰 소환하기</button>
           <p style="color: var(--text-secondary); font-size: 11px; margin-top: 8px;">[Enter] / [Space]로 소환</p>
+        </div>
+
+        <!-- Aura Choice Panel (shown from 2nd boss onwards) -->
+        <div id="gacha-choice-area" style="display:none; width: 100%; margin-top: 12px; text-align: center;">
+          <!-- Sokrates Blessing notification -->
+          <div id="sokrates-blessing" style="display:none; background: linear-gradient(135deg, rgba(255,210,0,0.2), rgba(255,159,67,0.15)); border: 2px solid #ffd200; border-radius: 12px; padding: 12px; margin-bottom: 16px; font-family: var(--font-title); color: #ffd200; font-size: 15px; font-weight: 800; text-align: center; text-shadow: 0 0 10px rgba(255,210,0,0.8); animation: chest-bounce 0.5s infinite alternate ease-in-out; letter-spacing: 0.5px;">
+            🎆 소크라테스의 축복! 강화치 +1 보너스 부여!
+          </div>
+          <!-- Two choice buttons side by side -->
+          <div style="display: flex; gap: 16px; flex-direction: row; justify-content: center; width: 100%;">
+            <!-- Upgrade Button -->
+            <button id="gacha-upgrade-btn" style="flex: 1; min-height: 160px; background: rgba(20, 30, 20, 0.65); border: 2.5px solid #2ed573; border-radius: 16px; color: #fff; padding: 18px 12px; font-family: var(--font-title); cursor: pointer; text-align: center; transition: all 0.25s; box-shadow: 0 0 15px rgba(46,213,115,0.3);">
+              <div style="font-size: 32px; margin-bottom: 6px;">⬆️</div>
+              <div style="font-size: 18px; font-weight: 900; color: #2ed573; margin-bottom: 6px; text-shadow: 0 0 10px rgba(46, 213, 115, 0.4);">현재 오라 강화</div>
+              <div id="gacha-upgrade-desc" style="font-size: 12px; color: rgba(255,255,255,0.75); font-family: var(--font-mono); line-height: 1.4; word-break: keep-all;"></div>
+            </button>
+            <!-- Change Button -->
+            <button id="gacha-change-btn" style="flex: 1; min-height: 160px; background: rgba(20, 20, 35, 0.65); border: 2.5px solid #54a0ff; border-radius: 16px; color: #fff; padding: 18px 12px; font-family: var(--font-title); cursor: pointer; text-align: center; transition: all 0.25s; box-shadow: 0 0 15px rgba(84,160,255,0.3);">
+              <div style="font-size: 32px; margin-bottom: 6px;">🔄</div>
+              <div style="font-size: 18px; font-weight: 900; color: #54a0ff; margin-bottom: 6px; text-shadow: 0 0 10px rgba(84, 160, 255, 0.4);">새로운 오라 교체</div>
+              <div id="gacha-change-desc" style="font-size: 12px; color: rgba(255,255,255,0.75); font-family: var(--font-mono); line-height: 1.4; word-break: keep-all;"></div>
+            </button>
+          </div>
+          <p style="color: var(--text-secondary); font-size: 11px; margin-top: 12px;">방향키 [←]/[→] 또는 [A]/[D]로 선택하고 [Enter]/[Space]로 결정</p>
         </div>
       </div>
     </div>

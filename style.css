@@ -2076,3 +2076,26 @@ button.keyboard-selected,
     border-color: rgba(255, 192, 72, 1);
   }
 }
+
+/* Aura Choice Buttons */
+#gacha-upgrade-btn:hover,
+#gacha-upgrade-btn.keyboard-selected {
+  background: rgba(46, 213, 115, 0.18) !important;
+  box-shadow: 0 0 25px rgba(46, 213, 115, 0.65), inset 0 0 12px rgba(46, 213, 115, 0.25) !important;
+  border-color: #5effa0 !important;
+  transform: translateY(-4px) scale(1.02);
+}
+
+#gacha-change-btn:hover,
+#gacha-change-btn.keyboard-selected {
+  background: rgba(84, 160, 255, 0.18) !important;
+  box-shadow: 0 0 25px rgba(84, 160, 255, 0.65), inset 0 0 12px rgba(84, 160, 255, 0.25) !important;
+  border-color: #90c4ff !important;
+  transform: translateY(-4px) scale(1.02);
+}
+
+#gacha-upgrade-btn,
+#gacha-change-btn {
+  transition: all 0.22s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+
