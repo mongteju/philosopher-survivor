@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;600;800&family=Share+Tech+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;600;800&family=Share+Tech+Mono&family=Noto+Sans+KR:wght@400;600;700;800;900&display=swap');
 
 :root {
   --bg-dark: #0a0b10;
@@ -15,8 +15,8 @@
   --xp-glow: rgba(255, 192, 72, 0.5);
   --text-primary: #f1f2f6;
   --text-secondary: #a4b0be;
-  --font-title: 'Outfit', 'Inter', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  --font-title: 'Outfit', 'Noto Sans KR', 'Malgun Gothic', 'Apple SD Gothic Neo', 'NanumGothic', sans-serif;
+  --font-body: 'Inter', 'Noto Sans KR', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
   --font-mono: 'Share Tech Mono', monospace;
 }
 
@@ -413,18 +413,102 @@ body {
   text-align: left;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   box-sizing: border-box;
   width: 100%;
   box-shadow: 4px 4px 0px #231F20 !important;
 }
 
-/* Category-specific card border-left point color styling */
-.choice-card-horizontal.choice-card-weapon {
-  border-left: 8px solid #FF4D4D !important;
+/* =============================================================
+   TYPE BADGE ONLY — Card body color is driven by RARITY, not type.
+   The ::before badge is the only type indicator.
+   ============================================================= */
+
+/* Shared ::before badge base styles */
+.choice-card-horizontal.choice-card-weapon::before,
+.choice-card-horizontal.choice-card-passive::before {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-size: 200% auto;
+  color: #fff;
+  font-family: var(--font-title);
+  font-size: 11px;
+  font-weight: 900;
+  padding: 2px 12px;
+  border-radius: 20px;
+  border: 2px solid #231F20;
+  white-space: nowrap;
+  animation: awakening-badge-shine 1.5s infinite linear;
+  z-index: 10;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
 }
-.choice-card-horizontal.choice-card-passive {
-  border-left: 8px solid #3B82F6 !important;
+
+/* ⚡ Active badge — red */
+.choice-card-horizontal.choice-card-weapon::before {
+  content: '⚡ 액티브';
+  background: linear-gradient(90deg, #FF4D4D, #ff6b35, #FF4D4D);
+}
+
+/* ✦ Passive badge — blue */
+.choice-card-horizontal.choice-card-passive::before {
+  content: '✦ 패시브';
+  background: linear-gradient(90deg, #3B82F6, #60a5fa, #3B82F6);
+}
+
+/* =============================================================
+   RARITY-BASED CARD COLORS
+   Normal = neutral | Rare = purple | Unique = pink | Epic = gold
+   ============================================================= */
+
+/* Normal — base card style (see .choice-card-horizontal above) */
+
+/* Rare — Purple glow border + light purple bg */
+@keyframes rare-border-glow {
+  0%   { border-color: #A78BFA; box-shadow: 0 0 10px 2px #A78BFA, 0 0 28px 6px rgba(167,139,250,0.4), inset 0 0 18px rgba(167,139,250,0.1); }
+  50%  { border-color: #c4b5fd; box-shadow: 0 0 18px 4px #c4b5fd, 0 0 40px 12px rgba(196,181,253,0.45), inset 0 0 26px rgba(167,139,250,0.15); }
+  100% { border-color: #A78BFA; box-shadow: 0 0 10px 2px #A78BFA, 0 0 28px 6px rgba(167,139,250,0.4), inset 0 0 18px rgba(167,139,250,0.1); }
+}
+@keyframes rare-bg-shimmer {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.choice-card-horizontal.rare-card {
+  border: 4px solid #A78BFA !important;
+  background: linear-gradient(120deg, #faf8ff, #f3f0ff, #ede8ff, #e5ddff, #faf8ff) !important;
+  background-size: 300% 300% !important;
+  box-shadow: 4px 4px 0px #231F20 !important;
+  animation: rare-border-glow 2.5s infinite ease-in-out, rare-bg-shimmer 5s infinite ease-in-out !important;
+}
+
+/* Unique — Pink glow border + light pink bg */
+@keyframes unique-border-glow {
+  0%   { border-color: #FF7DB4; box-shadow: 0 0 10px 2px #FF7DB4, 0 0 28px 6px rgba(255,125,180,0.4), inset 0 0 18px rgba(255,125,180,0.1); }
+  50%  { border-color: #ffb3d1; box-shadow: 0 0 18px 4px #ffb3d1, 0 0 40px 12px rgba(255,179,209,0.45), inset 0 0 26px rgba(255,125,180,0.15); }
+  100% { border-color: #FF7DB4; box-shadow: 0 0 10px 2px #FF7DB4, 0 0 28px 6px rgba(255,125,180,0.4), inset 0 0 18px rgba(255,125,180,0.1); }
+}
+@keyframes unique-bg-shimmer {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.choice-card-horizontal.unique-card {
+  border: 4px solid #FF7DB4 !important;
+  background: linear-gradient(120deg, #fff8fb, #fff0f6, #ffe4f0, #ffd6e8, #fff8fb) !important;
+  background-size: 300% 300% !important;
+  box-shadow: 4px 4px 0px #231F20 !important;
+  animation: unique-border-glow 2.5s infinite ease-in-out, unique-bg-shimmer 5s infinite ease-in-out !important;
+}
+
+/* Epic — Gold glow border + light gold bg (reuse awakening keyframes) */
+.choice-card-horizontal.epic-card:not(.awakening-card) {
+  border: 4px solid #FFD13B !important;
+  background: linear-gradient(120deg, #fff9e6, #fffde0, #fff3cc, #ffe0a0, #fff9e6) !important;
+  background-size: 300% 300% !important;
+  box-shadow: 4px 4px 0px #231F20 !important;
+  animation: awakening-border-fire 2.5s infinite ease-in-out, awakening-bg-shimmer 5s infinite ease-in-out !important;
 }
 
 .choice-card-horizontal.heal-card {
@@ -502,15 +586,17 @@ body {
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   white-space: nowrap;
 }
+/* Epic ribbon uses dark text on gold — no dark shadow */
+.tier-ribbon.epic { text-shadow: 0 1px 1px rgba(0,0,0,0.15); }
 
-.tier-ribbon.normal { background: #7f8c8d; }
-.tier-ribbon.rare { background: #2980b9; }
-.tier-ribbon.unique { background: #8e44ad; }
-.tier-ribbon.epic { background: #e74c3c; animation: epic-shimmer 2s infinite alternate; }
+.tier-ribbon.normal { background: #7f8c8d; color: #fff; }
+.tier-ribbon.rare { background: #A78BFA; color: #fff; }
+.tier-ribbon.unique { background: #FF7DB4; color: #fff; }
+.tier-ribbon.epic { background: #FFD13B; color: #231F20; animation: epic-shimmer 2s infinite alternate; }
 
 @keyframes epic-shimmer {
-  0% { background-color: #e74c3c; }
-  100% { background-color: #d35400; }
+  0% { background-color: #FFD13B; }
+  100% { background-color: #f9ca24; }
 }
 
 .card-right-section {
@@ -563,15 +649,19 @@ body {
   border-radius: 6px;
 }
 .card-lv-badge.awakening {
-  background: linear-gradient(135deg, #e74c3c, #f1c40f);
-  color: #fff;
-  border: 1px solid #5c4033;
-  animation: pulse-awakening-badge 1s infinite alternate;
+  background: linear-gradient(135deg, #FFD13B, #ff9f43, #FFD13B);
+  background-size: 200% auto;
+  color: #231F20;
+  font-family: var(--font-title);
+  font-weight: 900;
+  border: 2px solid #231F20 !important;
+  box-shadow: 2px 2px 0px #231F20 !important;
+  animation: awakening-badge-shine 1.5s infinite linear;
 }
 
-@keyframes pulse-awakening-badge {
-  0% { box-shadow: 0 0 2px rgba(231,76,60,0.5); }
-  100% { box-shadow: 0 0 6px rgba(241,196,15,0.8); }
+@keyframes awakening-badge-shine {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
 }
 
 .card-skill-desc {
@@ -1794,7 +1884,7 @@ button.keyboard-selected,
 .levelup-ribbon-title {
   position: relative;
   z-index: 3;
-  margin-top: 15px; /* Offset the floating mascot */
+  margin-top: 15px;
   margin-bottom: 8px;
   background: linear-gradient(180deg, #ffdd59 0%, #ffc048 100%);
   border: 3.5px solid #231F20 !important;
@@ -1803,9 +1893,8 @@ button.keyboard-selected,
   font-family: var(--font-title);
   font-size: 28px;
   font-weight: 900;
-  color: #fff;
-  -webkit-text-stroke: 1.5px #231F20;
-  text-shadow: 2px 2px 0px #231F20 !important;
+  color: #231F20;
+  text-shadow: none !important;
   box-shadow: 4px 4px 0px #231F20 !important;
   display: inline-block;
   white-space: nowrap;
@@ -1843,10 +1932,11 @@ button.keyboard-selected,
 .card-choices-stack {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 20px;
   width: 100%;
   z-index: 2;
   margin-bottom: 12px;
+  padding-top: 14px;
 }
 
 /* Learned Skills Button at Bottom Right */
@@ -2094,33 +2184,59 @@ button.keyboard-selected,
 
 
 /* ==============================
-   SKILL SELECTION CARD CONTRAST & LEGIBILITY OVERRIDES
+   SKILL NAME COLORS BY RARITY
    ============================== */
-.choice-card-weapon .card-skill-name,
-.choice-card-passive .card-skill-name {
-  color: #2d3436 !important;
-  text-shadow: none !important;
-}
 
-.choice-card-weapon .card-skill-desc,
-.choice-card-passive .card-skill-desc {
-  color: #4e342e !important;
-  text-shadow: none !important;
-}
-
-/* ==============================
-   SKILL SELECTION CARD CONTRAST & LEGIBILITY OVERRIDES
-   ============================== */
-.choice-card-weapon .card-skill-name,
-.choice-card-passive .card-skill-name {
+/* Normal — dark text on cream bg */
+.normal-card .card-skill-name {
   color: #2A2A2A !important;
-  font-weight: bold !important;
+  font-weight: 800 !important;
   text-shadow: none !important;
 }
 
+/* Rare — purple text on light purple bg */
+.rare-card .card-skill-name {
+  color: #7c3aed !important;
+  font-weight: 800 !important;
+  text-shadow: none !important;
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  animation: none !important;
+  display: inline !important;
+  filter: none !important;
+}
+
+/* Unique — deep pink text on light pink bg */
+.unique-card .card-skill-name {
+  color: #db2777 !important;
+  font-weight: 800 !important;
+  text-shadow: none !important;
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  animation: none !important;
+  display: inline !important;
+  filter: none !important;
+}
+
+/* Epic — deep amber text on light gold bg */
+.epic-card:not(.awakening-card) .card-skill-name {
+  color: #b45309 !important;
+  font-weight: 800 !important;
+  text-shadow: none !important;
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  animation: none !important;
+  display: inline !important;
+  filter: none !important;
+}
+
+/* Desc text — dark on all card types */
 .choice-card-weapon .card-skill-desc,
 .choice-card-passive .card-skill-desc {
-  color: #555555 !important;
+  color: #444444 !important;
   text-shadow: none !important;
 }
 
@@ -2185,71 +2301,135 @@ button.keyboard-selected,
   font-weight: 800 !important;
 }
 
-/* Beautiful High-Contrast 2D Cartoon Gold-Sparkling Awakening Card Override */
+/* ============================================================
+   🔥 AWAKENING CARD — SPECTACULAR GOLD CARD OVERRIDE
+   ============================================================ */
+
+@keyframes awakening-border-fire {
+  0%   { border-color: #FFD13B; box-shadow: 0 0 12px 3px #FFD13B, 0 0 32px 8px rgba(255,140,0,0.5), inset 0 0 20px rgba(255,209,59,0.15); }
+  25%  { border-color: #ff9f43; box-shadow: 0 0 18px 5px #ff9f43, 0 0 40px 12px rgba(255,80,0,0.4), inset 0 0 24px rgba(255,159,67,0.18); }
+  50%  { border-color: #FFD13B; box-shadow: 0 0 22px 6px #FFD13B, 0 0 48px 16px rgba(255,210,0,0.55), inset 0 0 30px rgba(255,209,59,0.2); }
+  75%  { border-color: #ff6348; box-shadow: 0 0 16px 4px #ff6348, 0 0 36px 10px rgba(255,80,0,0.45), inset 0 0 22px rgba(255,99,72,0.15); }
+  100% { border-color: #FFD13B; box-shadow: 0 0 12px 3px #FFD13B, 0 0 32px 8px rgba(255,140,0,0.5), inset 0 0 20px rgba(255,209,59,0.15); }
+}
+
+@keyframes awakening-bg-shimmer {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes awakening-sparkle {
+  0%, 100% { opacity: 0; transform: scale(0); }
+  50%       { opacity: 1; transform: scale(1); }
+}
+
 .choice-card-horizontal.awakening-card {
-  border: 4px dashed #FFD13B !important;
-  box-shadow: 4px 4px 0px #231F20 !important;
-  background: #FFFDF6 !important;
+  border: 4px solid #FFD13B !important;
+  background: linear-gradient(120deg, #fff9e6, #fffde0, #fff3cc, #ffe0a0, #fff9e6) !important;
+  background-size: 300% 300% !important;
   color: #2A2A2A !important;
-  animation: none !important;
+  animation: awakening-border-fire 2s infinite ease-in-out, awakening-bg-shimmer 4s infinite ease-in-out !important;
+  position: relative;
+  overflow: visible;
+}
+
+/* Gold sparkle pseudo-element overlay */
+.choice-card-horizontal.awakening-card::before {
+  content: '✦ 각성 ✦';
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, #FFD13B, #ff9f43, #FFD13B);
+  background-size: 200% auto;
+  color: #231F20;
+  font-family: var(--font-title);
+  font-size: 11px;
+  font-weight: 900;
+  padding: 2px 12px;
+  border-radius: 20px;
+  border: 2px solid #231F20;
+  white-space: nowrap;
+  animation: awakening-badge-shine 1.5s infinite linear;
+  z-index: 10;
+}
+
+/* Corner fire sparkles */
+.choice-card-horizontal.awakening-card::after {
+  content: '🔥';
+  position: absolute;
+  top: -6px;
+  right: 8px;
+  font-size: 20px;
+  animation: awakening-sparkle 1.8s infinite ease-in-out;
+  z-index: 11;
+  filter: drop-shadow(0 0 6px rgba(255,160,0,0.9));
 }
 
 .choice-card-horizontal.awakening-card:hover,
 .choice-card-horizontal.awakening-card.keyboard-selected {
-  transform: translate(-2px, -2px) !important;
-  box-shadow: 6px 6px 0px #231F20 !important;
+  transform: translate(-3px, -3px) scale(1.01) !important;
+  box-shadow: 8px 8px 0px #231F20, 0 0 40px rgba(255,210,0,0.7) !important;
 }
 
 .choice-card-horizontal.awakening-card .card-skill-name {
-  color: #d35400 !important;
+  background: linear-gradient(90deg, #e67e22, #FFD13B, #ff9f43, #FFD13B, #e67e22) !important;
+  background-size: 300% auto !important;
+  color: transparent !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
   text-shadow: none !important;
   font-weight: 900 !important;
+  animation: text-glitter 1.8s infinite linear !important;
+  display: inline-block !important;
+  filter: drop-shadow(0 0 6px rgba(255,180,0,0.6));
 }
 
 .choice-card-horizontal.awakening-card .card-skill-desc {
-  color: #555555 !important;
+  color: #4a3000 !important;
   text-shadow: none !important;
+  font-weight: 600 !important;
+}
+
+.choice-card-horizontal.awakening-card .card-icon-box {
+  border: 3px solid #FFD13B !important;
+  box-shadow: 0 0 12px rgba(255,210,0,0.8), 3px 3px 0px #231F20 !important;
+  background: linear-gradient(135deg, #FFD13B, #ff9f43) !important;
+  /* animation removed: no more scale pulsing */
+}
+
+.choice-card-horizontal.awakening-card .awakening-badge-line {
+  color: #b7410e !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  font-family: var(--font-title) !important;
+  text-shadow: 0 0 8px rgba(255,120,0,0.5);
 }
 
 .choice-card-horizontal.awakening-card .stat-compare-row {
   color: #2a2a2a !important;
 }
 
-/* Sparkling animated text glitter keyframes and tier rules */
+/* Hide tier-ribbon on awakening cards (::before already shows 각성 banner) */
+.choice-card-horizontal.awakening-card .tier-ribbon {
+  display: none !important;
+}
+
+/* On awakening cards, suppress the inherited weapon/passive ::before type badge.
+   The awakening card's own ::before (각성 banner) takes over. */
+.choice-card-horizontal.choice-card-weapon.awakening-card::before,
+.choice-card-horizontal.choice-card-passive.awakening-card::before {
+  content: '✦ 각성 ✦' !important;
+  background: linear-gradient(90deg, #FFD13B, #ff9f43, #FFD13B) !important;
+  color: #231F20 !important;
+  text-shadow: none !important;
+  animation: awakening-badge-shine 1.5s infinite linear !important;
+}
+
+/* Sparkling animated text glitter keyframes (used by awakening card) */
 @keyframes text-glitter {
   0% { background-position: 0% center; }
   100% { background-position: 200% center; }
 }
 
-.rare-card .card-skill-name {
-  background: linear-gradient(90deg, #0984e3 0%, #00cec9 50%, #0984e3 100%) !important;
-  background-size: 200% auto !important;
-  color: transparent !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  text-shadow: 0 0 8px rgba(9, 132, 227, 0.2) !important;
-  animation: text-glitter 2.5s infinite linear !important;
-  display: inline-block !important;
-}
-
-.unique-card .card-skill-name {
-  background: linear-gradient(90deg, #6c5ce7 0%, #e0a7ff 50%, #6c5ce7 100%) !important;
-  background-size: 200% auto !important;
-  color: transparent !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  text-shadow: 0 0 8px rgba(108, 92, 231, 0.2) !important;
-  animation: text-glitter 2.5s infinite linear !important;
-  display: inline-block !important;
-}
-
-.epic-card .card-skill-name {
-  background: linear-gradient(90deg, #d35400 0%, #fdcb6e 50%, #d35400 100%) !important;
-  background-size: 200% auto !important;
-  color: transparent !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  text-shadow: 0 0 10px rgba(230, 126, 34, 0.3) !important;
-  animation: text-glitter 2.5s infinite linear !important;
-  display: inline-block !important;
-}

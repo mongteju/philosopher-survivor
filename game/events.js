@@ -27,10 +27,6 @@ export function updateKeyboardCardSelection() {
   document.querySelectorAll('.choice-card').forEach((c, i) => {
     c.classList.toggle('keyboard-selected', i === this.cardSelectedIndex);
   });
-  const learnedBtn = document.getElementById('learned-skills-btn');
-  if (learnedBtn) {
-    learnedBtn.classList.toggle('keyboard-selected', this.cardSelectedIndex === (this.levelChoices.length || 1));
-  }
 }
 
 export function updateExamKeyboardSelection() {
@@ -163,62 +159,25 @@ export function gameEvents() {
       return;
     }
 
-    // Global Learned Skills popup close check (Space / Escape)
-    const learnedSkillsPopup = document.getElementById('learned-skills-popup');
-    if (learnedSkillsPopup && learnedSkillsPopup.classList.contains('active')) {
-      if (e.key === ' ' || e.key === 'Escape') {
-        e.preventDefault();
-        const closeBtn = document.getElementById('learned-skills-popup-close');
-        if (closeBtn) closeBtn.click();
-        if (document.getElementById('levelup-screen').classList.contains('active')) {
-          this.cardSelectedIndex = this.levelChoices.length || 1;
-          this.updateKeyboardCardSelection();
-        }
-        if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
-        return;
-      }
-    }
-
     // Level up card selection
     const lvlScreen = document.getElementById('levelup-screen');
     if (lvlScreen.classList.contains('active')) {
-      const popup = document.getElementById('learned-skills-popup');
-      if (popup && popup.classList.contains('active')) {
-        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') {
-          e.preventDefault();
-          const closeBtn = document.getElementById('learned-skills-popup-close');
-          if (closeBtn) closeBtn.click();
-          this.cardSelectedIndex = this.levelChoices.length || 1;
-          this.updateKeyboardCardSelection();
-          sfx.playTick();
-        }
-        return;
-      }
-
       const totalChoices = this.levelChoices.length || 1;
-      const totalItems = totalChoices + 1;
 
       if (k === 'arrowup' || k === 'w') {
         e.preventDefault();
-        this.cardSelectedIndex = (this.cardSelectedIndex - 1 + totalItems) % totalItems;
+        this.cardSelectedIndex = (this.cardSelectedIndex - 1 + totalChoices) % totalChoices;
         this.updateKeyboardCardSelection();
         sfx.playTick();
       } else if (k === 'arrowdown' || k === 's') {
         e.preventDefault();
-        this.cardSelectedIndex = (this.cardSelectedIndex + 1) % totalItems;
+        this.cardSelectedIndex = (this.cardSelectedIndex + 1) % totalChoices;
         this.updateKeyboardCardSelection();
         sfx.playTick();
       } else if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        if (this.cardSelectedIndex === totalChoices) {
-          document.getElementById('learned-skills-btn').click();
-          const closeBtn = document.getElementById('learned-skills-popup-close');
-          if (closeBtn) closeBtn.classList.add('keyboard-selected');
-          sfx.playTick();
-        } else {
-          const cards = document.querySelectorAll('.choice-card');
-          if (cards[this.cardSelectedIndex]) cards[this.cardSelectedIndex].click();
-        }
+        const cards = document.querySelectorAll('.choice-card');
+        if (cards[this.cardSelectedIndex]) cards[this.cardSelectedIndex].click();
       }
       return;
     }
@@ -336,17 +295,6 @@ export function gameEvents() {
     }
   });
 
-  document.getElementById('learned-skills-btn').addEventListener('click', () => {
-    const popup = document.getElementById('learned-skills-popup');
-    if (popup.classList.contains('active')) {
-      popup.classList.remove('active');
-    } else {
-      this.showLearnedSkillsPopup();
-    }
-  });
-  document.getElementById('learned-skills-popup-close').addEventListener('click', () => {
-    document.getElementById('learned-skills-popup').classList.remove('active');
-  });
 
   // Final ending quiz option buttons
   document.querySelectorAll('.quiz-option-btn').forEach(btn => {

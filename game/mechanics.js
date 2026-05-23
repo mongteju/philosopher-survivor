@@ -411,7 +411,6 @@ export function applyCardSelection(upgrade, isAwakening) {
 export function closeLevelUp() {
   this.resetFocus();
   document.getElementById('levelup-screen').classList.remove('active');
-  document.getElementById('learned-skills-popup').classList.remove('active');
   this.isPlaying = true; this.lastTime = performance.now();
   requestAnimationFrame(t => this.loop(t));
 }
