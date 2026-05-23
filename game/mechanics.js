@@ -355,8 +355,8 @@ export function triggerLevelUp() {
       el.className = `choice-card choice-card-horizontal ${categoryClass} ${this.player.lineage}-card ${tier}-card${isAwakening ? ' awakening-card' : ''}`;
       if (idx === 0) el.classList.add('keyboard-selected');
 
-      const percentMap = { rare: '+25%', unique: '+55%', epic: '+90%' };
-      const bonusSpan = tier !== 'normal' ? ` <span class="rarity-bonus-pill ${tier}">${percentMap[tier]} 보너스</span>` : '';
+      const percentMap = { rare: '+25% 보너스 스텟', unique: '+55% 보너스 스텟', epic: '+90% 보너스 스텟' };
+      const bonusSpan = tier !== 'normal' ? `<span class="rarity-bonus-pill ${tier}">${percentMap[tier]}</span>` : '';
 
       const lvLabel = isAwakening ? '각성' : `Lv.${nextLvl}`;
       el.innerHTML = `
@@ -369,8 +369,10 @@ export function triggerLevelUp() {
         <div class="card-right-section">
           <div class="card-title-row">
             <span class="card-skill-name">${upgrade.name}</span>
-            <span class="card-lv-badge ${isAwakening ? 'awakening' : ''}">${lvLabel}</span>
-            ${bonusSpan}
+            <div class="card-right-badge-stack">
+              <span class="card-lv-badge ${isAwakening ? 'awakening' : ''}">${lvLabel}</span>
+              ${bonusSpan}
+            </div>
           </div>
           <div class="card-skill-desc">${upgrade.desc || ''}</div>
           ${isAwakening ? '<div class="awakening-badge-line">🔥 각성 특수 효과 발현!</div>' : ''}

@@ -539,22 +539,30 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 6px;
 }
 
 .card-title-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 12px;
   font-family: var(--font-title);
   margin-bottom: 1px;
 }
 
 .card-skill-name {
-  font-size: 21px;
+  font-size: 24px !important;
   font-weight: 800;
   color: #3e2723;
   text-shadow: 0 1px 0px rgba(255,255,255,0.8);
+}
+
+.card-right-badge-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
 }
 
 .card-type-badge {
@@ -569,12 +577,12 @@ body {
 
 .card-lv-badge {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 16px !important;
   font-weight: bold;
   color: #7d6b63;
   background: rgba(0,0,0,0.06);
-  padding: 2px 7px;
-  border-radius: 4px;
+  padding: 3px 9px;
+  border-radius: 6px;
 }
 .card-lv-badge.awakening {
   background: linear-gradient(135deg, #e74c3c, #f1c40f);
@@ -589,10 +597,10 @@ body {
 }
 
 .card-skill-desc {
-  font-size: 14px;
+  font-size: 16.5px !important;
   color: #4e342e;
-  line-height: 1.5;
-  margin-bottom: 3px;
+  line-height: 1.55;
+  margin-bottom: 2px;
 }
 
 .choice-card-horizontal .stat-compare {
