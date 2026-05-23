@@ -283,7 +283,7 @@ export function fireWeapon(id, lvl, stats, awakening) {
     const sz = (stats.size || 50) * sizeM;
     const dmg = (stats.dmg || 35) * dmgM;
     this.projectiles.push(new Projectile(this.player.x, this.player.y, tx, ty, 6, sz, dmg, '#ff4757', 'fire_explosion'));
-    sfx.playExplosion();
+    sfx.playFireShoot();
   }
 
   if (id === 'fire_aura') {

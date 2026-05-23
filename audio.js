@@ -23,6 +23,11 @@ export class PhilosophyAudio {
     // Layer 3: High fire pop (Sine, fast heat sweep)
     this._play('sine', 350, 80, 0.15, 0.15);
   }
+  playFireShoot() {
+    // Whooshing fireball sound (fast sawtooth slide layered with short sine wave sweep)
+    this._play('sawtooth', 300, 80, 0.12, 0.16);
+    this._play('sine', 400, 150, 0.08, 0.10);
+  }
   playFreeze() {
     // Layer 1: Sparkling high glass chime 1 (Sine glide)
     this._play('sine', 880, 1500, 0.1, 0.25);
