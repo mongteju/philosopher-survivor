@@ -399,95 +399,43 @@ body {
   width: 100%;
 }
 
-/* Cream-toned RPG Horizontal Skill Choice Card Layout */
+/* Cream-toned RPG Horizontal Skill Choice Card Layout - 2D Casual Cartoon Style */
 .choice-card-horizontal {
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 20px;
-  background: #fdf5e6; /* Fallback Cream/Beige tone */
-  border: 3px solid #5c4033; /* Thick brown border */
+  background: #FFFDF6 !important;
+  border: 3px solid #231F20 !important;
   border-radius: 16px;
   padding: 18px 22px;
   cursor: pointer;
   text-align: left;
-  transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
   width: 100%;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  box-shadow: 4px 4px 0px #231F20 !important;
 }
 
-/* Stunning foil gloss-shine sweeping sheen animation across cards */
-.choice-card-horizontal::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -150%;
-  width: 40%;
-  height: 100%;
-  background: linear-gradient(
-    to right,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.6) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  transform: skewX(-25deg);
-  transition: none;
-  pointer-events: none;
-}
-
-.choice-card-horizontal:hover::after,
-.choice-card-horizontal.keyboard-selected::after {
-  left: 150%;
-  transition: left 0.85s ease-in-out;
-}
-
-/* Category-specific card background styling */
+/* Category-specific card border-left point color styling */
 .choice-card-horizontal.choice-card-weapon {
-  background: linear-gradient(135deg, #fff0f0, #ffe5e5) !important;
-  border: 2px solid rgba(255, 107, 107, 0.45) !important;
-  border-left: 6px solid #ff6b6b !important;
-  color: #2d3436 !important;
+  border-left: 8px solid #FF4D4D !important;
 }
 .choice-card-horizontal.choice-card-passive {
-  background: linear-gradient(135deg, #f0f8ff, #e6f2ff) !important;
-  border: 2px solid rgba(116, 185, 255, 0.45) !important;
-  border-left: 6px solid #74b9ff !important;
-  color: #2d3436 !important;
+  border-left: 8px solid #3B82F6 !important;
 }
 
 .choice-card-horizontal.heal-card {
-  border-left: 6px solid #2ecc71;
+  border-left: 8px solid #2ecc71 !important;
 }
 
-/* Hover and active glow states */
-.choice-card-horizontal.choice-card-weapon:hover,
-.choice-card-horizontal.choice-card-weapon.keyboard-selected {
-  background: linear-gradient(135deg, #ffe5e5, #ffd3d3) !important;
-  border-color: #ff6b6b !important;
-  box-shadow: 0 0 15px rgba(255, 107, 107, 0.35) !important;
-  transform: translateY(-2px) scale(1.015);
-  animation: pulse-border-weapon 1.5s infinite alternate ease-in-out;
-}
-
-.choice-card-horizontal.choice-card-passive:hover,
-.choice-card-horizontal.choice-card-passive.keyboard-selected {
-  background: linear-gradient(135deg, #e6f2ff, #d9ebff) !important;
-  border-color: #74b9ff !important;
-  box-shadow: 0 0 15px rgba(116, 185, 255, 0.35) !important;
-  transform: translateY(-2px) scale(1.015);
-  animation: pulse-border-passive 1.5s infinite alternate ease-in-out;
-}
-
-@keyframes pulse-border-weapon {
-  0% { border-color: rgba(255, 107, 107, 0.5); box-shadow: 0 0 8px rgba(255, 107, 107, 0.2); }
-  100% { border-color: #ff6b6b; box-shadow: 0 0 16px rgba(255, 107, 107, 0.4); }
-}
-@keyframes pulse-border-passive {
-  0% { border-color: rgba(116, 185, 255, 0.5); box-shadow: 0 0 8px rgba(116, 185, 255, 0.2); }
-  100% { border-color: #74b9ff; box-shadow: 0 0 16px rgba(116, 185, 255, 0.4); }
+/* Hover and active flat comic offset translation states */
+.choice-card-horizontal:hover,
+.choice-card-horizontal.keyboard-selected {
+  transform: translate(-2px, -2px) !important;
+  box-shadow: 6px 6px 0px #231F20 !important;
 }
 
 .card-left-section {
@@ -501,20 +449,20 @@ body {
   position: relative;
   width: 100px;
   height: 100px;
-  background: linear-gradient(135deg, #f39c12, #d35400);
-  border: 3px solid #5c4033;
+  border: 3px solid #231F20 !important;
   border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: inset 0 2px 5px rgba(0,0,0,0.25);
+  box-shadow: 3px 3px 0px #231F20 !important;
   transition: all 0.25s ease;
 }
 
-.card-icon-box.normal { background: linear-gradient(135deg, #7f8c8d, #34495e); }
-.card-icon-box.rare { background: linear-gradient(135deg, #3498db, #2980b9); }
-.card-icon-box.unique { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
-.card-icon-box.epic { background: linear-gradient(135deg, #f1c40f, #e67e22); }
+/* Flat casual comic tier color classes inside icon boxes */
+.card-icon-box.normal { background: #4B5563 !important; }
+.card-icon-box.rare { background: #A78BFA !important; }
+.card-icon-box.unique { background: #FF7DB4 !important; }
+.card-icon-box.epic { background: #FFD13B !important; }
 
 .card-skill-icon {
   font-size: 78px !important;
@@ -1780,17 +1728,21 @@ button.keyboard-selected,
   z-index: 10000 !important;
 }
 
-/* Levelup Container styles */
+/* Levelup Container styles - 2D Casual Cartoon Webtoon Style Overhaul */
+#levelup-screen {
+  background: #1F1A24 !important;
+  backdrop-filter: none !important;
+}
+
 .levelup-container {
   position: relative;
   max-width: 680px;
   width: 92%;
-  background: var(--bg-card);
-  border: 4px solid #5c4033; /* Thick brown border */
+  background: #FFFDF6 !important;
+  border: 4px solid #231F20 !important;
   border-radius: 28px;
   padding: 32px;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 
-              inset 0 1px 2px rgba(255, 255, 255, 0.1);
+  box-shadow: 6px 6px 0px #231F20 !important;
   text-align: center;
   transform: translateY(20px) scale(0.95);
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -1806,33 +1758,7 @@ button.keyboard-selected,
 
 /* Conic background light rays */
 .ray-light-glow {
-  position: absolute;
-  top: -120px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 320px;
-  height: 320px;
-  border-radius: 50%;
-  background: conic-gradient(
-    from 0deg,
-    rgba(255, 234, 167, 0) 0deg,
-    rgba(255, 234, 167, 0.15) 30deg,
-    rgba(255, 234, 167, 0) 60deg,
-    rgba(255, 234, 167, 0.15) 90deg,
-    rgba(255, 234, 167, 0) 120deg,
-    rgba(255, 234, 167, 0.15) 150deg,
-    rgba(255, 234, 167, 0) 180deg,
-    rgba(255, 234, 167, 0.15) 210deg,
-    rgba(255, 234, 167, 0) 240deg,
-    rgba(255, 234, 167, 0.15) 270deg,
-    rgba(255, 234, 167, 0) 300deg,
-    rgba(255, 234, 167, 0.15) 330deg,
-    rgba(255, 234, 167, 0) 360deg
-  );
-  filter: blur(2px);
-  z-index: 1;
-  animation: rotate-rays 20s linear infinite;
-  pointer-events: none;
+  display: none !important; /* Hide glowing rays to fit the flat 2D cartoon style */
 }
 
 @keyframes rotate-rays {
@@ -1849,7 +1775,7 @@ button.keyboard-selected,
   z-index: 2;
   width: 140px;
   height: 140px;
-  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.5));
+  filter: drop-shadow(4px 4px 0px #231F20);
   animation: mascot-bounce 2s infinite alternate ease-in-out;
 }
 
@@ -1871,16 +1797,16 @@ button.keyboard-selected,
   margin-top: 15px; /* Offset the floating mascot */
   margin-bottom: 8px;
   background: linear-gradient(180deg, #ffdd59 0%, #ffc048 100%);
-  border: 3.5px solid #5c4033;
+  border: 3.5px solid #231F20 !important;
   border-radius: 12px;
   padding: 8px 36px;
   font-family: var(--font-title);
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 900;
   color: #fff;
-  text-shadow: -2px -2px 0 #5c4033, 2px -2px 0 #5c4033, -2px 2px 0 #5c4033, 2px 2px 0 #5c4033,
-               0px 4px 6px rgba(0,0,0,0.4);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.35);
+  -webkit-text-stroke: 1.5px #231F20;
+  text-shadow: 2px 2px 0px #231F20 !important;
+  box-shadow: 4px 4px 0px #231F20 !important;
   display: inline-block;
   white-space: nowrap;
   letter-spacing: 1px;
@@ -1896,20 +1822,20 @@ button.keyboard-selected,
 }
 .levelup-ribbon-title::before {
   left: 10px;
-  border-right-color: #d3a43c;
-  border-top-color: #d3a43c;
+  border-right-color: #231F20 !important;
+  border-top-color: #231F20 !important;
 }
 .levelup-ribbon-title::after {
   right: 10px;
-  border-left-color: #d3a43c;
-  border-top-color: #d3a43c;
+  border-left-color: #231F20 !important;
+  border-top-color: #231F20 !important;
 }
 
 .levelup-instructions {
-  color: #c8d6e5;
-  font-size: 13px;
+  color: #555555 !important;
+  font-size: 13.5px;
+  font-weight: 600;
   margin-bottom: 20px;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
   z-index: 2;
 }
 
@@ -2182,97 +2108,111 @@ button.keyboard-selected,
   text-shadow: none !important;
 }
 
+/* ==============================
+   SKILL SELECTION CARD CONTRAST & LEGIBILITY OVERRIDES
+   ============================== */
+.choice-card-weapon .card-skill-name,
+.choice-card-passive .card-skill-name {
+  color: #2A2A2A !important;
+  font-weight: bold !important;
+  text-shadow: none !important;
+}
+
+.choice-card-weapon .card-skill-desc,
+.choice-card-passive .card-skill-desc {
+  color: #555555 !important;
+  text-shadow: none !important;
+}
+
 .choice-card-weapon .stat-compare,
 .choice-card-passive .stat-compare {
   background: rgba(0, 0, 0, 0.05) !important;
   border: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
 
-/* Rarity Bonus Pill styled with vibrant glowing colors */
+/* Rarity Bonus Pill styled with vibrant cartoon colors */
 .rarity-bonus-pill {
   font-size: 11px;
   font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 2px 8px;
+  border-radius: 6px;
   margin-left: 8px;
   display: inline-block;
   vertical-align: middle;
+  border: 2px solid #231F20 !important;
+  box-shadow: 2px 2px 0px #231F20 !important;
 }
 .choice-card-weapon .rarity-bonus-pill,
 .choice-card-passive .rarity-bonus-pill {
   text-shadow: none !important;
 }
 .rarity-bonus-pill.rare {
-  background-color: rgba(9, 132, 227, 0.12) !important;
-  color: #0984e3 !important;
-  border: 1px solid rgba(9, 132, 227, 0.25) !important;
+  background-color: #A78BFA !important;
+  color: #fff !important;
 }
 .rarity-bonus-pill.unique {
-  background-color: rgba(108, 92, 231, 0.12) !important;
-  color: #6c5ce7 !important;
-  border: 1px solid rgba(108, 92, 231, 0.25) !important;
+  background-color: #FF7DB4 !important;
+  color: #fff !important;
 }
 .rarity-bonus-pill.epic {
-  background-color: rgba(225, 112, 85, 0.12) !important;
-  color: #d63031 !important;
-  border: 1px solid rgba(225, 112, 85, 0.25) !important;
+  background-color: #FFD13B !important;
+  color: #231F20 !important;
 }
 
 .choice-card-weapon .stat-compare-row,
 .choice-card-passive .stat-compare-row {
-  color: #2d3436 !important;
+  color: #2A2A2A !important;
 }
 
 .choice-card-weapon .stat-label-item,
 .choice-card-passive .stat-label-item {
-  color: rgba(0, 0, 0, 0.55) !important;
+  color: rgba(0, 0, 0, 0.65) !important;
   font-weight: 700 !important;
 }
 
 .choice-card-weapon .stat-val-old,
 .choice-card-passive .stat-val-old {
-  color: rgba(0, 0, 0, 0.35) !important;
+  color: rgba(0, 0, 0, 0.45) !important;
   text-decoration: line-through;
 }
 
 .choice-card-weapon .card-lv-badge,
 .choice-card-passive .card-lv-badge {
-  color: #7d6b63 !important;
-  background: rgba(0,0,0,0.06) !important;
-  border: 1px solid rgba(0,0,0,0.08) !important;
+  color: #231F20 !important;
+  background: #FFFDF6 !important;
+  border: 2px solid #231F20 !important;
+  box-shadow: 2px 2px 0px #231F20 !important;
+  font-weight: 800 !important;
 }
 
-/* Beautiful High-Contrast Gold-Sparkling Awakening Card Override */
+/* Beautiful High-Contrast 2D Cartoon Gold-Sparkling Awakening Card Override */
 .choice-card-horizontal.awakening-card {
-  border: 3px dashed #e67e22 !important;
-  box-shadow: 0 0 20px rgba(230, 126, 34, 0.35), inset 0 0 10px rgba(230, 126, 34, 0.08) !important;
-  background: linear-gradient(135deg, #fff9f0, #ffebd1) !important;
-  color: #2d3436 !important;
-  animation: awakening-pulse-new 1.8s infinite alternate ease-in-out !important;
+  border: 4px dashed #FFD13B !important;
+  box-shadow: 4px 4px 0px #231F20 !important;
+  background: #FFFDF6 !important;
+  color: #2A2A2A !important;
+  animation: none !important;
+}
+
+.choice-card-horizontal.awakening-card:hover,
+.choice-card-horizontal.awakening-card.keyboard-selected {
+  transform: translate(-2px, -2px) !important;
+  box-shadow: 6px 6px 0px #231F20 !important;
 }
 
 .choice-card-horizontal.awakening-card .card-skill-name {
   color: #d35400 !important;
   text-shadow: none !important;
+  font-weight: 900 !important;
 }
 
 .choice-card-horizontal.awakening-card .card-skill-desc {
-  color: #4e342e !important;
+  color: #555555 !important;
   text-shadow: none !important;
 }
 
 .choice-card-horizontal.awakening-card .stat-compare-row {
-  color: #2d3436 !important;
-}
-
-.choice-card-horizontal.awakening-card .stat-val-new.highlight {
-  color: #d35400 !important;
-  text-shadow: none !important;
-}
-
-@keyframes awakening-pulse-new {
-  from { box-shadow: 0 0 10px rgba(230,126,34,0.25), inset 0 0 5px rgba(230,126,34,0.05); }
-  to   { box-shadow: 0 0 20px rgba(230,126,34,0.5), inset 0 0 12px rgba(230,126,34,0.12); }
+  color: #2a2a2a !important;
 }
 
 /* Sparkling animated text glitter keyframes and tier rules */
