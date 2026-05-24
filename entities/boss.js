@@ -465,9 +465,13 @@ export class Boss {
           
           const angle = Math.random() * Math.PI * 2;
           const dist = 120 + Math.random() * 100;
+          const bounds = (game && game.bounds) ? game.bounds : 5000;
+          const pad = 110;
+          const zoneX = Math.max(-bounds + pad, Math.min(bounds - pad, player.x + Math.cos(angle) * dist));
+          const zoneY = Math.max(-bounds + pad, Math.min(bounds - pad, player.y + Math.sin(angle) * dist));
           game.ataraxiaZone = {
-            x: player.x + Math.cos(angle) * dist,
-            y: player.y + Math.sin(angle) * dist,
+            x: zoneX,
+            y: zoneY,
             radius: 110
           };
           game.showBossTooltip("🟢 아파테이아: 모든 격정에서 벗어난 고요한 영역(🟢)을 찾으십시오! BGM이 멈추는 평정 속에 안식처가 있습니다.");
@@ -490,11 +494,15 @@ export class Boss {
           this.isPatternActive = true;
           game.medievalDarkness = true;
           game.showBossTooltip("🕯️ 교조주의: 교리가 세상을 어둠으로 덮었습니다! 신앙과 이성의 촛대(🕯️)를 활성화하여 빛을 찾으십시오!");
+          const bounds = (game && game.bounds) ? game.bounds : 5000;
+          const pad = 100;
+          const cX = this.x;
+          const cY = this.y;
           game.candlesticks = [
-            new Candlestick(this.x - 220, this.y - 220, "제1교조: 무조건적 신앙 (Faith)"),
-            new Candlestick(this.x + 220, this.y - 220, "제2교조: 편협한 신념 (Dogma)"),
-            new Candlestick(this.x - 220, this.y + 220, "제3교조: 맹목적 추종 (Conformity)"),
-            new Candlestick(this.x + 220, this.y + 220, "제4교조: 독단적 확신 (Certainty)")
+            new Candlestick(Math.max(-bounds + pad, Math.min(bounds - pad, cX - 220)), Math.max(-bounds + pad, Math.min(bounds - pad, cY - 220)), "제1교조: 무조건적 신앙 (Faith)"),
+            new Candlestick(Math.max(-bounds + pad, Math.min(bounds - pad, cX + 220)), Math.max(-bounds + pad, Math.min(bounds - pad, cY - 220)), "제2교조: 편협한 신념 (Dogma)"),
+            new Candlestick(Math.max(-bounds + pad, Math.min(bounds - pad, cX - 220)), Math.max(-bounds + pad, Math.min(bounds - pad, cY + 220)), "제3교조: 맹목적 추종 (Conformity)"),
+            new Candlestick(Math.max(-bounds + pad, Math.min(bounds - pad, cX + 220)), Math.max(-bounds + pad, Math.min(bounds - pad, cY + 220)), "제4교조: 독단적 확신 (Certainty)")
           ];
           
           // Setup global gimmick

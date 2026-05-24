@@ -119,8 +119,13 @@ export function spawnBossImmediate() {
   this.bossBullets = []; this.warningZones = [];
   this.activeIdols.clear();
 
+  const bounds = this.bounds || 5000;
+  const padding = 150;
+  const spawnX = Math.max(-bounds + padding, Math.min(bounds - padding, this.player.x + 400));
+  const spawnY = Math.max(-bounds + padding, Math.min(bounds - padding, this.player.y));
+
   const boss = new Boss(
-    this.player.x + 400, this.player.y,
+    spawnX, spawnY,
     this.player.level, this.stage.bossName, this.stageIndex
   );
   this.currentBoss = boss;

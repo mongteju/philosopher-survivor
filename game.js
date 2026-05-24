@@ -9,6 +9,43 @@ import {
   dealDamageToEnemy
 } from './game/update.js';
 import { gameDraw, drawStageBackground } from './game/draw.js';
+
+// Polyfill roundRect to avoid silent failures or canvas freezes on older/incompatible browsers
+if (typeof CanvasRenderingContext2D !== 'undefined' && !CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+    if (typeof r === 'undefined') r = 0;
+    if (typeof r === 'number') {
+      r = { tl: r, tr: r, br: r, bl: r };
+    } else if (Array.isArray(r)) {
+      r = { tl: r[0] || 0, tr: r[1] || 0, br: r[2] || 0, bl: r[3] || 0 };
+    } else {
+      r = {
+        tl: r.tl || 0,
+        tr: r.tr || 0,
+        br: r.br || 0,
+        bl: r.bl || 0
+      };
+    }
+    const maxR = Math.min(w / 2, h / 2);
+    const tl = Math.min(maxR, r.tl);
+    const tr = Math.min(maxR, r.tr);
+    const br = Math.min(maxR, r.br);
+    const bl = Math.min(maxR, r.bl);
+
+    this.beginPath();
+    this.moveTo(x + tl, y);
+    this.lineTo(x + w - tr, y);
+    this.arcTo(x + w, y, x + w, y + h, tr);
+    this.lineTo(x + w, y + h - br);
+    this.arcTo(x + w, y + h, x, y + h, br);
+    this.lineTo(x + bl, y + h);
+    this.arcTo(x, y + h, x, y, bl);
+    this.lineTo(x, y + tl);
+    this.arcTo(x, y, x + w, y, tl);
+    this.closePath();
+    return this;
+  };
+}
 import {
   gameEvents,
   updatePauseKeyboardSelection,
