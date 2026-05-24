@@ -162,6 +162,111 @@ class Game {
     this.scroll = 0;
     window.gameInstance = this;
 
+    // ─── POWERFUL DEBUGGER SYSTEM ──────────────────────────────────────
+    window.gameDebug = {
+      instance: this,
+      status: () => {
+        console.table({
+          "isPlaying": this.isPlaying,
+          "isPaused": this.isPaused,
+          "stageIndex": this.stageIndex,
+          "stageName": this.stage ? this.stage.name : 'Unknown',
+          "playerLevel": this.player ? this.player.level : 'N/A',
+          "playerHp": this.player ? `${this.player.hp}/${this.player.maxHp}` : 'N/A',
+          "playerPos": this.player ? `(${Math.round(this.player.x)}, ${Math.round(this.player.y)})` : 'N/A',
+          "cameraPos": `(${Math.round(this.camera.x)}, ${Math.round(this.camera.y)})`,
+          "enemiesCount": this.enemies.length,
+          "currentBoss": this.currentBoss ? this.currentBoss.name : 'None',
+          "gimmickActive": this.gimmickActive,
+          "gimmickTimer": this.gimmickTimer,
+          "gimmickInstruction": this.gimmickInstruction,
+          "lastError": window.gameDebug.lastError || "None"
+        });
+      },
+      resume: () => {
+        this.isPlaying = true;
+        this.isPaused = false;
+        this.lastTime = performance.now();
+        console.log("[Debug] Game forced to play! Loop state reset.");
+        const alertBox = document.getElementById('debug-visual-alert');
+        if (alertBox) alertBox.style.display = 'none';
+      },
+      skipStage: () => {
+        console.log("[Debug] Skipping current stage...");
+        if (this.currentBoss) this.currentBoss.hp = 0;
+        else this.eraSurvivalTime = 60;
+      },
+      killBoss: () => {
+        if (this.currentBoss) {
+          this.currentBoss.hp = 0;
+          console.log("[Debug] Boss instantly killed.");
+        } else {
+          console.log("[Debug] No active boss to kill.");
+        }
+      },
+      heal: () => {
+        if (this.player) {
+          this.player.hp = this.player.maxHp;
+          console.log("[Debug] Player healed to full.");
+        }
+      },
+      spawnBoss: () => {
+        this.spawnBossImmediate();
+        console.log("[Debug] Boss spawned manually.");
+      }
+    };
+
+    // Global Error Catcher to expose silent JavaScript exceptions
+    window.onerror = function(message, source, lineno, colno, error) {
+      const errStr = `${message} at ${source}:${lineno}:${colno}`;
+      window.gameDebug.lastError = errStr;
+      console.error("[Silent Intercept Error]:", errStr, error);
+      
+      let alertBox = document.getElementById('debug-visual-alert');
+      if (!alertBox) {
+        alertBox = document.createElement('div');
+        alertBox.id = 'debug-visual-alert';
+        alertBox.style.cssText = 'position:fixed; bottom:20px; left:20px; background:rgba(255, 71, 87, 0.95); border:2px solid #ff6b81; border-radius:12px; color:#fff; padding:15px; font-family:sans-serif; z-index:999999; max-width:400px; box-shadow:0 10px 30px rgba(0,0,0,0.5); font-size:12px; word-break:break-all;';
+        document.body.appendChild(alertBox);
+      }
+      alertBox.style.display = 'block';
+      alertBox.innerHTML = `<strong>⚠️ 런타임 에러 감지 (Debug Alert)</strong><br><span style="color:#ffeaa7;">${errStr}</span><br><br><small>F12 콘솔창에서 window.gameDebug.status()를 입력해보십시오.</small>`;
+      return false;
+    };
+
+    window.onunhandledrejection = function(event) {
+      const errStr = `Unhandled promise rejection: ${event.reason}`;
+      window.gameDebug.lastError = errStr;
+      console.error("[Silent Intercept Promise]:", errStr);
+      return false;
+    };
+
+    // Heartbeat loop checker
+    let lastPulseTime = Date.now();
+    this._heartbeatPulse = 0;
+    this._lastCheckedPulse = 0;
+    
+    setInterval(() => {
+      const now = Date.now();
+      lastPulseTime = now;
+      
+      const curPulse = this._heartbeatPulse;
+      if (this.isPlaying && this._lastCheckedPulse === curPulse) {
+        console.warn("[Debug Heartbeat] WARNING: Game update loop is FROZEN!");
+        
+        let alertBox = document.getElementById('debug-visual-alert');
+        if (!alertBox) {
+          alertBox = document.createElement('div');
+          alertBox.id = 'debug-visual-alert';
+          alertBox.style.cssText = 'position:fixed; bottom:20px; left:20px; background:rgba(255, 71, 87, 0.95); border:2px solid #ff6b81; border-radius:12px; color:#fff; padding:15px; font-family:sans-serif; z-index:999999; max-width:400px; box-shadow:0 10px 30px rgba(0,0,0,0.5); font-size:12px; word-break:break-all;';
+          document.body.appendChild(alertBox);
+        }
+        alertBox.style.display = 'block';
+        alertBox.innerHTML = `<strong>⚠️ 게임 루프 정지(Freeze) 감지!</strong><br><span style="color:#ffeaa7;">isPlaying 상태이지만 화면 프레임 갱신이 중단되었습니다.</span><br><br><button onclick="window.gameDebug.resume()" style="background:#fff; color:#ff4757; border:none; padding:4px 8px; border-radius:4px; font-weight:bold; cursor:pointer;">루프 강제 복구(Resume)</button>`;
+      }
+      this._lastCheckedPulse = curPulse;
+    }, 3000);
+
     // Custom Stage pattern helpers
     this.candlesticks = [];
     this.nietzcheRelics = [];
@@ -235,12 +340,13 @@ class Game {
   }
 
   loop(timestamp) {
-    const now = performance.now();
-    if (this._lastLoopTime && (now - this._lastLoopTime < 8)) {
-      // Abort duplicate loop calls if a loop is already actively spinning
+    this._heartbeatPulse = (this._heartbeatPulse || 0) + 1;
+    
+    // Abort duplicate ticks in the exact same animation frame to prevent loops from terminating permanently
+    if (this._lastLoopFrameId && this._lastLoopFrameId === timestamp) {
       return;
     }
-    this._lastLoopTime = now;
+    this._lastLoopFrameId = timestamp;
 
     let dt = timestamp - this.lastTime;
     if (isNaN(dt) || dt <= 0) dt = 16.666;
