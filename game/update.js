@@ -274,7 +274,7 @@ export function fireWeapon(id, lvl, stats, awakening) {
   const tierMul = tierMuls[skillTier] || 1.0;
 
   const sizeM = (awakening ? 1.1 : 1.0) * this.player.areaMultiplier * (1 + (tierMul - 1) * 0.5);
-  const dmgM = (awakening ? 1.5 : 1.0) * this.player.dmgMultiplier * tierMul;
+  const dmgM = (awakening ? 1.5 : 1.0) * this.player.dmgMultiplier * tierMul * (1 + (this.player.auraDamageBonus || 0));
 
   if (id === 'fire_projectile') {
     const target = this.getNearestEnemy();
@@ -282,7 +282,7 @@ export function fireWeapon(id, lvl, stats, awakening) {
     const ty = target ? target.y : this.player.y + Math.sin(this.player.faceAngle) * 300;
     const sz = (stats.size || 50) * sizeM;
     const dmg = (stats.dmg || 35) * dmgM;
-    this.projectiles.push(new Projectile(this.player.x, this.player.y, tx, ty, 6, sz, dmg, '#ff4757', 'fire_explosion'));
+    this.projectiles.push(new Projectile(this.player.x, this.player.y, tx, ty, 6 * (1 + (this.player.auraProjSpeedBonus || 0)), sz, dmg, '#ff4757', 'fire_explosion'));
     sfx.playFireShoot();
   }
 
@@ -318,7 +318,7 @@ export function fireWeapon(id, lvl, stats, awakening) {
   if (id === 'fire_sword') {
     const count = (stats.count || 3) * (awakening ? 2 : 1);
     const dmg = (stats.dmg || 55) * dmgM;
-    const spd = stats.speed || 6;
+    const spd = (stats.speed || 6) * (1 + (this.player.auraProjSpeedBonus || 0));
     for (let i = 0; i < count; i++) {
       const angle = (Math.PI * 2 / count) * i;
       const p = new Projectile(
@@ -337,7 +337,7 @@ export function fireWeapon(id, lvl, stats, awakening) {
     const ty = target ? target.y : this.player.y + Math.sin(this.player.faceAngle) * 300;
     const dmg = (stats.dmg || 25) * dmgM;
     const sz = (20 + lvl * 6) * sizeM;
-    const p = new Projectile(this.player.x, this.player.y, tx, ty, stats.speed || 8, sz, dmg, '#00d2d3', 'ice_pierce');
+    const p = new Projectile(this.player.x, this.player.y, tx, ty, (stats.speed || 8) * (1 + (this.player.auraProjSpeedBonus || 0)), sz, dmg, '#00d2d3', 'ice_pierce');
     p.pierceLeft = awakening ? 999 : (stats.pierce || 2);
     p.slowAmount = (stats.slow || 0.35) * (1 + this.player.slowBonus);
     this.projectiles.push(p);
@@ -421,11 +421,12 @@ export function dealDamageToEnemy(e, dmg, proj) {
     return;
   }
 
-  const isCrit = Math.random() < 0.15;
+  const isCrit = Math.random() < (0.15 + (this.player.auraCritChance || 0));
   const finalDmg = Math.floor(dmg * (isCrit ? (1.5 * this.player.critMultiplier) : 1));
   e.hp -= finalDmg;
   this.addDamageText(e.x, e.y - e.size - 10, finalDmg, isCrit ? '#ffd200' : '#fff', isCrit ? 20 : 14, isCrit);
   if (this.player.auraLifesteal > 0) {
     this.player.heal(Math.ceil(finalDmg * this.player.auraLifesteal));
+    this.spawnParticles(e.x, e.y, '#e84118', 4, 6, -3);
   }
 }

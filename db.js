@@ -4,8 +4,8 @@ export const PHILOSOPHY_DB = {
     { id:'fire_projectile', name:'이데아의 불꽃', type:'weapon', maxLevel:4, icon:'🔥',
       desc:'이데아의 빛을 화염 구체로 형상화해 주변 적에게 발사합니다.', quote:'현실은 이데아의 그림자일 뿐이다.',
       stats:[{dmg:35,cd:1400,size:50},{dmg:75,cd:1100,size:75},{dmg:145,cd:850,size:100},{dmg:290,cd:550,size:150}] },
-    { id:'fire_aura', name:'이성의 아우라', type:'weapon', maxLevel:4, icon:'☀️',
-      desc:'뜨거운 이성의 아우라로 주변 적들을 지속해서 불태웁니다.', quote:'이성에 따르라.',
+    { id:'fire_aura', name:'이성의 오라', type:'weapon', maxLevel:4, icon:'☀️',
+      desc:'뜨거운 이성의 오라로 주변 적들을 지속해서 불태웁니다.', quote:'이성에 따르라.',
       stats:[{dmg:16,radius:95,cd:500},{dmg:35,radius:130,cd:450},{dmg:75,radius:165,cd:380},{dmg:140,radius:210,cd:280}] },
     { id:'fire_pillar', name:'은총의 스파크', type:'weapon', maxLevel:4, icon:'⚡',
       desc:'장엄한 은총의 스파크를 소환해 적들에게 광역 심판을 내립니다.', quote:'이성은 신앙 아래 완전해진다.',
@@ -83,43 +83,59 @@ export const TIMELINE = [
 // ─── AURA DATABASE ─────────────────────────────────────────────────
 export const AURA_DB = {
   brilliance: {
-    name:'브릴리언스 오라', icon:'💠', color:'#54a0ff',
-    desc:'공격 시 적을 밀쳐냅니다.',
-    effect:{ knockback: true }
+    name: '브릴리언스 오라',
+    icon: '💠',
+    color: '#54a0ff',
+    desc: '쿨타임이 감소하여 스킬 시전 속도가 대폭 증가합니다.',
+    statsDesc: '스킬 시전 속도 증가'
   },
   devotion: {
-    name:'디보션 오라', icon:'🛡️', color:'#ffd200',
-    desc:'받는 피해를 감소시킵니다.',
-    effect:{ defense: true }
+    name: '디보션 오라',
+    icon: '🛡️',
+    color: '#718093',
+    desc: '하얀색 방패의 신성한 비호로 받는 모든 피해가 감소합니다.',
+    statsDesc: '방어력 증가'
   },
   endurance: {
-    name:'인듀어런스 오라', icon:'⚡', color:'#2ed573',
-    desc:'이동속도와 쿨타임을 감소시킵니다.',
-    effect:{ speed: true, cooldown: true }
+    name: '인듀어런스 오라',
+    icon: '⚡',
+    color: '#ff4757',
+    desc: '붉은색 소용돌이가 휘돌아 이동 속도 및 투사체 속도가 증가합니다.',
+    statsDesc: '이동 및 투사체 속도 증가'
   },
   warsong: {
-    name:'워송 오라', icon:'⚔️', color:'#ff6b35',
-    desc:'기본 공격력을 증가시킵니다.',
-    effect:{ damage: true }
+    name: '워송 배틀 드럼',
+    icon: '🥁',
+    color: '#ff9f43',
+    desc: '전쟁 노래의 배틀 드럼 북소리가 모든 공격력을 대폭 증가시킵니다.',
+    statsDesc: '기본 공격력 증가'
   },
   unholy: {
-    name:'언홀리 오라', icon:'🦇', color:'#a55eea',
-    desc:'이동속도를 높이고 매초 체력을 회복합니다.',
-    effect:{ speed: true, regen: true }
+    name: '언홀리 오라',
+    icon: '🟢',
+    color: '#2ed573',
+    desc: '그림자 역오각형 소용돌이가 생명력을 흡수해 이속과 지속 체력 회복량이 증가합니다.',
+    statsDesc: '이동 속도 및 초당 체력 재생 증가'
   },
   vampiric: {
-    name:'뱀피릭 오라', icon:'🧛', color:'#ff4757',
-    desc:'근접 공격 시 가한 대미지 비례 체력을 흡수합니다.',
-    effect:{ lifesteal: true }
+    name: '뱀파이어릭 오라',
+    icon: '🦇',
+    color: '#a55eea',
+    desc: '박쥐 마법진이 활성화되어 공격 시 입힌 피해의 일부를 체력으로 흡수합니다.',
+    statsDesc: '가한 데미지 비례 체력 흡수'
   },
   thorns: {
-    name:'손스 오라', icon:'🌵', color:'#1dd1a1',
-    desc:'피해를 받으면 일부를 반사합니다.',
-    effect:{ reflect: true }
+    name: '쏜즈 오라',
+    icon: '🌵',
+    color: '#1dd1a1',
+    desc: '가시 덩굴 장벽이 피격당했을 때 입은 피해를 일부 반사합니다.',
+    statsDesc: '받은 데미지 반사'
   },
   trueshot: {
-    name:'트루샷 오라', icon:'🎯', color:'#ffd200',
-    desc:'원거리 공격의 공격력이 증가합니다.',
-    effect:{ rangedDmg: true }
+    name: '트루샷 오라',
+    icon: '🎯',
+    color: '#48dbfb',
+    desc: '화살촉 마법진이 모든 공격의 크리티컬 확률을 비약적으로 높입니다.',
+    statsDesc: '크리티컬 확률 증가'
   }
 };

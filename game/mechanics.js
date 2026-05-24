@@ -1,4 +1,4 @@
-import { PHILOSOPHY_DB, EVOLUTION_STAGES, TIMELINE } from '../db.js';
+import { PHILOSOPHY_DB, EVOLUTION_STAGES, TIMELINE, AURA_DB } from '../db.js';
 import { sfx } from '../audio.js';
 import {
   Enemy,
@@ -149,107 +149,181 @@ export function onBossDefeated(boss) {
 
 export function spawnAuraGacha() {
   this.isPlaying = false;
-  const rVal = Math.random() * 100;
-  let rolledTier = rVal < 5 ? 4 : rVal < 15 ? 3 : rVal < 45 ? 2 : 1;
-
-  const tierNames = ['', '[보통] 신속의 아우라', '[레어] 광풍의 아우라', '[유니크] 지배의 아우라', '[에픽] 영생의 아우라'];
-  const tierDescs = ['',
-    '효과: 이동 속도 +15%',
-    '효과: 이동 속도 +15%, 공격 속도 +15%',
-    '효과: 이동 속도 +15%, 공격 속도 +15%, 주변 적 이동 속도 -25%',
-    '효과: 이동 속도 +15%, 공격 속도 +15%, 주변 적 이동 속도 -25%, 흡혈 +10%'
-  ];
-  const tierColors = ['', '#2ed573', '#54a0ff', '#a55eea', '#ffd200'];
-  const tierIcons = ['', '👣', '⚡', '🌀', '🩸'];
-
-  let statusText = '';
-  if (rolledTier > this.activeAuraTier) {
-    statusText = '상위 등급 아우라를 장착했습니다!';
+  
+  const titleEl = document.querySelector('#gacha-screen h2');
+  const descEl = document.querySelector('#gacha-screen p');
+  
+  if (!this.activeAura) {
+    // First stage clear - 8 Ora Gacha spin
+    if (titleEl) titleEl.textContent = '✨ 사상의 오라 소환 ✨';
+    if (descEl) {
+      descEl.style.display = 'block';
+      descEl.textContent = '보스를 격파하여 획득한 영혼 에너지로 첫 번째 오라를 소환합니다.';
+    }
+    
+    const spinArea = document.getElementById('gacha-spin-area');
+    if (spinArea) spinArea.style.display = 'block';
+    const reelWrap = document.getElementById('gacha-reel-container');
+    if (reelWrap) reelWrap.style.display = 'block';
+    const resultEl = document.getElementById('gacha-result');
+    if (resultEl) resultEl.style.display = 'none';
+    const choiceArea = document.getElementById('gacha-choice-area');
+    if (choiceArea) choiceArea.style.display = 'none';
+    
+    this._gachaChoiceMode = false;
+    this._gachaSpun = false;
+    
+    const spinBtn = document.getElementById('gacha-spin-btn');
+    if (spinBtn) spinBtn.classList.add('keyboard-selected');
+    const closeBtn = document.getElementById('gacha-close-btn');
+    if (closeBtn) closeBtn.classList.remove('keyboard-selected');
   } else {
-    statusText = '현재 아우라가 더 강력합니다. 유지합니다.';
+    // Subsequent stage clears - Upgrade (+1) or Change choice
+    if (titleEl) titleEl.textContent = '⚡ 오라 강화 및 변경 ⚡';
+    if (descEl) {
+      descEl.style.display = 'block';
+      descEl.textContent = '현재 장착한 오라를 더욱 강화하거나, 새로운 오라로 형태를 교체하십시오.';
+    }
+    
+    const spinArea = document.getElementById('gacha-spin-area');
+    if (spinArea) spinArea.style.display = 'none';
+    const reelWrap = document.getElementById('gacha-reel-container');
+    if (reelWrap) reelWrap.style.display = 'none';
+    const resultEl = document.getElementById('gacha-result');
+    if (resultEl) resultEl.style.display = 'none';
+    const choiceArea = document.getElementById('gacha-choice-area');
+    if (choiceArea) choiceArea.style.display = 'block';
+    
+    this._gachaChoiceMode = true;
+    this._gachaChoiceIndex = 0; // Default: Upgrade
+    this._updateAuraChoiceSelection();
+    
+    // Roll/pre-roll the change aura immediately!
+    const auraKeys = Object.keys(AURA_DB);
+    const filtered = auraKeys.filter(k => k !== this.activeAura);
+    const preRolledChangeAura = filtered[Math.floor(Math.random() * filtered.length)];
+    this._gachaPreRolledChangeAura = preRolledChangeAura;
+    
+    const curA = AURA_DB[this.activeAura];
+    const changeA = AURA_DB[preRolledChangeAura];
+    
+    const currentLvlText = this.activeAuraLevel === 1 ? '' : ` +${this.activeAuraLevel - 1}강`;
+    const nextLvlText = `+${this.activeAuraLevel}강`;
+    
+    // Dynamic button titles to avoid static defaults
+    const upBtnText = document.querySelector('#gacha-upgrade-btn div:nth-child(2)');
+    if (upBtnText) upBtnText.textContent = `현재 오라 강화 (${nextLvlText})`;
+    
+    const chBtnText = document.querySelector('#gacha-change-btn div:nth-child(2)');
+    if (chBtnText) chBtnText.textContent = `${changeA.name}로 교체`;
+    
+    const upDesc = document.getElementById('gacha-upgrade-desc');
+    if (upDesc) {
+      upDesc.innerHTML = `<span style="font-size: 18px; font-weight: 850; color: ${curA.color}; display: block; margin-bottom: 12px; text-shadow: 0 0 4px ${curA.color}44;">${curA.icon} ${curA.name}${currentLvlText}</span>` +
+                         `<span style="color: #b7791f; font-weight: 900; font-size: 16.5px;">성능 강화하여 ${nextLvlText} 만들기</span><br>` +
+                         `<span style="font-size: 12.5px; color: #231F20; opacity: 0.85; font-weight: 600; display: inline-block; margin-top: 10px;">[${curA.statsDesc}] 수치가 한 단계 영구 증폭됩니다.</span>`;
+    }
+    const chDesc = document.getElementById('gacha-change-desc');
+    if (chDesc) {
+      chDesc.innerHTML = `<span style="font-size: 18px; font-weight: 850; color: ${changeA.color}; display: block; margin-bottom: 12px; text-shadow: 0 0 4px ${changeA.color}44;">${changeA.icon} ${changeA.name}로 교체</span>` +
+                         `<span style="color: #b7791f; font-weight: 900; font-size: 16.5px;">현재 강화 등급 유지${currentLvlText}</span><br>` +
+                         `<span style="font-size: 12.5px; color: #231F20; opacity: 0.85; font-weight: 600; display: inline-block; margin-top: 10px;">[${changeA.statsDesc}] 효과를 획득합니다.</span>`;
+    }
   }
-
-  this._gachaPendingTier = rolledTier;
-  this._gachaTierNames = tierNames;
-  this._gachaTierDescs = tierDescs;
-  this._gachaTierColors = tierColors;
-  this._gachaAuraIcons = tierIcons;
-  this._gachaStatusText = statusText;
-  this._gachaSpun = false;
-
-  const resultEl = document.getElementById('gacha-result');
-  if (resultEl) { resultEl.style.display = 'none'; }
-  const spinArea = document.getElementById('gacha-spin-area');
-  if (spinArea) spinArea.style.display = 'block';
-  const reelWrap = document.getElementById('gacha-reel-container');
-  if (reelWrap) { reelWrap.style.display = 'block'; }
-  const reel = document.getElementById('gacha-reel');
-  if (reel) { reel.style.transition = 'none'; reel.style.transform = 'translateY(0)'; }
-
+  
   document.getElementById('gacha-screen').classList.add('active');
   sfx.playLevelUp();
-
-  const spinBtn = document.getElementById('gacha-spin-btn');
-  if (spinBtn) spinBtn.classList.add('keyboard-selected');
-  const closeBtn = document.getElementById('gacha-close-btn');
-  if (closeBtn) closeBtn.classList.remove('keyboard-selected');
 }
 
 export function triggerGachaSpin() {
   if (this._gachaSpun) return;
   this._gachaSpun = true;
-  const rolledTier = this._gachaPendingTier;
+  
+  const auraKeys = Object.keys(AURA_DB);
+  const rolledKey = auraKeys[Math.floor(Math.random() * auraKeys.length)];
+  this._gachaPendingAura = rolledKey;
+  
   const reel = document.getElementById('gacha-reel');
-  if (!reel) { this._showGachaResult(rolledTier); return; }
-
+  if (!reel) { this._showGachaResult(rolledKey); return; }
+  
   const itemH = 72;
-  const tierCycle = [1, 2, 3, 4];
-  const labels = { 1: '⚡ 보통', 2: '💎 레어', 3: '🌟 유니크', 4: '👑 에픽' };
-  const attrs = { 1: 'common', 2: 'rare', 3: 'unique', 4: 'epic' };
   const totalItems = 48;
+  
   reel.innerHTML = '';
   for (let i = 0; i < totalItems; i++) {
-    const t = tierCycle[i % 4];
+    const k = auraKeys[i % auraKeys.length];
+    const item = AURA_DB[k];
     const el = document.createElement('div');
     el.className = 'gacha-reel-item';
-    el.setAttribute('data-tier', attrs[t]);
-    el.textContent = labels[t];
+    el.style.color = item.color;
+    el.style.fontWeight = 'bold';
+    el.style.textShadow = `0 0 4px ${item.color}44`;
+    el.textContent = `${item.icon} ${item.name}`;
     reel.appendChild(el);
   }
+  
   let targetIdx = 40;
   for (let j = 40; j < totalItems; j++) {
-    if (tierCycle[j % 4] === rolledTier) targetIdx = j;
+    if (auraKeys[j % auraKeys.length] === rolledKey) targetIdx = j;
   }
+  
   const finalOffset = -(targetIdx * itemH);
   reel.style.transition = 'none'; reel.style.transform = 'translateY(0)';
   void reel.offsetWidth;
   reel.style.transition = 'transform 2.5s cubic-bezier(0.12, 0.04, 0.04, 1)';
   reel.style.transform = `translateY(${finalOffset}px)`;
+  
   const spinArea = document.getElementById('gacha-spin-area');
   if (spinArea) spinArea.style.display = 'none';
   sfx.playEvolve();
-  setTimeout(() => this._showGachaResult(rolledTier), 2700);
+  
+  setTimeout(() => this._showGachaResult(rolledKey), 2700);
 }
 
-export function _showGachaResult(rolledTier) {
-  if (rolledTier > this.activeAuraTier) {
-    this.activeAuraTier = rolledTier;
-    this.applyAuraStats();
-  }
+export function _showGachaResult(rolledKey) {
+  const item = AURA_DB[rolledKey];
+  
+  this.activeAura = rolledKey;
+  this.activeAuraLevel = 1;
+  this.applyAuraStats();
+  
   const reelWrap = document.getElementById('gacha-reel-container');
   if (reelWrap) reelWrap.style.display = 'none';
+  
+  const descEl = document.querySelector('#gacha-screen p');
+  if (descEl) descEl.style.display = 'none'; // Hide the subtitle only after gacha result is shown!
+  
   const gVisual = document.getElementById('gacha-aura-visual');
-  if (gVisual) gVisual.textContent = this._gachaAuraIcons[rolledTier];
+  if (gVisual) {
+    gVisual.textContent = item.icon;
+    gVisual.style.color = item.color;
+    gVisual.style.textShadow = `0 0 20px ${item.color}`;
+  }
   const gTier = document.getElementById('gacha-tier');
-  if (gTier) { gTier.textContent = this._gachaTierNames[rolledTier]; gTier.style.color = this._gachaTierColors[rolledTier]; }
+  if (gTier) {
+    gTier.textContent = `[신규 소환] ${item.name}`;
+    gTier.style.color = item.color;
+  }
   const gDesc = document.getElementById('gacha-desc');
-  if (gDesc) gDesc.textContent = this._gachaTierDescs[rolledTier];
+  if (gDesc) {
+    gDesc.textContent = `효과: ${item.desc}`;
+    gDesc.style.fontSize = '20px';
+    gDesc.style.fontWeight = 'bold';
+    gDesc.style.color = '#231F20';
+    gDesc.style.borderColor = item.color;
+    gDesc.style.boxShadow = `0 4px 15px ${item.color}33`;
+  }
   const gStatus = document.getElementById('gacha-status');
-  if (gStatus) gStatus.textContent = this._gachaStatusText;
+  if (gStatus) {
+    gStatus.textContent = '';
+    gStatus.style.display = 'none';
+  }
+  
   const resultEl = document.getElementById('gacha-result');
   if (resultEl) resultEl.style.display = 'block';
+  
   sfx.playLevelUp();
-
+  
   const spinBtn = document.getElementById('gacha-spin-btn');
   if (spinBtn) spinBtn.classList.remove('keyboard-selected');
   const closeBtn = document.getElementById('gacha-close-btn');
@@ -257,13 +331,200 @@ export function _showGachaResult(rolledTier) {
 }
 
 export function applyAuraStats() {
-  this.player.auraSpeedBonus = 0; this.player.auraCooldownReduction = 0;
-  this.player.auraLifesteal = 0; this.player.auraEnemySlowAura = false;
-  this.player.auraTier = this.activeAuraTier;
-  if (this.activeAuraTier >= 1) this.player.auraSpeedBonus = 0.15;
-  if (this.activeAuraTier >= 2) this.player.auraCooldownReduction = 0.15;
-  if (this.activeAuraTier >= 3) this.player.auraEnemySlowAura = true;
-  if (this.activeAuraTier >= 4) this.player.auraLifesteal = 0.10;
+  if (!this.player) return;
+  
+  this.player.auraSpeedBonus = 0;
+  this.player.auraCooldownReduction = 0;
+  this.player.auraLifesteal = 0;
+  this.player.auraProjSpeedBonus = 0;
+  this.player.auraDamageBonus = 0;
+  this.player.auraDamageReduction = 0;
+  this.player.auraRegenBonus = 0;
+  this.player.auraThornsReflection = 0;
+  this.player.auraCritChance = 0;
+  
+  if (!this.activeAura || this.activeAuraLevel <= 0) return;
+  
+  const lvl = this.activeAuraLevel;
+  const key = this.activeAura;
+  
+  if (key === 'brilliance') {
+    this.player.auraCooldownReduction = lvl * 0.10;
+  } else if (key === 'devotion') {
+    this.player.auraDamageReduction = Math.min(0.75, lvl * 0.10);
+  } else if (key === 'endurance') {
+    this.player.auraSpeedBonus = lvl * 0.10;
+    this.player.auraProjSpeedBonus = lvl * 0.10;
+  } else if (key === 'warsong') {
+    this.player.auraDamageBonus = lvl * 0.15;
+  } else if (key === 'unholy') {
+    this.player.auraSpeedBonus = lvl * 0.08;
+    this.player.auraRegenBonus = lvl * 1.5;
+  } else if (key === 'vampiric') {
+    this.player.auraLifesteal = lvl * 0.06;
+  } else if (key === 'thorns') {
+    this.player.auraThornsReflection = lvl * 0.25;
+  } else if (key === 'trueshot') {
+    this.player.auraCritChance = lvl * 0.12;
+  }
+}
+
+export function _applyAuraUpgrade() {
+  if (!this.activeAura) return;
+  
+  const item = AURA_DB[this.activeAura];
+  const isBlessed = Math.random() < 0.20;
+  
+  if (isBlessed) {
+    this.activeAuraLevel += 2;
+    this.applyAuraStats();
+    
+    // Play celebratory sound effects
+    if (typeof sfx !== 'undefined') {
+      if (sfx.playEvolve) sfx.playEvolve();
+      if (sfx.playLevelUp) sfx.playLevelUp();
+    }
+    
+    // Massive colorful fireworks particles around the player
+    const colors = ['#ffd200', '#ff9f43', '#ff4757', '#54a0ff', '#2ed573', '#a55eea'];
+    colors.forEach(col => {
+      this.spawnParticles(this.player.x, this.player.y, col, 15, 15, -3);
+    });
+    
+    // Gorgeous congratulations text scrolling above player's head
+    this.addDamageText(this.player.x, this.player.y - 120, "🎆 소크라테스의 축복! (+2강 추가 획득) 🎆", "#ffd200", 24, true);
+  } else {
+    this.activeAuraLevel += 1;
+    this.applyAuraStats();
+    if (typeof sfx !== 'undefined' && sfx.playEvolve) sfx.playEvolve();
+  }
+  
+  // Transition to Result Screen
+  this._gachaChoiceMode = false;
+  this._gachaSpun = true; // Safety guard for event handler!
+  
+  const choiceArea = document.getElementById('gacha-choice-area');
+  if (choiceArea) choiceArea.style.display = 'none';
+  
+  const titleEl = document.querySelector('#gacha-screen h2');
+  if (titleEl) titleEl.textContent = '✨ 오라 강화 완료! ✨';
+  
+  const descEl = document.querySelector('#gacha-screen p');
+  if (descEl) descEl.style.display = 'none';
+  
+  const gVisual = document.getElementById('gacha-aura-visual');
+  if (gVisual) {
+    gVisual.textContent = item.icon;
+    gVisual.style.color = item.color;
+    gVisual.style.textShadow = `0 0 20px ${item.color}`;
+  }
+  
+  const gTier = document.getElementById('gacha-tier');
+  if (gTier) {
+    if (isBlessed) {
+      gTier.textContent = `🎆 [소크라테스의 축복!] ${item.name} +${this.activeAuraLevel - 1}강`;
+      gTier.style.color = '#ffd200';
+    } else {
+      gTier.textContent = `[강화 성공] ${item.name} +${this.activeAuraLevel - 1}강`;
+      gTier.style.color = item.color;
+    }
+  }
+  
+  const gDesc = document.getElementById('gacha-desc');
+  if (gDesc) {
+    gDesc.textContent = `효과: ${item.desc} (현재 +${this.activeAuraLevel - 1}강)`;
+    gDesc.style.fontSize = '20px';
+    gDesc.style.fontWeight = 'bold';
+    gDesc.style.color = '#231F20';
+    gDesc.style.borderColor = item.color;
+    gDesc.style.boxShadow = `0 4px 15px ${item.color}33`;
+  }
+  
+  const resultEl = document.getElementById('gacha-result');
+  if (resultEl) resultEl.style.display = 'block';
+  
+  const closeBtn = document.getElementById('gacha-close-btn');
+  if (closeBtn) {
+    closeBtn.textContent = '오라 수락 [Enter]';
+    closeBtn.classList.add('keyboard-selected');
+  }
+  
+  const upBtn = document.getElementById('gacha-upgrade-btn');
+  if (upBtn) upBtn.classList.remove('keyboard-selected');
+  const chBtn = document.getElementById('gacha-change-btn');
+  if (chBtn) chBtn.classList.remove('keyboard-selected');
+}
+
+export function _applyAuraChange() {
+  if (!this.activeAura || !this._gachaPreRolledChangeAura) return;
+  
+  this.activeAura = this._gachaPreRolledChangeAura;
+  this.applyAuraStats();
+  
+  if (typeof sfx !== 'undefined' && sfx.playEvolve) sfx.playEvolve();
+  
+  const item = AURA_DB[this.activeAura];
+  
+  // Transition to Result Screen
+  this._gachaChoiceMode = false;
+  this._gachaSpun = true; // Safety guard for event handler!
+  
+  const choiceArea = document.getElementById('gacha-choice-area');
+  if (choiceArea) choiceArea.style.display = 'none';
+  
+  const titleEl = document.querySelector('#gacha-screen h2');
+  if (titleEl) titleEl.textContent = '✨ 오라 교체 완료! ✨';
+  
+  const descEl = document.querySelector('#gacha-screen p');
+  if (descEl) descEl.style.display = 'none';
+  
+  const gVisual = document.getElementById('gacha-aura-visual');
+  if (gVisual) {
+    gVisual.textContent = item.icon;
+    gVisual.style.color = item.color;
+    gVisual.style.textShadow = `0 0 20px ${item.color}`;
+  }
+  
+  const gTier = document.getElementById('gacha-tier');
+  if (gTier) {
+    const lvlText = this.activeAuraLevel === 1 ? '' : ` +${this.activeAuraLevel - 1}강`;
+    gTier.textContent = `[교체 성공] ${item.name}${lvlText}`;
+    gTier.style.color = item.color;
+  }
+  
+  const gDesc = document.getElementById('gacha-desc');
+  if (gDesc) {
+    const lvlText = this.activeAuraLevel === 1 ? '' : ` +${this.activeAuraLevel - 1}강`;
+    gDesc.textContent = `효과: ${item.desc} (현재${lvlText})`;
+    gDesc.style.fontSize = '20px';
+    gDesc.style.fontWeight = 'bold';
+    gDesc.style.color = '#231F20';
+    gDesc.style.borderColor = item.color;
+    gDesc.style.boxShadow = `0 4px 15px ${item.color}33`;
+  }
+  
+  const resultEl = document.getElementById('gacha-result');
+  if (resultEl) resultEl.style.display = 'block';
+  
+  const closeBtn = document.getElementById('gacha-close-btn');
+  if (closeBtn) {
+    closeBtn.textContent = '오라 수락 [Enter]';
+    closeBtn.classList.add('keyboard-selected');
+  }
+  
+  const upBtn = document.getElementById('gacha-upgrade-btn');
+  if (upBtn) upBtn.classList.remove('keyboard-selected');
+  const chBtn = document.getElementById('gacha-change-btn');
+  if (chBtn) chBtn.classList.remove('keyboard-selected');
+}
+
+export function _updateAuraChoiceSelection() {
+  const upBtn = document.getElementById('gacha-upgrade-btn');
+  const chBtn = document.getElementById('gacha-change-btn');
+  if (upBtn && chBtn) {
+    upBtn.classList.toggle('keyboard-selected', this._gachaChoiceIndex === 0);
+    chBtn.classList.toggle('keyboard-selected', this._gachaChoiceIndex === 1);
+  }
 }
 
 export function resumeFromGacha() {
@@ -651,16 +912,16 @@ export function updatePauseStatusPanel() {
 
   const auraEl = document.getElementById('stat-aura');
   if (auraEl) {
-    if (this.activeAuraTier === 0) {
+    if (!this.activeAura || this.activeAuraLevel <= 0) {
       auraEl.innerHTML = '<span style="color: #95a5a6;">없음</span>';
-    } else if (this.activeAuraTier === 1) {
-      auraEl.innerHTML = '<span style="color: #2ed573; text-shadow: 0 0 4px rgba(46,213,115,0.4); font-weight:bold;">👣 보통 (이속 +15%)</span>';
-    } else if (this.activeAuraTier === 2) {
-      auraEl.innerHTML = '<span style="color: #54a0ff; text-shadow: 0 0 4px rgba(84,160,255,0.4); font-weight:bold;">⚡ 레어 (이속+15%, 쿨감-15%)</span>';
-    } else if (this.activeAuraTier === 3) {
-      auraEl.innerHTML = '<span style="color: #a55eea; text-shadow: 0 0 4px rgba(165,94,234,0.4); font-weight:bold;">🌀 유니크 (이속+쿨감+적감속)</span>';
-    } else if (this.activeAuraTier === 4) {
-      auraEl.innerHTML = '<span style="color: #ffd200; text-shadow: 0 0 6px rgba(255,210,0,0.6); font-weight:bold;">👑 에픽 (이속+쿨감+적감속+흡혈)</span>';
+    } else {
+      const a = AURA_DB[this.activeAura];
+      if (a) {
+        const lvlText = this.activeAuraLevel === 1 ? '' : ` +${this.activeAuraLevel - 1}강`;
+        auraEl.innerHTML = `<span style="color: ${a.color}; text-shadow: 0 0 6px ${a.color}; font-weight:bold;">${a.icon} ${a.name}${lvlText}</span>`;
+      } else {
+        auraEl.innerHTML = '<span style="color: #95a5a6;">없음</span>';
+      }
     }
   }
 

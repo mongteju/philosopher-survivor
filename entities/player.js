@@ -14,7 +14,15 @@ export class Player {
     this.cooldownReduction = 0; this.regenHp = 0; this.regenAccumulator = 0;
     this.xpMultiplier = 1; this.armorReduction = 0; this.critMultiplier = 1;
     this.slowBonus = 0;
-    this.auraSpeedBonus = 0; this.auraCooldownReduction = 0; this.auraLifesteal = 0;
+    this.auraSpeedBonus = 0;
+    this.auraCooldownReduction = 0;
+    this.auraProjSpeedBonus = 0;
+    this.auraDamageBonus = 0;
+    this.auraDamageReduction = 0;
+    this.auraRegenBonus = 0;
+    this.auraLifesteal = 0;
+    this.auraThornsReflection = 0;
+    this.auraCritChance = 0;
     this.auraTier = 0;
     this.lastDirection = 'down';
     this.facing = 'left';
@@ -29,6 +37,16 @@ export class Player {
     this.xpMultiplier = 1;
     this.armorReduction = 0;
     this.critMultiplier = 1;
+    
+    this.auraSpeedBonus = 0;
+    this.auraCooldownReduction = 0;
+    this.auraProjSpeedBonus = 0;
+    this.auraDamageBonus = 0;
+    this.auraDamageReduction = 0;
+    this.auraRegenBonus = 0;
+    this.auraLifesteal = 0;
+    this.auraThornsReflection = 0;
+    this.auraCritChance = 0;
     
     let baseMaxHp = 120;
     const tierMuls = { 'normal': 1.0, 'rare': 1.25, 'unique': 1.55, 'epic': 1.9 };
@@ -57,15 +75,31 @@ export class Player {
     if (window.gameInstance && window.gameInstance.uberMenschMode) {
       this.dmgMultiplier *= 5;
     }
+    
+    if (window.gameInstance && typeof window.gameInstance.applyAuraStats === 'function') {
+      window.gameInstance.applyAuraStats();
+    }
   }
   get effectiveSpeed() { return this.speed * (1 + this.auraSpeedBonus); }
   takeDamage(dmg, game) {
     if (this.isInvincible) return;
-    const reduced = Math.max(1, Math.floor(dmg * (1 - this.armorReduction)));
+    const reduced = Math.max(1, Math.floor(dmg * (1 - this.armorReduction) * (1 - (this.auraDamageReduction || 0))));
     this.hp = Math.max(0, this.hp - reduced);
     game.addDamageText(this.x, this.y - 40, reduced, '#ff6b81', 16, false);
     this.isInvincible = true; this.invincibilityFlash = 800;
     setTimeout(() => { this.isInvincible = false; this.invincibilityFlash = 0; }, 800);
+    
+    // Thorns Aura reflection
+    if (this.auraThornsReflection > 0 && game && game.enemies) {
+      const reflectDmg = Math.ceil(reduced * this.auraThornsReflection);
+      game.enemies.forEach(e => {
+        if (Math.hypot(e.x - this.x, e.y - this.y) < 180 && e.hp > 0) {
+          game.dealDamageToEnemy(e, reflectDmg);
+          game.spawnParticles(e.x, e.y, '#1dd1a1', 3, 5, -2);
+        }
+      });
+    }
+    
     if (this.hp <= 0) game.gameOver();
   }
   heal(amt) { this.hp = Math.min(this.maxHp, this.hp + amt); }
@@ -111,9 +145,10 @@ export class Player {
     const bounds = (window.gameInstance && window.gameInstance.bounds) ? window.gameInstance.bounds : 5000;
     this.x = Math.max(-bounds, Math.min(bounds, this.x));
     this.y = Math.max(-bounds, Math.min(bounds, this.y));
-    if (this.regenHp > 0) {
+    const totalRegen = this.regenHp + (this.auraRegenBonus || 0);
+    if (totalRegen > 0) {
       this.regenAccumulator += dt;
-      if (this.regenAccumulator >= 1000) { this.heal(this.regenHp); this.regenAccumulator = 0; }
+      if (this.regenAccumulator >= 1000) { this.heal(totalRegen); this.regenAccumulator = 0; }
     }
   }
   draw(ctx, camera) {
@@ -141,170 +176,291 @@ export class Player {
 
 
     // ─── Drawing active auras at player's feet ─────────────────────────────
-    if (this.auras) {
+    const game = window.gameInstance;
+    if (game && game.activeAura && game.activeAuraLevel > 0) {
+      const auraKey = game.activeAura;
+      const lvl = game.activeAuraLevel;
       const time = performance.now();
-      for (const [key, lvl] of Object.entries(this.auras)) {
-        if (lvl <= 0) continue;
+      const radius = 60 + lvl * 10;
+      
+      ctx.save();
+      ctx.shadowBlur = 15 + Math.sin(time * 0.005) * 5;
+      
+      // 1. BRILLIANCE AURA (푸른색 마법진 회전 + 푸른빛 아지랑이)
+      if (auraKey === 'brilliance') {
+        ctx.strokeStyle = 'rgba(84, 160, 255, 0.75)';
+        ctx.shadowColor = '#54a0ff';
         
-        const db = AURA_DB[key];
-        if (!db) continue;
-        
+        // Rotating outer circle
         ctx.save();
-        const radius = 80 + lvl * 15;
-        ctx.strokeStyle = db.color;
-        ctx.lineWidth = 2;
-        ctx.shadowColor = db.color;
-        ctx.shadowBlur = 10 + Math.sin(time * 0.005) * 4;
+        ctx.translate(rx, ry);
+        ctx.rotate(time * 0.0006);
+        ctx.lineWidth = 2.5;
         
-        // Soft pulsing fill
-        ctx.fillStyle = db.color + "11";
+        // Inner complex star
         ctx.beginPath();
-        ctx.arc(rx, ry, radius);
-        ctx.fill();
+        for (let i = 0; i < 8; i++) {
+          const a = (Math.PI * 2 / 8) * i;
+          const r = i % 2 === 0 ? radius : radius * 0.5;
+          ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+        }
+        ctx.closePath();
+        ctx.stroke();
         
-        // Decorative concentric dashed ring
-        ctx.setLineDash([4, 4]);
+        // Geometric rings
         ctx.beginPath();
-        ctx.arc(rx, ry, radius, time * 0.0005, time * 0.0005 + Math.PI * 2);
+        ctx.arc(0, 0, radius - 10, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+        
+        // Rising blue hazes
+        ctx.fillStyle = 'rgba(84, 160, 255, 0.6)';
+        for (let i = 0; i < 4; i++) {
+          const seed = i * 250;
+          const pct = ((time + seed) % 1500) / 1500;
+          const x = rx + Math.sin(time * 0.002 + i) * 15;
+          const y = ry + this.size - pct * 55;
+          ctx.beginPath();
+          ctx.arc(x, y, (1 - pct) * 5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      
+      // 2. DEVOTION AURA (하얀색 방패 문양 마법진 + 노란색 원형 이펙트)
+      else if (auraKey === 'devotion') {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.shadowColor = '#ffffff';
+        
+        // Outer rotating shielding rings
+        ctx.save();
+        ctx.translate(rx, ry);
+        ctx.rotate(-time * 0.0004);
+        
+        // Draw 3 shield emblems along the ring
+        for (let i = 0; i < 3; i++) {
+          const a = (Math.PI * 2 / 3) * i;
+          ctx.save();
+          ctx.translate(Math.cos(a) * radius, Math.sin(a) * radius);
+          ctx.rotate(a + Math.PI / 2);
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+          ctx.beginPath();
+          ctx.moveTo(-5, -6); ctx.lineTo(5, -6); ctx.lineTo(4, 2); ctx.lineTo(0, 6); ctx.lineTo(-4, 2);
+          ctx.closePath(); ctx.fill();
+          ctx.restore();
+        }
+        
+        // Concentric white line
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.stroke();
+        ctx.restore();
+        
+        // Yellow feet ring pulsing
+        ctx.strokeStyle = 'rgba(255, 210, 0, 0.8)';
+        ctx.shadowColor = '#ffd200';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        const pulseR = radius - 15 + Math.sin(time * 0.01) * 6;
+        ctx.arc(rx, ry, pulseR, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      
+      // 3. ENDURANCE AURA (붉은색 부족 문양 소용돌이 + 붉은색 원형 이펙트)
+      else if (auraKey === 'endurance') {
+        ctx.strokeStyle = 'rgba(255, 71, 87, 0.8)';
+        ctx.shadowColor = '#ff4757';
+        
+        // Rapid rotating tribal swirl
+        ctx.save();
+        ctx.translate(rx, ry);
+        ctx.rotate(time * 0.0015);
+        ctx.lineWidth = 3;
+        
+        // Draw 6 claw-like tribal curves
+        for (let i = 0; i < 6; i++) {
+          ctx.rotate(Math.PI / 3);
+          ctx.beginPath();
+          ctx.moveTo(radius * 0.3, 0);
+          ctx.quadraticCurveTo(radius * 0.6, radius * 0.4, radius, 0);
+          ctx.stroke();
+        }
+        ctx.restore();
+        
+        // Pulsing red feet circle
+        ctx.strokeStyle = 'rgba(255, 71, 87, 0.45)';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(rx, ry, radius + 8, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      
+      // 4. WARSONG BATTLE DRUM (주황색 작은 원형 이펙트 + 소리 파동)
+      else if (auraKey === 'warsong') {
+        ctx.strokeStyle = 'rgba(255, 159, 67, 0.8)';
+        ctx.shadowColor = '#ff9f43';
+        
+        // Pulsing small orange circles
+        const rSmall = 35 + Math.sin(time * 0.008) * 8;
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.arc(rx, ry, rSmall, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([6, 10]);
+        ctx.beginPath();
+        ctx.arc(rx, ry, rSmall + 15, 0, Math.PI * 2);
         ctx.stroke();
         ctx.setLineDash([]);
         
-        // Geometric motifs
-        if (key === 'brilliance') {
-          ctx.beginPath();
-          const rotateAngle = time * 0.0008;
-          for (let i = 0; i < 6; i++) {
-            const angle = rotateAngle + (Math.PI * 2 / 6) * i;
-            const x = rx + Math.cos(angle) * (radius - 12);
-            const y = ry + Math.sin(angle) * (radius - 12);
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-          }
-          ctx.closePath();
-          ctx.stroke();
-          
-          ctx.beginPath();
-          for (let i = 0; i < 6; i++) {
-            const angle = rotateAngle + (Math.PI * 2 / 6) * i + Math.PI / 3;
-            const x = rx + Math.cos(angle) * (radius - 12);
-            const y = ry + Math.sin(angle) * (radius - 12);
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-          }
-          ctx.closePath();
-          ctx.stroke();
-        } 
-        else if (key === 'unholy') {
-          ctx.beginPath();
-          const rotateAngle = -time * 0.0006;
-          for (let i = 0; i < 5; i++) {
-            const starIdx = (i * 2) % 5;
-            const angle = rotateAngle + (Math.PI * 2 / 5) * starIdx;
-            const x = rx + Math.cos(angle) * (radius - 10);
-            const y = ry + Math.sin(angle) * (radius - 10);
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-          }
-          ctx.closePath();
-          ctx.stroke();
-        }
-        else if (key === 'thorns') {
-          const spikeCount = 18;
-          ctx.beginPath();
-          const rotateAngle = time * 0.0003;
-          for (let i = 0; i < spikeCount * 2; i++) {
-            const angle = rotateAngle + (Math.PI * 2 / (spikeCount * 2)) * i;
-            const isSpike = i % 2 === 0;
-            const r = isSpike ? radius + 8 : radius - 6;
-            const x = rx + Math.cos(angle) * r;
-            const y = ry + Math.sin(angle) * r;
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-          }
-          ctx.closePath();
-          ctx.stroke();
-        }
-        else if (key === 'warsong') {
-          const pulse = Math.sin(time * 0.015) * 6;
-          ctx.strokeStyle = db.color;
-          ctx.beginPath();
-          ctx.arc(rx, ry, radius - 15 + pulse, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.arc(rx, ry, radius - 30 - pulse, 0, Math.PI * 2);
-          ctx.stroke();
-        }
-        else if (key === 'devotion') {
-          ctx.beginPath();
-          ctx.arc(rx, ry, radius - 15, 0, Math.PI * 2);
-          ctx.stroke();
-          
-          const rotateAngle = time * 0.0004;
-          for (let i = 0; i < 4; i++) {
-            const angle = rotateAngle + (Math.PI / 2) * i;
-            const cx = rx + Math.cos(angle) * radius;
-            const cy = ry + Math.sin(angle) * radius;
-            ctx.fillStyle = db.color;
-            ctx.beginPath();
-            ctx.arc(cx, cy, 6, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        }
-        else if (key === 'trueshot') {
-          const rotateAngle = time * 0.0005;
-          for (let i = 0; i < 4; i++) {
-            const angle = rotateAngle + (Math.PI / 2) * i;
-            const x1 = rx + Math.cos(angle) * (radius - 16);
-            const y1 = ry + Math.sin(angle) * (radius - 16);
-            const x2 = rx + Math.cos(angle) * (radius + 16);
-            const y2 = ry + Math.sin(angle) * (radius + 16);
-            
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.stroke();
-            
-            const tipAngle1 = angle + Math.PI - 0.4;
-            const tipAngle2 = angle + Math.PI + 0.4;
-            ctx.beginPath();
-            ctx.moveTo(x2 + Math.cos(tipAngle1) * 10, y2 + Math.sin(tipAngle1) * 10);
-            ctx.lineTo(x2);
-            ctx.lineTo(x2 + Math.cos(tipAngle2) * 10, y2 + Math.sin(tipAngle2) * 10);
-            ctx.stroke();
-          }
-        }
-        else if (key === 'endurance') {
-          const rotateAngle = time * 0.0015;
-          for (let i = 0; i < 3; i++) {
-            const angle = rotateAngle + (Math.PI * 2 / 3) * i;
-            const lx = rx + Math.cos(angle) * radius;
-            const ly = ry + Math.sin(angle) * radius;
-            ctx.beginPath();
-            ctx.moveTo(lx - 5, ly - 8);
-            ctx.lineTo(lx + 2, ly - 2);
-            ctx.lineTo(lx - 4, ly + 2);
-            ctx.lineTo(lx + 5, ly + 8);
-            ctx.stroke();
-          }
-        }
-        else if (key === 'vampiric') {
-          const rotateAngle = time * 0.0007;
-          for (let i = 0; i < 2; i++) {
-            const angle = rotateAngle + Math.PI * i;
-            const mx = rx + Math.cos(angle) * radius;
-            const my = ry + Math.sin(angle) * radius;
-            
-            ctx.beginPath();
-            ctx.arc(mx, my, 8, angle - 1.2, angle + 1.2);
-            ctx.stroke();
-            
-            ctx.beginPath();
-            ctx.arc(mx - Math.cos(angle)*4, my - Math.sin(angle)*4, 10, angle - 0.8, angle + 0.8);
-            ctx.stroke();
-          }
-        }
+        // Soundwave rings expanding
+        ctx.save();
+        ctx.translate(rx, ry);
+        const waveProgress = (time % 1200) / 1200;
+        ctx.strokeStyle = `rgba(255, 159, 67, ${1 - waveProgress})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * waveProgress, 0, Math.PI * 2);
+        ctx.stroke();
         ctx.restore();
       }
+      
+      // 5. UNHOLY AURA (녹색 역오각형 소용돌이 + 녹색 원형 이펙트)
+      else if (auraKey === 'unholy') {
+        ctx.strokeStyle = 'rgba(46, 213, 115, 0.85)';
+        ctx.shadowColor = '#2ed573';
+        
+        // Reverse pentagram
+        ctx.save();
+        ctx.translate(rx, ry);
+        ctx.rotate(-time * 0.0005);
+        ctx.lineWidth = 2.2;
+        
+        ctx.beginPath();
+        const pentRadius = radius * 0.95;
+        for (let i = 0; i < 5; i++) {
+          const starIdx = (i * 2) % 5;
+          const a = (Math.PI * 2 / 5) * starIdx - Math.PI / 2 + Math.PI; // Reverse rotation
+          ctx.lineTo(Math.cos(a) * pentRadius, Math.sin(a) * pentRadius);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        
+        // Outer concentric ring
+        ctx.beginPath();
+        ctx.arc(0, 0, pentRadius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+        
+        // Healing green sparkles rising
+        ctx.fillStyle = 'rgba(46, 213, 115, 0.6)';
+        for (let i = 0; i < 3; i++) {
+          const seed = i * 400;
+          const pct = ((time + seed) % 1800) / 1800;
+          const px = rx + Math.cos(time * 0.001 + i * 2) * (radius * 0.5);
+          const py = ry + this.size - pct * 45;
+          ctx.beginPath();
+          ctx.arc(px, py, (1 - pct) * 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      
+      // 6. VAMPIRIC AURA (보라색 박쥐 문양 + 흡혈)
+      else if (auraKey === 'vampiric') {
+        ctx.strokeStyle = 'rgba(165, 94, 234, 0.85)';
+        ctx.shadowColor = '#a55eea';
+        
+        // Rotating bats ring
+        ctx.save();
+        ctx.translate(rx, ry);
+        ctx.rotate(time * 0.0004);
+        
+        // Draw 4 bat designs
+        ctx.fillStyle = 'rgba(165, 94, 234, 0.7)';
+        for (let i = 0; i < 4; i++) {
+          const a = (Math.PI / 2) * i;
+          ctx.save();
+          ctx.translate(Math.cos(a) * radius, Math.sin(a) * radius);
+          ctx.rotate(a + Math.PI / 2);
+          
+          // Small procedural bat shape
+          ctx.beginPath();
+          ctx.moveTo(0, -4);
+          ctx.quadraticCurveTo(-6, -10, -12, -4);
+          ctx.quadraticCurveTo(-8, 4, 0, 1);
+          ctx.quadraticCurveTo(8, 4, 12, -4);
+          ctx.quadraticCurveTo(6, -10, 0, -4);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
+        
+        // Center ring
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.stroke();
+        ctx.restore();
+      }
+      
+      // 7. THORNS AURA (초록색 가시나무 덩굴 + 가시덤불 이펙트)
+      else if (auraKey === 'thorns') {
+        ctx.strokeStyle = 'rgba(29, 209, 161, 0.85)';
+        ctx.shadowColor = '#1dd1a1';
+        
+        // Thorny vine winding
+        ctx.save();
+        ctx.translate(rx, ry);
+        ctx.rotate(time * 0.0003);
+        ctx.lineWidth = 2.5;
+        
+        // Draw thorny spikes protruding outward
+        ctx.beginPath();
+        for (let i = 0; i < 16; i++) {
+          const a = (Math.PI * 2 / 16) * i;
+          const isSpike = i % 2 === 0;
+          const r = isSpike ? radius + 10 : radius - 5;
+          ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        
+        // Concentric vine line
+        ctx.beginPath();
+        ctx.arc(0, 0, radius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+      
+      // 8. TRUESHOT AURA (하늘색 깃털과 화살촉 + 크리티컬)
+      else if (auraKey === 'trueshot') {
+        ctx.strokeStyle = 'rgba(72, 219, 251, 0.85)';
+        ctx.shadowColor = '#48dbfb';
+        
+        // Feathers and arrowheads rotating ring
+        ctx.save();
+        ctx.translate(rx, ry);
+        ctx.rotate(time * 0.0005);
+        
+        // Draw 4 arrowheads pointing outward
+        ctx.fillStyle = 'rgba(72, 219, 251, 0.7)';
+        for (let i = 0; i < 4; i++) {
+          const a = (Math.PI / 2) * i;
+          ctx.save();
+          ctx.translate(Math.cos(a) * radius, Math.sin(a) * radius);
+          ctx.rotate(a);
+          
+          // Arrowhead
+          ctx.beginPath();
+          ctx.moveTo(8, 0); ctx.lineTo(-4, -5); ctx.lineTo(-1, 0); ctx.lineTo(-4, 5);
+          ctx.closePath(); ctx.fill();
+          ctx.restore();
+        }
+        
+        // Fine cyan lines
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.stroke();
+        ctx.restore();
+      }
+      
+      ctx.restore();
     }
 
     // ─── Drawing Reason's Aura Glowing Red Ring of Fire ───────────────────

@@ -190,7 +190,7 @@ export function gameEvents() {
     const gachaScreen = document.getElementById('gacha-screen');
     if (gachaScreen && gachaScreen.classList.contains('active')) {
       if (this._gachaChoiceMode) {
-        if (k === 'arrowup' || k === 'w' || k === 'arrowdown' || k === 's') {
+        if (k === 'arrowup' || k === 'w' || k === 'arrowdown' || k === 's' || k === 'arrowleft' || k === 'a' || k === 'arrowright' || k === 'd') {
           e.preventDefault();
           this._gachaChoiceIndex = this._gachaChoiceIndex === 0 ? 1 : 0;
           this._updateAuraChoiceSelection();
@@ -276,6 +276,22 @@ export function gameEvents() {
   document.getElementById('gacha-close-btn').addEventListener('click', () => this.resumeFromGacha());
   const spinBtn = document.getElementById('gacha-spin-btn');
   if (spinBtn) spinBtn.addEventListener('click', () => this.triggerGachaSpin());
+  const upgradeBtn = document.getElementById('gacha-upgrade-btn');
+  if (upgradeBtn) {
+    upgradeBtn.addEventListener('click', () => {
+      this._gachaChoiceIndex = 0;
+      this._updateAuraChoiceSelection();
+      this._applyAuraUpgrade();
+    });
+  }
+  const changeBtn = document.getElementById('gacha-change-btn');
+  if (changeBtn) {
+    changeBtn.addEventListener('click', () => {
+      this._gachaChoiceIndex = 1;
+      this._updateAuraChoiceSelection();
+      this._applyAuraChange();
+    });
+  }
   document.getElementById('gameover-retry-btn').addEventListener('click', () => location.reload());
   document.getElementById('restart-game-btn').addEventListener('click', () => location.reload());
   document.getElementById('pause-resume-btn').addEventListener('click', () => this.togglePause());

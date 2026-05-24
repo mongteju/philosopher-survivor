@@ -43,7 +43,10 @@ import {
   spawnXpFrags,
   spawnExistentialWords,
   gameOver,
-  triggerEnding
+  triggerEnding,
+  _applyAuraUpgrade,
+  _applyAuraChange,
+  _updateAuraChoiceSelection
 } from './game/mechanics.js';
 
 // ─── GAME CLASS ──────────────────────────────────────────────────────
@@ -108,6 +111,7 @@ class Game {
     window.addEventListener('click', playBgmOnce);
     window.addEventListener('keydown', playBgmOnce);
 
+    this.activeAura = null; this.activeAuraLevel = 0;
     this._gachaSpun = false; this._gachaPendingTier = 1;
     this._gachaTierNames = []; this._gachaTierDescs = []; this._gachaTierColors = [];
     this._gachaAuraIcons = []; this._gachaStatusText = '';
@@ -186,12 +190,32 @@ class Game {
   }
 
   loop(timestamp) {
-    if (!this.isPlaying) return;
+    const now = performance.now();
+    if (this._lastLoopTime && (now - this._lastLoopTime < 8)) {
+      // Abort duplicate loop calls if a loop is already actively spinning
+      return;
+    }
+    this._lastLoopTime = now;
+
     let dt = timestamp - this.lastTime;
     if (dt > 100) dt = 16;
     this.lastTime = timestamp;
-    this.update(dt);
-    this.draw();
+
+    if (this.isPlaying) {
+      this.update(dt);
+      this.draw();
+    } else {
+      // While paused or in modal, only animate particles and damage texts
+      if (this.particles) {
+        this.particles.forEach(p => p.update(dt));
+        this.particles = this.particles.filter(p => p.life > 0);
+      }
+      if (this.damageTexts) {
+        this.damageTexts.forEach(d => d.update(dt));
+        this.damageTexts = this.damageTexts.filter(d => d.life > 0);
+      }
+      this.draw();
+    }
     requestAnimationFrame(t => this.loop(t));
   }
 
@@ -224,6 +248,9 @@ class Game {
   _showGachaResult(rolledTier) { _showGachaResult.call(this, rolledTier); }
   applyAuraStats() { applyAuraStats.call(this); }
   resumeFromGacha() { resumeFromGacha.call(this); }
+  _applyAuraUpgrade() { _applyAuraUpgrade.call(this); }
+  _applyAuraChange() { _applyAuraChange.call(this); }
+  _updateAuraChoiceSelection() { _updateAuraChoiceSelection.call(this); }
   triggerEpicEvolutionUpgrade() { triggerEpicEvolutionUpgrade.call(this); }
   triggerLevelUp() { triggerLevelUp.call(this); }
   applyCardSelection(upgrade, isAwakening) { applyCardSelection.call(this, upgrade, isAwakening); }
