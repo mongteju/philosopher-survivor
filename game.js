@@ -206,7 +206,8 @@ class Game {
     this._lastLoopTime = now;
 
     let dt = timestamp - this.lastTime;
-    if (dt > 100) dt = 16;
+    if (isNaN(dt) || dt <= 0) dt = 16.666;
+    if (dt > 100) dt = 16.666;
     this.lastTime = timestamp;
 
     if (this.isPlaying) {

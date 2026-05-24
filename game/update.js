@@ -3,6 +3,9 @@ import { sfx } from '../audio.js';
 import { Projectile, MagnetItem } from '../entities.js';
 
 export function gameUpdate(dt) {
+  if (isNaN(dt) || dt <= 0) {
+    dt = 16.666;
+  }
   dt *= this.timeScale;
   this.realSurvivalTimer += dt / 1000;
   this.cumulativeSurvivalTime += dt / 1000;

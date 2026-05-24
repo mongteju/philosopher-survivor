@@ -1233,12 +1233,14 @@ export function applyUniqueHitAction(stageIndex) {
   } else if (stageIndex === 3) {
     const boss = this.currentBoss;
     if (boss) {
-      const dx = this.player.x - boss.x;
-      const dy = this.player.y - boss.y;
+      let dx = this.player.x - boss.x;
+      let dy = this.player.y - boss.y;
+      if (isNaN(dx)) dx = 0;
+      if (isNaN(dy)) dy = 0;
       const dist = Math.hypot(dx, dy) || 1;
       this.player.knockbackTimer = 600;
-      this.player.knockbackX = (dx / dist) * 18;
-      this.player.knockbackY = (dy / dist) * 18;
+      this.player.knockbackX = isNaN(dx / dist) ? 0 : (dx / dist) * 18;
+      this.player.knockbackY = isNaN(dy / dist) ? 0 : (dy / dist) * 18;
     }
     this.screenShake = 35;
     this.addDamageText(this.player.x, this.player.y - 110, "💥 충격 넉백 (Idol Impact)!", "#ff7675", 16);

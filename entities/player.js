@@ -128,6 +128,18 @@ export class Player {
     document.getElementById('hud-xp-fill').style.width = `${(this.xp / this.maxXp) * 100}%`;
   }
   update(dt, keys, joystickAngle, joystickStrength) {
+    if (isNaN(this.x) || isNaN(this.y)) {
+      this.x = 0;
+      this.y = 0;
+      this.vx = 0;
+      this.vy = 0;
+      console.warn("[NaN Guard] Player position was NaN! Safely reset to (0,0).");
+    }
+    if (isNaN(this.knockbackX) || isNaN(this.knockbackY)) {
+      this.knockbackX = 0;
+      this.knockbackY = 0;
+      console.warn("[NaN Guard] Player knockback velocity was NaN! Safely reset to 0.");
+    }
     if (this.invincibilityFlash > 0) this.invincibilityFlash -= dt;
     this.animTime = (this.animTime || 0) + dt;
 
