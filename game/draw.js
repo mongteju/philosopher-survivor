@@ -12,13 +12,18 @@ export function gameDraw() {
     this.screenShake *= 0.8; if (this.screenShake < 0.5) this.screenShake = 0;
   }
 
-  // Full grayscale filter for Stage 6 (Nietzsche)
-  if (this.stageIndex === 5 && this.currentBoss && !this.uberMenschMode) {
-    ctx.filter = 'grayscale(100%)';
-  } else if (this.prejudiceWave === 3) {
-    ctx.filter = 'contrast(140%) sepia(85%)';
-  } else {
-    ctx.filter = 'none';
+  // Full grayscale/contrast filter for Stage 6 and Prejudice Wave using GPU-accelerated CSS filters
+  const canvasEl = this.canvas;
+  if (canvasEl) {
+    const isGrayscale = !!(this.stageIndex === 5 && this.currentBoss && !this.uberMenschMode);
+    const isPrejudice = !!(this.prejudiceWave === 3);
+
+    if (canvasEl.classList.contains('grayscale-filter') !== isGrayscale) {
+      canvasEl.classList.toggle('grayscale-filter', isGrayscale);
+    }
+    if (canvasEl.classList.contains('prejudice-filter') !== isPrejudice) {
+      canvasEl.classList.toggle('prejudice-filter', isPrejudice);
+    }
   }
 
   // Draw stage background
@@ -50,8 +55,6 @@ export function gameDraw() {
   ctx.save();
   ctx.strokeStyle = themeColor;
   ctx.lineWidth = 5;
-  ctx.shadowColor = themeColor;
-  ctx.shadowBlur = 20;
   ctx.beginPath();
   ctx.rect(left, top, right - left, bottom - top);
   ctx.stroke();
@@ -60,7 +63,6 @@ export function gameDraw() {
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
   ctx.lineWidth = 2;
   ctx.setLineDash([10, 15]);
-  ctx.shadowBlur = 0;
   ctx.beginPath();
   ctx.rect(left + 8, top + 8, right - left - 16, bottom - top - 16);
   ctx.stroke();
@@ -92,7 +94,6 @@ export function gameDraw() {
     ctx.save();
     ctx.strokeStyle = 'rgba(46, 213, 115, 0.8)'; ctx.lineWidth = 4;
     const p = (Math.sin(Date.now() * 0.005) + 1) * 0.5;
-    ctx.shadowColor = '#2ed573'; ctx.shadowBlur = 20;
     ctx.beginPath(); ctx.arc(rx, ry, radius + p * 8, 0, Math.PI * 2); ctx.stroke();
     ctx.fillStyle = 'rgba(46, 213, 115, 0.08)'; ctx.fill();
     
@@ -126,6 +127,34 @@ export function gameDraw() {
     this.nietzcheRelics.forEach(r => r.draw(ctx, this.camera));
   }
 
+  // Draw Kantian Golden Line (도덕의 선)
+  if (this.kantDutyLine) {
+    ctx.save();
+    const ry = this.kantDutyLine.y - camY + H / 2;
+    
+    ctx.strokeStyle = 'rgba(255, 210, 0, 0.75)';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(0, ry);
+    ctx.lineTo(W, ry);
+    ctx.stroke();
+    
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([8, 12]);
+    ctx.beginPath();
+    ctx.moveTo(0, ry);
+    ctx.lineTo(W, ry);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    ctx.fillStyle = '#ffd200';
+    ctx.font = 'bold 12px Share Tech Mono, monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('⚖️ 도덕의 선 (LINE OF DUTY) ⚖️', 20, ry - 8);
+    ctx.restore();
+  }
+
   // Draw Rhythmic Grid Lines
   if (this.gridLines) {
     this.gridLines.forEach(l => l.draw(ctx, this.camera, W, H));
@@ -151,15 +180,16 @@ export function gameDraw() {
     ctx.restore();
   }
 
-  // Draw Cave Idol Blindness Overlay
-  if (this.prejudiceWave === 3) {
+  // Draw Cave Idol Blindness & Gimmick Failure Blindness Overlay
+  if (this.prejudiceWave === 3 || (this.player && this.player.blindedTimer > 0)) {
     ctx.save();
-    ctx.fillStyle = 'rgba(12, 6, 0, 0.88)';
+    ctx.fillStyle = 'rgba(12, 6, 0, 0.9)';
     ctx.fillRect(0, 0, W, H);
     const prx = W / 2, pry = H / 2;
-    const grad = ctx.createRadialGradient(prx, pry, 0, prx, pry, 75);
+    const radius = 65;
+    const grad = ctx.createRadialGradient(prx, pry, 0, prx, pry, radius);
     grad.addColorStop(0, 'rgba(0,0,0,0)');
-    grad.addColorStop(1, 'rgba(0,0,0,0.96)');
+    grad.addColorStop(1, 'rgba(0,0,0,0.98)');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, W, H);
     ctx.restore();
@@ -191,8 +221,6 @@ export function gameDraw() {
         
         ctx.strokeStyle = '#00d2d3';
         ctx.lineWidth = 1.8;
-        ctx.shadowColor = '#00d2d3';
-        ctx.shadowBlur = 12;
 
         // Draw delicate 6-pointed snowflake barbs
         for (let k = 0; k < 6; k++) {
@@ -212,7 +240,6 @@ export function gameDraw() {
         
         // Inner shining ice core
         ctx.fillStyle = '#ffffff';
-        ctx.shadowColor = '#ffffff'; ctx.shadowBlur = 6;
         ctx.beginPath();
         ctx.arc(0, 0, 3, 0, Math.PI * 2);
         ctx.fill();

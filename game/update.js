@@ -8,14 +8,231 @@ export function gameUpdate(dt) {
   this.cumulativeSurvivalTime += dt / 1000;
   if (!this.currentBoss) this.eraSurvivalTime += dt / 1000;
 
-  // Ataraxia safe zone BGM volume drop
-  if (this.ataraxiaZone) {
-    const dZone = Math.hypot(this.player.x - this.ataraxiaZone.x, this.player.y - this.ataraxiaZone.y);
-    if (dZone < this.ataraxiaZone.radius) {
-      this.bgm.volume = 0;
-    } else {
-      this.bgm.volume = this.bgmMuted ? 0 : 0.4;
+  // Update Guide Panel timer
+  if (this.guideTimer && this.guideTimer > 0) {
+    this.guideTimer -= dt;
+    const guideEl = document.getElementById('guide-panel');
+    if (guideEl) {
+      if (this.guideTimer <= 15000) {
+        const phase1 = document.getElementById('guide-phase-1');
+        const phase2 = document.getElementById('guide-phase-2');
+        if (phase1 && phase1.style.display !== 'none') {
+          phase1.style.display = 'none';
+        }
+        if (phase2 && phase2.style.display !== 'block') {
+          phase2.style.display = 'block';
+        }
+      }
+      if (this.guideTimer <= 500) {
+        guideEl.style.opacity = Math.max(0, this.guideTimer / 500);
+      }
+      if (this.guideTimer <= 0) {
+        guideEl.style.display = 'none';
+      }
     }
+  }
+
+  // Auto-hide guide panel when boss appears
+  if (this.currentBoss) {
+    const guideEl = document.getElementById('guide-panel');
+    if (guideEl && guideEl.style.display !== 'none') {
+      guideEl.style.display = 'none';
+      this.guideTimer = 0;
+    }
+  }
+
+  // Update Boss HP Bar Overlay
+  const bossHpContainer = document.getElementById('boss-hp-container');
+  if (bossHpContainer) {
+    if (this.currentBoss && this.currentBoss.hp > 0) {
+      bossHpContainer.style.display = 'block';
+      const nameEl = document.getElementById('boss-hp-name');
+      const valEl = document.getElementById('boss-hp-value');
+      const fillEl = document.getElementById('boss-hp-fill');
+      const shieldEl = document.getElementById('boss-hp-shield');
+
+      if (nameEl) nameEl.textContent = this.currentBoss.name;
+      const displayHp = Math.max(0, this.currentBoss.hp);
+      const displayMax = this.currentBoss.maxHp;
+      const pct = (displayHp / displayMax) * 100;
+      if (fillEl) fillEl.style.width = `${pct}%`;
+      if (valEl) valEl.textContent = `${Math.ceil(displayHp)} / ${Math.ceil(displayMax)} (${Math.ceil(pct)}%)`;
+
+      // Invincibility shield animation overlay
+      if (shieldEl) {
+        shieldEl.style.display = this.currentBoss.isPatternActive ? 'block' : 'none';
+      }
+    } else {
+      bossHpContainer.style.display = 'none';
+    }
+  }
+
+  // Update Side Gimmick Panel
+  const gimmickPanel = document.getElementById('boss-gimmick-panel');
+  if (gimmickPanel) {
+    if (this.gimmickActive && this.gimmickTimer > 0) {
+      gimmickPanel.style.display = 'block';
+      const instrEl = document.getElementById('gimmick-instruction');
+      const fillEl = document.getElementById('gimmick-timer-fill');
+
+      if (instrEl) instrEl.textContent = this.gimmickInstruction;
+      const pct = (this.gimmickTimer / this.gimmickMaxTime) * 100;
+      if (fillEl) fillEl.style.width = `${pct}%`;
+    } else {
+      gimmickPanel.style.display = 'none';
+    }
+  }
+
+  // Update and tick down global Gimmick timer
+  if (this.gimmickActive) {
+    this.gimmickTimer -= dt;
+    if (this.gimmickTimer <= 0) {
+      this.gimmickActive = false;
+      this.gimmickTimer = 0;
+      
+      if (this.player && this.currentBoss) {
+        const b = this.currentBoss;
+        
+        // 2단계 아파테이아 기믹 성공 여부 판정
+        if (this.stageIndex === 1) {
+          const zone = this.ataraxiaZone;
+          const inside = zone && Math.hypot(this.player.x - zone.x, this.player.y - zone.y) < zone.radius;
+          if (inside) {
+            // SUCCESS!
+            b.apatheiaActive = false;
+            b.speed = 1.2;
+            this.ataraxiaZone = null;
+            
+            if (this.bgm) {
+              try { this.bgm.volume = this.bgmMuted ? 0 : 0.4; } catch (err) {}
+            }
+            
+            b.isPatternActive = false;
+            b.isStunned = true;
+            b.stunTimer = 8000;
+            this.showBossTooltip("🛡️ 평정 달성! 아파테이아의 고요 속에서 보스가 무력화되었습니다!");
+            this.addDamageText(b.x, b.y - 70, "✨ 평정 완성! 그로기!", "#2ed573", 24);
+            if (typeof sfx !== 'undefined' && sfx.playLevelUp) sfx.playLevelUp();
+            
+            b.apatheiaTimer = 16000;
+            return;
+          }
+        }
+        
+        // Trigger Gimmick Failure!
+        if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
+        
+        // Take 50% max HP damage
+        const penaltyDmg = Math.ceil(this.player.maxHp * 0.5);
+        this.player.takeDamage(penaltyDmg, this, b);
+        this.addDamageText(this.player.x, this.player.y - 80, `💥 기믹 실패! -${penaltyDmg} HP`, '#ff4757', 24, true);
+        this.showBossTooltip("💥 기믹 실패: 제한 시간 내에 공략하지 못해 치명적인 대미지(최대 체력의 50%)를 입었습니다!");
+        
+        // Apply Stage-specific Gimmick Failure Hit Action
+        this.applyUniqueHitAction(this.stageIndex);
+        
+        b.isPatternActive = false;
+        
+        if (this.stageIndex === 0) {
+          // Sophist split: Clear all clones from enemies array
+          this.enemies = this.enemies.filter(e => !(e.isClone && e.parentBoss === b));
+          b.clonesList = [];
+        } else if (this.stageIndex === 1) {
+          // Apatheia: Clear safe zone and resume speed
+          b.apatheiaActive = false;
+          b.speed = 1.2;
+          this.ataraxiaZone = null;
+          if (this.bgm) {
+            try { this.bgm.volume = this.bgmMuted ? 0 : 0.4; } catch (err) {}
+          }
+          b.apatheiaTimer = 16000;
+        } else if (this.stageIndex === 2) {
+          // Dogmatism: Clear candlesticks and darkness
+          this.candlesticks = [];
+          this.medievalDarkness = false;
+        } else if (this.stageIndex === 3) {
+          // Prejudice: Clear idols
+          this.enemies = this.enemies.filter(e => !e.isIdol);
+          this.activeIdols.clear();
+          this.prejudiceWave = 0;
+          this.restoreHUD();
+        } else if (this.stageIndex === 4) {
+          // Kant: Clear grid lines
+          this.gridLines = [];
+          this.kantDutyLine = null;
+          b.speed = 1.2;
+        } else if (this.stageIndex === 5) {
+          // Nietzsche: Clear relics
+          this.nietzcheRelics = [];
+          b.isPatternActive = false;
+        }
+      }
+    }
+  }
+
+  // Kantian moral rules verification
+  if (this.stageIndex === 4 && this.currentBoss && this.currentBoss.isPatternActive && this.gimmickActive && !this.kantRuleViolation) {
+    const b = this.currentBoss;
+    const playerVel = Math.hypot(this.player.vx, this.player.vy);
+    const isMoving = playerVel > 0.3; // Check if player is moving
+    
+    if (b.kantCycle === 1) {
+      // Rule 1: Must stay on the Golden Line of Duty (Y deviation <= 35px)
+      if (this.kantDutyLine) {
+        const deviation = Math.abs(this.player.y - this.kantDutyLine.y);
+        if (deviation > 35) {
+          this.kantRuleViolation = true;
+        }
+      }
+    } else if (b.kantCycle === 2) {
+      // Rule 2: Must stay close to boss (distance <= 350px)
+      const dist = Math.hypot(this.player.x - b.x, this.player.y - b.y);
+      if (dist > 350) {
+        this.kantRuleViolation = true;
+      }
+    } else if (b.kantCycle === 3) {
+      // Rule 3: Must stay completely still
+      if (isMoving) {
+        this.kantMoveTimer = (this.kantMoveTimer || 0) + dt;
+        if (this.kantMoveTimer >= 1500) { // moving for 1.5s -> VIOLATION!
+          this.kantRuleViolation = true;
+        }
+      } else {
+        this.kantMoveTimer = 0;
+      }
+    }
+    
+    if (this.kantRuleViolation) {
+      if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
+      
+      const penaltyDmg = Math.ceil(this.player.maxHp * 0.5);
+      this.player.takeDamage(penaltyDmg, this, b);
+      this.addDamageText(this.player.x, this.player.y - 80, `💥 규율 위반! -${penaltyDmg} HP`, '#ff4757', 24, true);
+      this.showBossTooltip("💥 정언명령 위배: 정당한 도덕적 의무를 성실히 이행하지 못해 심판(최대 체력의 50% 피해)을 받았습니다!");
+      
+      // Apply unique hit action (5단계 칸트: 시간 속박)
+      this.applyUniqueHitAction(4);
+      
+      // Fail the whole gimmick immediately
+      this.gimmickActive = false;
+      this.gimmickTimer = 0;
+      b.isPatternActive = false;
+      this.gridLines = [];
+      this.kantDutyLine = null;
+      b.speed = 1.2;
+    }
+  }
+
+  // Ataraxia safe zone BGM volume drop
+  if (this.ataraxiaZone && this.bgm) {
+    const dZone = Math.hypot(this.player.x - this.ataraxiaZone.x, this.player.y - this.ataraxiaZone.y);
+    try {
+      if (dZone < this.ataraxiaZone.radius) {
+        this.bgm.volume = 0;
+      } else {
+        this.bgm.volume = this.bgmMuted ? 0 : 0.4;
+      }
+    } catch (err) {}
   }
 
   // Update HUD timer
@@ -205,19 +422,40 @@ export function gameUpdate(dt) {
 
   // Remove dead enemies & handle drops
   this.enemies = this.enemies.filter(e => {
+    if (e.isClone && e.parentBoss && !e.parentBoss.isPatternActive) {
+      return false;
+    }
+
     if (e.hp <= 0) {
       if (e.type === 'boss') {
         if (e.isClone) {
           this.spawnXpFrags(e.x, e.y, 10);
           this.spawnParticles(e.x, e.y, '#e84393', 8, 10, -3);
           if (e.parentBoss) {
-            e.parentBoss.clonesList = e.parentBoss.clonesList.filter(c => c !== e);
-            if (e.parentBoss.clonesList.length === 0) {
-              e.parentBoss.isPatternActive = false;
-              e.parentBoss.isStunned = true;
-              e.parentBoss.stunTimer = 6000;
+            if (e.isRealClone) {
+              const pb = e.parentBoss;
+              pb.isPatternActive = false;
+              pb.isStunned = true;
+              pb.stunTimer = 6000;
+              pb.clonesList.forEach(c => {
+                if (c !== e) c.hp = 0;
+              });
+              pb.clonesList = [];
+              this.gimmickActive = false;
+              this.gimmickTimer = 0;
               this.showBossTooltip("🛡️ 궤변 극복! 소피스트가 부끄러움에 빠져 방어력이 극도로 감소했습니다!");
-              this.addDamageText(e.parentBoss.x, e.parentBoss.y - 70, "✨ 논박 완료! 보스 그로기!", "#2ed573", 24);
+              this.addDamageText(pb.x, pb.y - 70, "✨ 논박 완료! 보스 그로기!", "#2ed573", 24);
+            } else {
+              e.parentBoss.clonesList = e.parentBoss.clonesList.filter(c => c !== e);
+              if (e.parentBoss.clonesList.length === 0) {
+                e.parentBoss.isPatternActive = false;
+                e.parentBoss.isStunned = true;
+                e.parentBoss.stunTimer = 6000;
+                this.gimmickActive = false;
+                this.gimmickTimer = 0;
+                this.showBossTooltip("🛡️ 궤변 극복! 소피스트가 부끄러움에 빠져 방어력이 극도로 감소했습니다!");
+                this.addDamageText(e.parentBoss.x, e.parentBoss.y - 70, "✨ 논박 완료! 보스 그로기!", "#2ed573", 24);
+              }
             }
           }
         } else {
@@ -416,15 +654,32 @@ export function handleCombatCollisions() {
 }
 
 export function dealDamageToEnemy(e, dmg, proj) {
-  if (e.isClone) {
+  if (e.isClone && !e.isRealClone) {
     this.addDamageText(e.x, e.y - e.size - 10, "Miss (궤변)", "#7f8c8d", 14, false);
     return;
   }
 
+  if (e.type === 'boss' && e.isPatternActive) {
+    this.addDamageText(e.x, e.y - e.size - 10, "🛡️ 무적 (기믹 진행 중)", "#a4b0be", 14, false);
+    this.spawnParticles(e.x, e.y, '#ffffff', 3, 5, -2);
+    return;
+  }
+
   const isCrit = Math.random() < (0.15 + (this.player.auraCritChance || 0));
-  const finalDmg = Math.floor(dmg * (isCrit ? (1.5 * this.player.critMultiplier) : 1));
+  let baseMultiplier = isCrit ? (1.5 * this.player.critMultiplier) : 1;
+  
+  // Double damage against groggy (stunned) boss
+  if (e.type === 'boss' && e.isStunned) {
+    baseMultiplier *= 2;
+  }
+  
+  const finalDmg = Math.floor(dmg * baseMultiplier);
   e.hp -= finalDmg;
-  this.addDamageText(e.x, e.y - e.size - 10, finalDmg, isCrit ? '#ffd200' : '#fff', isCrit ? 20 : 14, isCrit);
+  
+  const dmgColor = (e.type === 'boss' && e.isStunned) ? '#ff9f43' : (isCrit ? '#ffd200' : '#fff');
+  const dmgSize = (e.type === 'boss' && e.isStunned) ? 22 : (isCrit ? 20 : 14);
+  this.addDamageText(e.x, e.y - e.size - 10, (e.type === 'boss' && e.isStunned ? "🔥 2x!! " : "") + finalDmg, dmgColor, dmgSize, isCrit || (e.type === 'boss' && e.isStunned));
+  
   if (this.player.auraLifesteal > 0) {
     this.player.heal(Math.ceil(finalDmg * this.player.auraLifesteal));
     this.spawnParticles(e.x, e.y, '#e84118', 4, 6, -3);

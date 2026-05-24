@@ -16,9 +16,6 @@ export class Projectile {
     const ry = this.y - camera.y + ctx.canvas.height / 2;
     const t = Date.now();
     ctx.save();
-    
-    ctx.shadowBlur = 16;
-    ctx.shadowColor = this.color;
 
     if (this.type === 'fire_explosion') {
       // 1. 이데아의 불꽃: Blazing solar vortex (spinning fire petals)

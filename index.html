@@ -63,6 +63,50 @@
       </div>
     </div>
 
+    <!-- Boss HP Bar Overlay (Top Center) -->
+    <div id="boss-hp-container" style="display: none; position: absolute; top: 110px; left: 50%; transform: translateX(-50%); width: 500px; max-width: 90vw; background: rgba(10, 11, 16, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 12px 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 100; text-align: center; font-family: var(--font-title); transition: opacity 0.3s ease;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <span id="boss-hp-name" style="font-weight: 800; font-size: 16px; color: #ff4757; text-shadow: 0 0 10px rgba(255,71,87,0.3);">보스 이름</span>
+        <span id="boss-hp-value" style="font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary);">100%</span>
+      </div>
+      <div style="width: 100%; height: 12px; background: rgba(255,255,255,0.08); border-radius: 6px; overflow: hidden; position: relative;">
+        <div id="boss-hp-fill" style="width: 100%; height: 100%; background: linear-gradient(90deg, #ff4757, #ff6b81); box-shadow: 0 0 10px rgba(255,71,87,0.5); transition: width 0.1s ease-out;"></div>
+        <div id="boss-hp-shield" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(45deg, rgba(255,255,255,0.15), rgba(255,255,255,0.15) 10px, rgba(255,255,255,0.25) 10px, rgba(255,255,255,0.25) 20px); border: 2px solid #fff; box-sizing: border-box; animation: shield-slide 1.2s linear infinite;"></div>
+      </div>
+    </div>
+
+    <!-- Side Panels for Instructions and Boss Gimmick Guide (Top Right) -->
+    <div id="side-panels-container" class="side-panels-container">
+      <!-- How to Play Panel -->
+      <div id="guide-panel" class="side-panel-card" style="display: none; opacity: 0;">
+        <div id="guide-phase-1">
+          <h3>🎮 조작 방법 (Controls)</h3>
+          <p><strong>이동:</strong> 방향키 또는 [W][A][S][D]</p>
+          <p><strong>결정/선택:</strong> [Enter] 또는 [Space]</p>
+          <p><strong>일시정지:</strong> [ESC] 키</p>
+          <p style="font-size: 11px; opacity: 0.8; margin-top: 8px; color: var(--xp-color); border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
+            무지와 편견을 물리치고 진리를 탐구하십시오!
+          </p>
+        </div>
+        <div id="guide-phase-2" style="display: none;">
+          <h3>💡 성장 가이드 (Level Up)</h3>
+          <p style="font-size: 12px; line-height: 1.6; margin-bottom: 4px; word-break: keep-all;">몬스터를 물리치고 경험을 획득하여 레벨업하십시오!</p>
+          <p style="font-size: 11px; opacity: 0.8; margin-top: 8px; color: var(--xp-color); border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
+            진리에 가까워지기 위해 끝없이 성장하십시오!
+          </p>
+        </div>
+      </div>
+
+      <!-- Boss Gimmick Panel -->
+      <div id="boss-gimmick-panel" class="side-panel-card" style="display: none;">
+        <h3 id="gimmick-title" style="color: #ff4757;">⚠️ 보스 기믹 발동!</h3>
+        <p id="gimmick-instruction" style="font-weight: bold; font-size: 13px; color: #fff; margin-bottom: 8px; word-break: keep-all;"></p>
+        <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+          <div id="gimmick-timer-fill" style="width: 100%; height: 100%; background: #ff4757; transition: width 0.1s linear;"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- Virtual Joystick for touch/mobile devices -->
     <div id="joystick-zone">
       <div id="joystick-handle"></div>
@@ -159,9 +203,9 @@
 
     <!-- Screen 4: ORA GACHA MODAL -->
     <div id="gacha-screen" class="overlay-screen">
-      <div class="modal-content" style="max-width: 620px;">
-        <h2 style="font-family: var(--font-title); color: var(--xp-color); margin-bottom: 4px;">사상의 오라 소환!</h2>
-        <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 16px;">보스를 격파하여 획득한 영혼 에너지를 소환합니다.</p>
+      <div class="modal-content" style="max-width: 880px;">
+        <h2 style="font-family: var(--font-title); color: var(--xp-color); margin-bottom: 4px; font-weight: bold;">사상의 오라 소환!</h2>
+        <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 16px; font-weight: bold;">보스를 격파하여 획득한 영혼 에너지를 소환합니다.</p>
 
         <!-- Slot Machine Reel -->
         <div id="gacha-reel-container" class="gacha-reel-wrap">
@@ -170,7 +214,7 @@
             <div class="gacha-reel-item" style="color:#ffffff; font-weight:bold;">🛡️ 디보션 오라</div>
             <div class="gacha-reel-item" style="color:#ff4757; font-weight:bold;">⚡ 인듀어런스 오라</div>
             <div class="gacha-reel-item" style="color:#ff9f43; font-weight:bold;">🥁 워송 배틀 드럼</div>
-            <div class="gacha-reel-item" style="color:#2ed573; font-weight:bold;">🟢 언홀리 오라</div>
+            <div class="gacha-reel-item" style="color:#ffb300; font-weight:bold;">💀 언홀리 오라</div>
             <div class="gacha-reel-item" style="color:#a55eea; font-weight:bold;">🦇 뱀파이어릭 오라</div>
             <div class="gacha-reel-item" style="color:#1dd1a1; font-weight:bold;">🌵 쏜즈 오라</div>
             <div class="gacha-reel-item" style="color:#48dbfb; font-weight:bold;">🎯 트루샷 오라</div>
@@ -182,7 +226,7 @@
         <div id="gacha-result" style="display:none; margin: 12px 0;">
           <div id="gacha-aura-visual" class="gacha-aura-effect" style="font-size: 56px; animation: chest-bounce 1s infinite alternate ease-in-out;">✨</div>
           <div id="gacha-tier" style="font-family: var(--font-title); font-size: 26px; font-weight: 800; margin: 6px 0; text-shadow: 0 0 10px rgba(255,255,255,0.2);">[에픽] 영생의 오라</div>
-          <div id="gacha-desc" style="background: #ffffff; color: #231F20; font-size: 18px; font-weight: bold; padding: 16px 20px; border-radius: 50px; margin: 12px auto 20px; max-width: 480px; line-height: 1.5; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); border: 3px solid #dcdde1; display: inline-block; width: 90%;">효과: </div>
+          <div id="gacha-desc" style="background: none; color: #ffffff; font-size: 18.5px; font-weight: bold; padding: 0; margin: 12px auto 20px; max-width: 720px; line-height: 1.5; display: inline-block; width: 95%;">효과: </div>
           <div id="gacha-status" style="display:none;"></div>
           <button id="gacha-close-btn" style="background: #ffffff; color: #231F20; font-size: 20px; font-weight: 800; font-family: var(--font-title); border-radius: 50px; border: 3px solid #ffd200; padding: 14px 44px; cursor: pointer; display: block; margin: 20px auto 10px; box-shadow: 0 0 15px rgba(255, 192, 72, 0.55); transition: all 0.2s;">오라 수락 [Enter]</button>
         </div>
@@ -190,7 +234,7 @@
         <!-- Spin button (shown before spin) -->
         <div id="gacha-spin-area" style="margin-top: 16px;">
           <button id="gacha-spin-btn" class="btn-gacha-spin">🎰 소환하기</button>
-          <p style="color: var(--text-secondary); font-size: 11px; margin-top: 8px;">[Enter] / [Space]로 소환</p>
+          <p style="color: var(--text-secondary); font-size: 11px; margin-top: 8px; font-weight: bold;">[Enter] / [Space]로 소환</p>
         </div>
 
         <!-- Aura Choice Panel (shown from 2nd boss onwards) -->
@@ -198,19 +242,15 @@
           <!-- Two choice buttons side by side -->
           <div style="display: flex; gap: 16px; flex-direction: row; justify-content: center; width: 100%;">
             <!-- Upgrade Button -->
-            <button id="gacha-upgrade-btn" style="flex: 1; min-height: 285px; background: #ffffff; border: 3px solid #dcdde1; border-radius: 16px; color: #231F20; padding: 30px 20px; font-family: var(--font-title); cursor: pointer; text-align: center; transition: all 0.22s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 4px 15px rgba(0,0,0,0.06);">
-              <div style="font-size: 42px; margin-bottom: 12px;">⬆️</div>
-              <div style="font-size: 24px; font-weight: 900; color: #231F20; margin-bottom: 10px; text-shadow: none;">현재 오라 강화</div>
-              <div id="gacha-upgrade-desc" style="font-size: 15.5px; color: #231F20; font-family: var(--font-mono); line-height: 1.6; word-break: keep-all;"></div>
+            <button id="gacha-upgrade-btn" style="flex: 1; min-height: 220px; background: #ffffff; border: 3px solid #dcdde1; border-radius: 16px; color: #231F20; padding: 25px 20px; font-family: var(--font-title); cursor: pointer; text-align: center; transition: all 0.22s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 4px 15px rgba(0,0,0,0.06); font-weight: bold;">
+              <div id="gacha-upgrade-desc" style="font-size: 17px; color: #231F20; font-family: var(--font-title); line-height: 1.6; word-break: keep-all; font-weight: bold;"></div>
             </button>
             <!-- Change Button -->
-            <button id="gacha-change-btn" style="flex: 1; min-height: 285px; background: #ffffff; border: 3px solid #dcdde1; border-radius: 16px; color: #231F20; padding: 30px 20px; font-family: var(--font-title); cursor: pointer; text-align: center; transition: all 0.22s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 4px 15px rgba(0,0,0,0.06);">
-              <div style="font-size: 42px; margin-bottom: 12px;">🔄</div>
-              <div style="font-size: 24px; font-weight: 900; color: #231F20; margin-bottom: 10px; text-shadow: none;">새로운 오라 교체</div>
-              <div id="gacha-change-desc" style="font-size: 15.5px; color: #231F20; font-family: var(--font-mono); line-height: 1.6; word-break: keep-all;"></div>
+            <button id="gacha-change-btn" style="flex: 1; min-height: 220px; background: #ffffff; border: 3px solid #dcdde1; border-radius: 16px; color: #231F20; padding: 25px 20px; font-family: var(--font-title); cursor: pointer; text-align: center; transition: all 0.22s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 4px 15px rgba(0,0,0,0.06); font-weight: bold;">
+              <div id="gacha-change-desc" style="font-size: 17px; color: #231F20; font-family: var(--font-title); line-height: 1.6; word-break: keep-all; font-weight: bold;"></div>
             </button>
           </div>
-          <p style="color: var(--text-secondary); font-size: 11px; margin-top: 12px;">방향키 [←]/[→] 또는 [A]/[D]로 선택하고 [Enter]/[Space]로 결정</p>
+          <p style="color: var(--text-secondary); font-size: 11px; margin-top: 12px; font-weight: bold;">방향키 [←]/[→] 또는 [A]/[D]로 선택하고 [Enter]/[Space]로 결정</p>
         </div>
       </div>
     </div>
@@ -305,6 +345,34 @@
           </div>
 
           <button id="restart-game-btn" class="btn-primary" style="margin-top: 16px; padding: 12px 36px;">다시 도전하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 9: NIETZSCHE CHECKPOINT QUIZ -->
+    <div id="nietzsche-quiz-screen" class="overlay-screen">
+      <div class="modal-content" style="max-width: 600px; text-align: left; padding: 24px 32px; border-color: #ffd200;">
+        <div style="border-bottom: 2px solid rgba(255, 255, 255, 0.1); padding-bottom: 8px; margin-bottom: 16px;">
+          <h2 style="font-family: var(--font-title); color: #ffd200; font-size: 22px; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+            🦅 니체의 실존적 시험 (Existential Test)
+          </h2>
+          <p style="color: var(--text-secondary); font-size: 12px; margin-top: 4px;">
+            "지금껏 극복해 온 사상가들의 성찰을 증명하게나. 5문제 중 3문제 이상을 맞추어야 심연의 다음 관문으로 나아갈 수 있네."
+          </p>
+        </div>
+        
+        <div id="nq-container">
+          <h2 id="quiz-question-number" style="color: var(--xp-color); font-family: var(--font-title); font-size: 20px; margin-bottom: 8px;">실존적 질문 1 / 5</h2>
+          <div id="quiz-question-text" style="font-size: 15px; font-weight: bold; line-height: 1.6; margin-bottom: 20px; color: #fff; word-break: keep-all;">
+            질문 내용이 여기에 들어갑니다.
+          </div>
+          <div id="quiz-options-container" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;">
+            <!-- Options dynamically injected -->
+          </div>
+        </div>
+        
+        <div style="font-size: 11px; color: var(--text-secondary); text-align: center; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
+          방향키 [↑]/[↓]로 선택 | [Enter] 또는 [Space]로 결정
         </div>
       </div>
     </div>

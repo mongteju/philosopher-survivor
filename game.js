@@ -46,7 +46,13 @@ import {
   triggerEnding,
   _applyAuraUpgrade,
   _applyAuraChange,
-  _updateAuraChoiceSelection
+  _updateAuraChoiceSelection,
+  triggerNietzscheQuiz,
+  renderNietzscheQuizQuestion,
+  updateNietzscheQuizSelection,
+  selectNietzscheQuizOption,
+  endNietzscheQuiz,
+  applyUniqueHitAction
 } from './game/mechanics.js';
 
 // ─── GAME CLASS ──────────────────────────────────────────────────────
@@ -159,6 +165,8 @@ class Game {
         this.currentBoss.isStunned = true;
         this.currentBoss.stunTimer = 10000;
       }
+      this.gimmickActive = false;
+      this.gimmickTimer = 0;
       this.player.recalculateStats();
       this.showBossTooltip("👑 초인 각성! 신은 죽었다! 당신 자신의 가치를 창조하며 허무주의를 심판하십시오!");
       this.addDamageText(this.player.x, this.player.y - 80, "👑 Übermensch 초인 각성!", "#ffd200", 26, true);
@@ -264,6 +272,12 @@ class Game {
   spawnExistentialWords() { spawnExistentialWords.call(this); }
   gameOver() { gameOver.call(this); }
   triggerEnding() { triggerEnding.call(this); }
+  triggerNietzscheQuiz(boss) { triggerNietzscheQuiz.call(this, boss); }
+  renderNietzscheQuizQuestion() { renderNietzscheQuizQuestion.call(this); }
+  updateNietzscheQuizSelection() { updateNietzscheQuizSelection.call(this); }
+  selectNietzscheQuizOption() { selectNietzscheQuizOption.call(this); }
+  endNietzscheQuiz() { endNietzscheQuiz.call(this); }
+  applyUniqueHitAction(stageIndex) { applyUniqueHitAction.call(this, stageIndex); }
 }
 
 // ─── BOOT ────────────────────────────────────────────────────────────

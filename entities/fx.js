@@ -20,13 +20,11 @@ export class Particle {
       ctx.font = 'bold 18px Outfit, sans-serif';
       ctx.fillStyle = this.color;
       ctx.textAlign = 'center';
-      ctx.shadowColor = this.color; ctx.shadowBlur = 8;
       ctx.fillText(this.wordText, rx, ry);
     } else {
       ctx.beginPath();
       ctx.arc(rx, ry, Math.max(0.5, this.size * alpha), 0, Math.PI * 2);
       ctx.fillStyle = this.color;
-      ctx.shadowColor = this.color; ctx.shadowBlur = 6;
       ctx.fill();
     }
     ctx.restore();
@@ -52,7 +50,6 @@ export class DamageText {
     ctx.fillStyle = this.color;
     ctx.strokeStyle = 'rgba(0,0,0,0.8)'; ctx.lineWidth = 3;
     ctx.textAlign = 'center';
-    ctx.shadowColor = this.color; ctx.shadowBlur = this.isCrit ? 12 : 4;
     ctx.strokeText(String(this.val), rx, ry);
     ctx.fillText(String(this.val), rx, ry);
     ctx.restore();

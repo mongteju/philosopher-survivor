@@ -70,11 +70,28 @@ export function acceptTutorial(accepted) {
   document.getElementById('hud').style.display = 'flex';
   document.getElementById('hud').style.flexDirection = 'column';
   document.getElementById('hud').style.alignItems = 'center';
+  
+  // Show controls guide on game start
+  const guideEl = document.getElementById('guide-panel');
+  if (guideEl) {
+    guideEl.style.display = 'block';
+    guideEl.style.opacity = '1';
+    const phase1 = document.getElementById('guide-phase-1');
+    const phase2 = document.getElementById('guide-phase-2');
+    if (phase1) phase1.style.display = 'block';
+    if (phase2) phase2.style.display = 'none';
+  }
+  this.guideTimer = 30000; // 30 seconds total (15s Phase 1 + 15s Phase 2)
+  this.gimmickActive = false;
+  this.gimmickTimer = 0;
+  
   this.resetFocus();
   this.spawnInitialEnemies();
   this.isPlaying = true;
   this.lastTime = performance.now();
-  this.bgm.play().catch(() => {});
+  if (this.bgm) {
+    try { this.bgm.play().catch(() => {}); } catch (err) {}
+  }
   requestAnimationFrame(t => this.loop(t));
 }
 
@@ -111,20 +128,6 @@ export function spawnBossImmediate() {
   this.bossFightStartTime = this.realSurvivalTimer;
   this.medievalDarkness = false;
 
-  if (this.stageIndex === 3) {
-    const idolTypes = ['cave', 'tribe', 'market', 'theater'];
-    idolTypes.forEach((type, i) => {
-      const a = (Math.PI * 2 / 4) * i;
-      const idol = new Idol(
-        this.player.x + Math.cos(a) * 300,
-        this.player.y + Math.sin(a) * 300,
-        type, boss
-      );
-      this.activeIdols.set(type, idol);
-      this.enemies.push(idol);
-    });
-  }
-
   this.addDamageText(this.player.x, this.player.y - 80, `⚠ ${this.stage.bossName} 등장!`, '#ff4757', 22);
   sfx.playAlert();
 }
@@ -133,7 +136,19 @@ export function onBossDefeated(boss) {
   this.currentBoss = null;
   this.medievalDarkness = false;
   this.kantRule = null;
+  this.kantDutyLine = null;
+  this.ataraxiaZone = null; // 아파테이아 평정 구역 안전지대 즉시 제거
   this.bossBullets = []; this.warningZones = [];
+  
+  // Clear gimmick overlays and state
+  this.gimmickActive = false;
+  this.gimmickTimer = 0;
+  this.gridLines = [];
+  this.candlesticks = [];
+  if (this.bgm) {
+    try { this.bgm.volume = this.bgmMuted ? 0 : 0.4; } catch (err) {}
+  }
+  
   this.lastBossKillTime = this.realSurvivalTimer - this.bossFightStartTime;
   this.spawnXpFrags(boss.x, boss.y, 30);
   this.spawnParticles(boss.x, boss.y, '#ffd200', 20, 15, -4);
@@ -210,24 +225,17 @@ export function spawnAuraGacha() {
     const currentLvlText = this.activeAuraLevel === 1 ? '' : ` +${this.activeAuraLevel - 1}강`;
     const nextLvlText = `+${this.activeAuraLevel}강`;
     
-    // Dynamic button titles to avoid static defaults
-    const upBtnText = document.querySelector('#gacha-upgrade-btn div:nth-child(2)');
-    if (upBtnText) upBtnText.textContent = `현재 오라 강화 (${nextLvlText})`;
-    
-    const chBtnText = document.querySelector('#gacha-change-btn div:nth-child(2)');
-    if (chBtnText) chBtnText.textContent = `${changeA.name}로 교체`;
-    
     const upDesc = document.getElementById('gacha-upgrade-desc');
     if (upDesc) {
-      upDesc.innerHTML = `<span style="font-size: 18px; font-weight: 850; color: ${curA.color}; display: block; margin-bottom: 12px; text-shadow: 0 0 4px ${curA.color}44;">${curA.icon} ${curA.name}${currentLvlText}</span>` +
-                         `<span style="color: #b7791f; font-weight: 900; font-size: 16.5px;">성능 강화하여 ${nextLvlText} 만들기</span><br>` +
-                         `<span style="font-size: 12.5px; color: #231F20; opacity: 0.85; font-weight: 600; display: inline-block; margin-top: 10px;">[${curA.statsDesc}] 수치가 한 단계 영구 증폭됩니다.</span>`;
+      upDesc.innerHTML = `<span style="font-size: 21px; font-weight: 900; color: ${curA.color}; display: block; margin-bottom: 12px; text-shadow: 0 0 6px ${curA.color}55;">${curA.icon} ${curA.name}${currentLvlText} (강화)</span>` +
+                         `<span style="color: #b7791f; font-weight: 900; font-size: 19px;">성능 강화하여 ${nextLvlText} 만들기</span><br>` +
+                         `<span style="font-size: 16.5px; color: #231F20; font-weight: 900; display: inline-block; margin-top: 12px;">[${curA.statsDesc}] 수치가 한 단계 영구 증폭됩니다.</span>`;
     }
     const chDesc = document.getElementById('gacha-change-desc');
     if (chDesc) {
-      chDesc.innerHTML = `<span style="font-size: 18px; font-weight: 850; color: ${changeA.color}; display: block; margin-bottom: 12px; text-shadow: 0 0 4px ${changeA.color}44;">${changeA.icon} ${changeA.name}로 교체</span>` +
-                         `<span style="color: #b7791f; font-weight: 900; font-size: 16.5px;">현재 강화 등급 유지${currentLvlText}</span><br>` +
-                         `<span style="font-size: 12.5px; color: #231F20; opacity: 0.85; font-weight: 600; display: inline-block; margin-top: 10px;">[${changeA.statsDesc}] 효과를 획득합니다.</span>`;
+      chDesc.innerHTML = `<span style="font-size: 21px; font-weight: 900; color: ${changeA.color}; display: block; margin-bottom: 12px; text-shadow: 0 0 6px ${changeA.color}55;">${changeA.icon} ${changeA.name}로 교체</span>` +
+                         `<span style="color: #b7791f; font-weight: 900; font-size: 19px;">현재 강화 등급 유지${currentLvlText}</span><br>` +
+                         `<span style="font-size: 16.5px; color: #231F20; font-weight: 900; display: inline-block; margin-top: 12px;">[${changeA.statsDesc}] 효과를 획득합니다.</span>`;
     }
   }
   
@@ -307,11 +315,13 @@ export function _showGachaResult(rolledKey) {
   const gDesc = document.getElementById('gacha-desc');
   if (gDesc) {
     gDesc.textContent = `효과: ${item.desc}`;
-    gDesc.style.fontSize = '20px';
+    gDesc.style.fontSize = '18.5px';
     gDesc.style.fontWeight = 'bold';
-    gDesc.style.color = '#231F20';
-    gDesc.style.borderColor = item.color;
-    gDesc.style.boxShadow = `0 4px 15px ${item.color}33`;
+    gDesc.style.color = '#ffffff';
+    gDesc.style.background = 'none';
+    gDesc.style.border = 'none';
+    gDesc.style.boxShadow = 'none';
+    gDesc.style.padding = '0';
   }
   const gStatus = document.getElementById('gacha-status');
   if (gStatus) {
@@ -433,11 +443,13 @@ export function _applyAuraUpgrade() {
   const gDesc = document.getElementById('gacha-desc');
   if (gDesc) {
     gDesc.textContent = `효과: ${item.desc} (현재 +${this.activeAuraLevel - 1}강)`;
-    gDesc.style.fontSize = '20px';
+    gDesc.style.fontSize = '18.5px';
     gDesc.style.fontWeight = 'bold';
-    gDesc.style.color = '#231F20';
-    gDesc.style.borderColor = item.color;
-    gDesc.style.boxShadow = `0 4px 15px ${item.color}33`;
+    gDesc.style.color = '#ffffff';
+    gDesc.style.background = 'none';
+    gDesc.style.border = 'none';
+    gDesc.style.boxShadow = 'none';
+    gDesc.style.padding = '0';
   }
   
   const resultEl = document.getElementById('gacha-result');
@@ -496,11 +508,13 @@ export function _applyAuraChange() {
   if (gDesc) {
     const lvlText = this.activeAuraLevel === 1 ? '' : ` +${this.activeAuraLevel - 1}강`;
     gDesc.textContent = `효과: ${item.desc} (현재${lvlText})`;
-    gDesc.style.fontSize = '20px';
+    gDesc.style.fontSize = '18.5px';
     gDesc.style.fontWeight = 'bold';
-    gDesc.style.color = '#231F20';
-    gDesc.style.borderColor = item.color;
-    gDesc.style.boxShadow = `0 4px 15px ${item.color}33`;
+    gDesc.style.color = '#ffffff';
+    gDesc.style.background = 'none';
+    gDesc.style.border = 'none';
+    gDesc.style.boxShadow = 'none';
+    gDesc.style.padding = '0';
   }
   
   const resultEl = document.getElementById('gacha-result');
@@ -1051,4 +1065,189 @@ export function triggerEnding() {
   
   this.updateExamKeyboardSelection();
   sfx.playExamBell();
+}
+
+// ─── NIETZSCHE CHECKPOINT QUIZ & UNIQUE DEBUFF ACTIONS ────────────────
+
+const NIETZSCHE_QUIZ_DATA = [
+  {
+    q: "Q1. 소피스트들의 상대주의적 진리관에 맞서, 대화를 통해 스스로 모름을 깨닫는 '무지의 자각'을 강조하고 보편적 진리를 추구한 철학자는 누구인가?",
+    options: ["1) 프로타고라스", "2) 소크라테스", "3) 플라톤", "4) 데모크리토스"],
+    correct: 1
+  },
+  {
+    q: "Q2. 모든 격정과 외적인 감정 동요에서 완전히 벗어나 마음의 평정(부동심)을 이루고자 한 스토아학파의 이상적 경지는 무엇인가?",
+    options: ["1) 아타락시아 (Ataraxia)", "2) 아파테이아 (Apatheia)", "3) 카타르시스 (Catharsis)", "4) 유다이모니아 (Eudaimonia)"],
+    correct: 1
+  },
+  {
+    q: "Q3. 중세의 맹목적인 믿음을 넘어 신앙과 이성의 조화를 강조하며, 학문적으로 신학을 체계화한 스콜라 철학의 거장은 누구인가?",
+    options: ["1) 아우구스티누스", "2) 토마스 아퀴나스", "3) 윌리엄 오브 오캄", "4) 안셀무스"],
+    correct: 1
+  },
+  {
+    q: "Q4. 프랜시스 베이컨이 경고한 인간의 4대 우상(편견) 중, 잘못된 언어와 소문의 유포, 시장에서의 왜곡된 소통으로 인해 발생하는 오류는?",
+    options: ["1) 종족의 우상 (Idol of the Tribe)", "2) 동굴의 우상 (Idol of the Cave)", "3) 시장의 우상 (Idol of the Market)", "4) 극장의 우상 (Idol of the Theater)"],
+    correct: 2
+  },
+  {
+    q: "Q5. 임마누엘 칸트의 윤리학에서, 결과나 조건에 상관없이 인간이 마땅히 지켜야 할 절대적이고 무조건적인 도덕적 명령은 무엇인가?",
+    options: ["1) 정언 명령 (Categorical Imperative)", "2) 가언 명령 (Hypothetical Imperative)", "3) 실용 명령 (Pragmatic Imperative)", "4) 자연 명령 (Natural Imperative)"],
+    correct: 0
+  }
+];
+
+export function triggerNietzscheQuiz(boss) {
+  this.isPlaying = false;
+  this.nietzscheQuizActive = true;
+  this.nietzscheQuizBoss = boss;
+  this.nietzscheQuizIndex = 0;
+  this.nietzscheQuizScore = 0;
+  this.nietzscheQuizSelection = 0;
+
+  document.getElementById('nietzsche-quiz-screen').classList.add('active');
+  this.renderNietzscheQuizQuestion();
+  if (this.bgm) {
+    try { this.bgm.pause(); } catch (err) {}
+  }
+  sfx.playExamBell();
+}
+
+export function renderNietzscheQuizQuestion() {
+  const qData = NIETZSCHE_QUIZ_DATA[this.nietzscheQuizIndex];
+  if (!qData) return;
+
+  const numEl = document.getElementById('quiz-question-number');
+  const txtEl = document.getElementById('quiz-question-text');
+  if (numEl) numEl.textContent = `실존적 질문 ${this.nietzscheQuizIndex + 1} / 5`;
+  if (txtEl) txtEl.textContent = qData.q;
+
+  const container = document.getElementById('quiz-options-container');
+  if (container) {
+    container.innerHTML = '';
+    qData.options.forEach((opt, idx) => {
+      const btn = document.createElement('div');
+      btn.className = 'quiz-option-btn';
+      btn.style = 'background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 12px 16px; font-size: 14px; color: #fff; cursor: pointer; transition: all 0.2s; font-weight: bold; margin-bottom: 4px;';
+      btn.textContent = opt;
+      btn.addEventListener('click', () => {
+        this.nietzscheQuizSelection = idx;
+        this.selectNietzscheQuizOption();
+      });
+      container.appendChild(btn);
+    });
+  }
+
+  this.updateNietzscheQuizSelection();
+}
+
+export function updateNietzscheQuizSelection() {
+  const container = document.getElementById('quiz-options-container');
+  if (!container) return;
+  const buttons = container.querySelectorAll('.quiz-option-btn');
+  buttons.forEach((btn, idx) => {
+    if (idx === this.nietzscheQuizSelection) {
+      btn.style.background = 'rgba(255, 210, 0, 0.2)';
+      btn.style.borderColor = '#ffd200';
+      btn.style.boxShadow = '0 0 10px rgba(255, 210, 0, 0.4)';
+    } else {
+      btn.style.background = 'rgba(255,255,255,0.05)';
+      btn.style.borderColor = 'rgba(255,255,255,0.15)';
+      btn.style.boxShadow = 'none';
+    }
+  });
+}
+
+export function selectNietzscheQuizOption() {
+  const qData = NIETZSCHE_QUIZ_DATA[this.nietzscheQuizIndex];
+  if (this.nietzscheQuizSelection === qData.correct) {
+    this.nietzscheQuizScore++;
+    sfx.playTick();
+  } else {
+    if (sfx.playHit) sfx.playHit();
+  }
+
+  this.nietzscheQuizIndex++;
+  if (this.nietzscheQuizIndex >= 5) {
+    this.endNietzscheQuiz();
+  } else {
+    this.nietzscheQuizSelection = 0;
+    this.renderNietzscheQuizQuestion();
+  }
+}
+
+export function endNietzscheQuiz() {
+  document.getElementById('nietzsche-quiz-screen').classList.remove('active');
+  this.nietzscheQuizActive = false;
+  this.isPlaying = true;
+  this.lastTime = performance.now();
+
+  const boss = this.nietzscheQuizBoss;
+  
+  if (this.bgm) {
+    try { this.bgm.play().catch(err => console.warn(err)); } catch (e) {}
+  }
+
+  if (this.nietzscheQuizScore >= 3) {
+    // SUCCESS: Phase 2 Giant Dragon!
+    boss.dragonActive = true;
+    boss.size = 85;
+    boss.maxHp = boss.maxHp * 1.5;
+    boss.hp = boss.maxHp;
+    boss.speed = 1.8;
+    boss.isPatternActive = false;
+    this.nietzcheRelics = [];
+    
+    this.addDamageText(boss.x, boss.y - 120, '🔥 허무의 종말룡 각성!! 🔥', '#ffd200', 30, true);
+    this.showBossTooltip("🐉 니체: 허무주의의 지배자! 거대한 암흑룡의 불꽃 세례를 극복하고 진리에 도달하십시오!");
+    sfx.playLevelUp();
+  } else {
+    // FAILURE: Take 50% damage, restore boss HP to 55%, apply blind & slow debuff
+    const penaltyDmg = Math.floor(this.player.maxHp * 0.5);
+    this.player.takeDamage(penaltyDmg, this);
+    
+    boss.hp = boss.maxHp * 0.55;
+    boss.nietzscheQuizTriggered = false; // retry
+    
+    this.player.blindedTimer = 3000;
+    this.player.nietzscheVortexTimer = 3000;
+    
+    this.addDamageText(this.player.x, this.player.y - 80, '❌ 시험 낙제! 50% 피해 & 심연의 저주!', '#ff4757', 24);
+    this.showBossTooltip("🦅 니체: 그대의 깨달음이 부족하군. 잿빛의 심연 속에서 다시 한 번 진리를 갈구해라!");
+    sfx.playAlert();
+  }
+}
+
+export function applyUniqueHitAction(stageIndex) {
+  if (!this.player) return;
+  
+  if (stageIndex === 0) {
+    this.player.confusedTimer = 3000;
+    this.addDamageText(this.player.x, this.player.y - 110, "🌀 혼란 (Sophist Chaos)!", "#a55eea", 16);
+  } else if (stageIndex === 1) {
+    this.player.stunnedTimer = 2500;
+    this.addDamageText(this.player.x, this.player.y - 110, "❄️ 결빙 (Apatheia Freeze)!", "#74b9ff", 16);
+  } else if (stageIndex === 2) {
+    this.player.blindedTimer = 3000;
+    this.addDamageText(this.player.x, this.player.y - 110, "👁️ 실명 (Dogmatic Blindness)!", "#2c3e50", 16);
+  } else if (stageIndex === 3) {
+    const boss = this.currentBoss;
+    if (boss) {
+      const dx = this.player.x - boss.x;
+      const dy = this.player.y - boss.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      this.player.knockbackTimer = 600;
+      this.player.knockbackX = (dx / dist) * 18;
+      this.player.knockbackY = (dy / dist) * 18;
+    }
+    this.screenShake = 35;
+    this.addDamageText(this.player.x, this.player.y - 110, "💥 충격 넉백 (Idol Impact)!", "#ff7675", 16);
+  } else if (stageIndex === 4) {
+    this.player.kantStunnedTimer = 2000;
+    this.addDamageText(this.player.x, this.player.y - 110, "⏰ 시간 속박 (Kantian Stasis)!", "#ffd200", 16);
+  } else if (stageIndex === 5) {
+    this.player.nietzscheVortexTimer = 3000;
+    this.player.blindedTimer = 3000;
+    this.addDamageText(this.player.x, this.player.y - 110, "🦅 중력 속박 (Nietzschean Abyss)!", "#0a0a0c", 16);
+  }
 }

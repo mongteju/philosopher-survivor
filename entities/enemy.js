@@ -61,13 +61,11 @@ export class Enemy {
     let isSlowed = this.slowMul < 1;
     
     if (isFrozen) {
-      ctx.fillStyle = '#a8e6f0'; ctx.shadowColor = '#00d2d3'; ctx.shadowBlur = 12;
+      ctx.fillStyle = '#a8e6f0';
     } else if (isSlowed) {
-      ctx.fillStyle = '#54a0ff'; ctx.shadowColor = '#00d2d3'; ctx.shadowBlur = 9;
+      ctx.fillStyle = '#54a0ff';
     } else {
       ctx.fillStyle = baseColor;
-      ctx.shadowBlur = 8;
-      ctx.shadowColor = baseColor;
     }
 
     const t = Date.now();
@@ -345,15 +343,8 @@ export class Idol {
     let renderColor = this.color;
     if (this.frozenTime > 0) {
       renderColor = '#a8e6f0';
-      ctx.shadowColor = '#00d2d3';
-      ctx.shadowBlur = 20;
     } else if (this.slowMul < 1) {
       renderColor = '#54a0ff';
-      ctx.shadowColor = '#00d2d3';
-      ctx.shadowBlur = 15;
-    } else {
-      ctx.shadowColor = this.color;
-      ctx.shadowBlur = 12;
     }
     
     ctx.fillStyle = renderColor;
@@ -364,7 +355,7 @@ export class Idol {
     ctx.closePath(); ctx.fill();
     // Label
     ctx.font = '10px Outfit, sans-serif'; ctx.fillStyle = '#fff';
-    ctx.textAlign = 'center'; ctx.shadowBlur = 4; ctx.shadowColor = '#000';
+    ctx.textAlign = 'center';
     ctx.fillText(this.label, rx, ry - this.size - 6);
     // HP bar
     const bw = this.size * 2;

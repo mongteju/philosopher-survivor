@@ -1,4 +1,51 @@
 import { sfx } from '../audio.js';
+import { Idol } from './enemy.js';
+
+// ─── BOSS QUOTES DATABASE ───────────────────────────────────────────
+const BOSS_QUOTES = {
+  0: [ // 소피스트 (Sophist)
+    "인간은 만물의 척도라네.",
+    "진리는 절대적이지 않고, 상대적이지.",
+    "말재주만 있으면 어떤 학설이든 설파할 수 있어.",
+    "의견이 다를 뿐, 틀린 진리는 없다네.",
+    "유창한 웅변으로 세상을 논박하겠네!"
+  ],
+  1: [ // 아파테이아 수호자 (Apatheia Guardian / Stoic)
+    "운명을 사랑하라 (Amor Fati).",
+    "그대가 제어할 수 없는 것에 마음을 빼앗기지 마라.",
+    "모든 마음의 격정을 잠재우고 고요를 찾으라.",
+    "외부의 자극은 무의미하다, 내면의 이성에 복종하라.",
+    "평정(Ataraxia)만이 그대를 진정 자유롭게 하리니."
+  ],
+  2: [ // 교조주의의 망령 (Dogmatism Ghost / Medieval)
+    "믿기 위해 알라, 알기 위해 믿으라.",
+    "신앙과 이성의 조화만이 구원을 가져오리라.",
+    "절대적인 교리는 세상의 어둠을 비추는 횃불이다.",
+    "의심하지 마라, 맹목적인 믿음이야말로 진리이니.",
+    "교리의 수호자가 되어 이단을 척결하겠노라!"
+  ],
+  3: [ // 편견의 거인 (Francis Bacon / Empiricism)
+    "아는 것이 힘이다 (Knowledge is Power)!",
+    "인간의 마음속 네 가지 우상을 타파하라!",
+    "동굴의 어둠에 갇혀 세상을 편협하게 보지 마라.",
+    "시장의 뜬소문과 왜곡된 언어가 세상을 병들게 한다.",
+    "편견의 안개를 걷어내고 경험적 사실을 직시하라!"
+  ],
+  4: [ // 도덕의 심판자 (Kant / Deontology)
+    "네 의지의 준칙이 항상 보편적 법칙이 되게 하라!",
+    "인격을 결코 수단으로 대하지 말고 목적으로 대하라.",
+    "하늘에는 별, 내 안에는 도덕 법칙!",
+    "의무는 실천이성의 절대적인 도덕적 명령이다.",
+    "사변적 집착에서 벗어나 실천을 통해 원칙을 증명하라!"
+  ],
+  5: [ // 허무주의의 그림자 (Nietzsche / Existentialism)
+    "신은 죽었다! 그리고 우리가 그를 죽였다!",
+    "나를 죽이지 못하는 고통은 나를 더 강하게 만든다.",
+    "영원회귀의 삶을 사랑하고 극복하여 초인(Übermensch)이 되라!",
+    "괴물과 싸우는 자는 스스로 괴물이 되지 않도록 경계해야 한다.",
+    "기존의 모든 가치를 재평가하고 허무를 창조로 극복하라!"
+  ]
+};
 
 // ─── BOSS BULLET ────────────────────────────────────────────────────
 export class BossBullet {
@@ -29,9 +76,6 @@ export class BossBullet {
     const rx = this.x - camera.x + ctx.canvas.width / 2;
     const ry = this.y - camera.y + ctx.canvas.height / 2;
     ctx.save();
-    
-    ctx.shadowBlur = 12;
-    ctx.shadowColor = this.color;
     
     if (this.type === 'spiral') {
       // Spinning dark magic vortex
@@ -144,8 +188,6 @@ export class Candlestick {
     const rx = this.x - camera.x + ctx.canvas.width / 2;
     const ry = this.y - camera.y + ctx.canvas.height / 2;
     ctx.save();
-    ctx.shadowColor = this.lit ? '#ffd200' : '#7f8c8d';
-    ctx.shadowBlur = this.lit ? 15 : 4;
     ctx.fillStyle = this.lit ? '#ffd200' : '#4b6584';
     ctx.beginPath(); ctx.arc(rx, ry, this.size, 0, Math.PI * 2); ctx.fill();
     ctx.font = '12px sans-serif';
@@ -186,21 +228,27 @@ export class RhythmicGridLine {
   detonate(game) {
     this.detonated = true;
     this.life = 0;
-    if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
-    
-    const W = game.canvas.width;
-    if (this.isVertical) {
-      game.spawnParticles(this.coord, game.player.y, '#ff4757', 15, 12, -4);
-      if (Math.abs(game.player.x - this.coord) < 25) {
-        game.player.takeDamage(20, game, null);
-        game.addDamageText(game.player.x, game.player.y - 60, '⚡ 정언명령 충격!', '#ff4757', 18);
+    try {
+      if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
+      
+      if (!game || !game.player || !game.canvas || isNaN(this.coord)) return;
+      
+      const W = game.canvas.width;
+      if (this.isVertical) {
+        game.spawnParticles(this.coord, game.player.y, '#ff4757', 15, 12, -4);
+        if (Math.abs(game.player.x - this.coord) < 25) {
+          game.player.takeDamage(20, game, null);
+          game.addDamageText(game.player.x, game.player.y - 60, '⚡ 정언명령 충격!', '#ff4757', 18);
+        }
+      } else {
+        game.spawnParticles(game.player.x, this.coord, '#ff4757', 15, 12, -4);
+        if (Math.abs(game.player.y - this.coord) < 25) {
+          game.player.takeDamage(20, game, null);
+          game.addDamageText(game.player.x, game.player.y - 60, '⚡ 정언명령 충격!', '#ff4757', 18);
+        }
       }
-    } else {
-      game.spawnParticles(game.player.x, this.coord, '#ff4757', 15, 12, -4);
-      if (Math.abs(game.player.y - this.coord) < 25) {
-        game.player.takeDamage(20, game, null);
-        game.addDamageText(game.player.x, game.player.y - 60, '⚡ 정언명령 충격!', '#ff4757', 18);
-      }
+    } catch (err) {
+      console.error("[RhythmicGridLine Detonate Error]", err);
     }
   }
   draw(ctx, camera, W, H) {
@@ -262,8 +310,6 @@ export class NietzscheRelic {
     const ry = this.y - camera.y + ctx.canvas.height / 2;
     ctx.save();
     const isFreedom = this.type === 'freedom';
-    ctx.shadowColor = isFreedom ? '#ff9f43' : '#54a0ff';
-    ctx.shadowBlur = 15;
     ctx.fillStyle = isFreedom ? '#ff9f43' : '#54a0ff';
     ctx.beginPath(); ctx.arc(rx, ry, this.size, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#fff';
@@ -281,7 +327,7 @@ export class Boss {
   constructor(x, y, playerLevel, name, stageIndex) {
     this.x = x; this.y = y; this.type = 'boss'; this.isIdol = false;
     this.name = name; this.stageIndex = stageIndex;
-    const baseHps = [1500, 5000, 8000, 12000, 18000, 42000];
+    const baseHps = [1500, 5000, 40000, 120000, 360000, 1260000];
     this.maxHp = (baseHps[stageIndex] || 5000) * (1 + (playerLevel - 1) * 0.1);
     this.hp = this.maxHp; this.size = 38; this.speed = 1.2;
     this.color = '#e84393'; this.xpVal = 50;
@@ -296,10 +342,37 @@ export class Boss {
     this.isStunned = false;
     this.stunTimer = 0;
     this.isClone = false;
+
+    // Dialogue properties
+    this.dialogueTimer = 3000 + Math.random() * 2000;
+    this.dialogueDisplayTimer = 0;
+    this.activeDialogue = "";
   }
 
   update(dt, player, game) {
     if (this.frozenTime > 0) { this.frozenTime -= dt; return; }
+
+    // Dialogue update
+    if (this.dialogueDisplayTimer > 0) {
+      this.dialogueDisplayTimer -= dt;
+      if (this.dialogueDisplayTimer <= 0) {
+        this.activeDialogue = "";
+      }
+    }
+    if (this.isStunned) {
+      this.activeDialogue = "";
+      this.dialogueDisplayTimer = 0;
+    } else if (!this.isClone) {
+      this.dialogueTimer -= dt;
+      if (this.dialogueTimer <= 0) {
+        const quotes = BOSS_QUOTES[this.stageIndex];
+        if (quotes && quotes.length > 0) {
+          this.activeDialogue = quotes[Math.floor(Math.random() * quotes.length)];
+          this.dialogueDisplayTimer = 2500; // Display for 2.5s
+        }
+        this.dialogueTimer = 7000 + Math.random() * 4000; // Trigger every 7-11 seconds
+      }
+    }
 
     // Stun logic
     if (this.isStunned) {
@@ -376,37 +449,19 @@ export class Boss {
       }
 
       if (this.apatheiaActive) {
-        this.apatheiaTimeLeft -= dt;
         this.speed = 0;
-        if (this.apatheiaTimeLeft <= 0) {
-          this.apatheiaActive = false;
-          this.isPatternActive = false;
-          this.speed = 1.2;
-          
-          if (game.ataraxiaZone) {
-            const dZone = Math.hypot(player.x - game.ataraxiaZone.x, player.y - game.ataraxiaZone.y);
-            if (dZone < game.ataraxiaZone.radius) {
-              this.isStunned = true;
-              this.stunTimer = 6000;
-              game.showBossTooltip("🛡️ 평정 달성! 격정의 아바타가 이성적인 고요함 속에 침묵했습니다!");
-              game.addDamageText(this.x, this.y - 70, "✨ 평정 달성! 그로기!", "#2ed573", 24);
-              if (typeof sfx !== 'undefined' && sfx.playLevelUp) sfx.playLevelUp();
-            } else {
-              player.takeDamage(50, game, this);
-              game.showBossTooltip("💥 격정 폭발! 감정에 휩쓸려 치명적인 피해를 받았습니다!");
-            }
-            game.ataraxiaZone = null;
-            game.bgm.volume = game.bgmMuted ? 0 : 0.4;
-          }
-          this.apatheiaTimer = 16000;
-        }
         return; // Channeling safe zone
       } else {
         this.apatheiaTimer -= dt;
         if (this.apatheiaTimer <= 0) {
           this.apatheiaActive = true;
           this.isPatternActive = true;
-          this.apatheiaTimeLeft = 5000;
+          
+          // Setup global gimmick
+          game.gimmickActive = true;
+          game.gimmickTimer = 5000;
+          game.gimmickMaxTime = 5000;
+          game.gimmickInstruction = "공략법: 5초 이내에 초록색 아파테이아(🟢) 영역 안으로 대피하십시오!";
           
           const angle = Math.random() * Math.PI * 2;
           const dist = 120 + Math.random() * 100;
@@ -436,18 +491,46 @@ export class Boss {
           game.medievalDarkness = true;
           game.showBossTooltip("🕯️ 교조주의: 교리가 세상을 어둠으로 덮었습니다! 신앙과 이성의 촛대(🕯️)를 활성화하여 빛을 찾으십시오!");
           game.candlesticks = [
-            new Candlestick(this.x - 220, this.y - 100, "신앙의 촛대 (Faith)"),
-            new Candlestick(this.x + 220, this.y + 100, "이성의 촛대 (Reason)")
+            new Candlestick(this.x - 220, this.y - 220, "제1교조: 무조건적 신앙 (Faith)"),
+            new Candlestick(this.x + 220, this.y - 220, "제2교조: 편협한 신념 (Dogma)"),
+            new Candlestick(this.x - 220, this.y + 220, "제3교조: 맹목적 추종 (Conformity)"),
+            new Candlestick(this.x + 220, this.y + 220, "제4교조: 독단적 확신 (Certainty)")
           ];
+          
+          // Setup global gimmick
+          game.gimmickActive = true;
+          game.gimmickTimer = 20000; // Increased to 20 seconds for 4 candlesticks
+          game.gimmickMaxTime = 20000;
+          game.gimmickInstruction = "공략법: 20초 이내에 촛대(🕯️) 4개를 몸으로 터치하여 모두 활성화하십시오!";
           break;
         }
       }
       if (this.isPatternActive && game.candlesticks && game.candlesticks.length > 0) {
+        // Spawn lightning WarningZones near unlit candlesticks periodically to increase difficulty
+        if (!this.thunderTimer) this.thunderTimer = 0;
+        this.thunderTimer += dt;
+        if (this.thunderTimer >= 1500) {
+          this.thunderTimer = 0;
+          const unlit = game.candlesticks.filter(c => !c.lit);
+          if (unlit.length > 0) {
+            const targetCandle = unlit[Math.floor(Math.random() * unlit.length)];
+            const wx = targetCandle.x + (Math.random() - 0.5) * 100;
+            const wy = targetCandle.y + (Math.random() - 0.5) * 100;
+            game.warningZones.push(new WarningZone(wx, wy, 80, 25, 1200));
+            if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
+          }
+        }
+
         const allLit = game.candlesticks.every(c => c.lit);
         if (allLit) {
           this.isPatternActive = false;
           game.medievalDarkness = false;
           game.candlesticks = [];
+          
+          // Clear global gimmick
+          game.gimmickActive = false;
+          game.gimmickTimer = 0;
+          
           this.isStunned = true;
           this.stunTimer = 8000;
           game.showBossTooltip("🛡️ 어둠 극복! 신앙과 이성의 조화로 교독의 환각을 비추었습니다!");
@@ -458,13 +541,35 @@ export class Boss {
     }
 
     // Stage 4 (Idols of Prejudice): Scrambled sensory waves
-    if (this.stageIndex === 3 && !this.isClone) {
+    if ((this.stageIndex === 3 || this.name.includes("편견")) && !this.isClone) {
       if (!this.prejudiceInitialized) {
         this.prejudiceInitialized = true;
         this.isPatternActive = true;
         this.prejudiceTimer = 0;
         game.prejudiceWave = 0;
         game.showBossTooltip("🗿 편견의 우상: 4대 우상이 활성화되었습니다! 우상을 먼저 모두 제거하십시오! 편견의 왜곡이 지속됩니다!");
+        
+        console.log("[Prejudice Gimmick] Spawning Idols of Prejudice. Boss name:", this.name, "StageIndex:", this.stageIndex);
+        
+        // Spawn the 4 Idols directly to guarantee they always appear
+        const idolTypes = ['cave', 'tribe', 'market', 'theater'];
+        game.activeIdols.clear();
+        idolTypes.forEach((type, i) => {
+          const a = (Math.PI * 2 / 4) * i;
+          const idol = new Idol(
+            player.x + Math.cos(a) * 300,
+            player.y + Math.sin(a) * 300,
+            type, this
+          );
+          game.activeIdols.set(type, idol);
+          game.enemies.push(idol);
+        });
+
+        // Setup global gimmick
+        game.gimmickActive = true;
+        game.gimmickTimer = 25000; // 25 seconds
+        game.gimmickMaxTime = 25000;
+        game.gimmickInstruction = "공략법: 25초 이내에 보스 주위의 4대 우상(Idols)을 모두 파괴하십시오!";
       }
       if (this.isPatternActive) {
         let allDead = true;
@@ -474,6 +579,11 @@ export class Boss {
           this.isPatternActive = false;
           game.prejudiceWave = 0;
           game.restoreHUD();
+          
+          // Clear global gimmick
+          game.gimmickActive = false;
+          game.gimmickTimer = 0;
+          
           this.isStunned = true;
           this.stunTimer = 8000;
           game.showBossTooltip("🛡️ 우상 타파! 편견의 장벽이 무너지고 거인이 무력화되었습니다!");
@@ -506,14 +616,40 @@ export class Boss {
         this.isPatternActive = true;
         this.kantCycle = 1;
         this.kantTimer = 0;
-        this.kantCycleDuration = 8000;
+        this.kantCycleDuration = 12000; // Increased to 12s
         this.spawnedGridLines = false;
         game.showBossTooltip("⏰ 도덕적 정언명령: 절대 법칙의 리듬에 맞추어 격자 경고선(💥)을 회피하십시오! 3사이클 생존 시 약화됩니다.");
+        
+        // Setup global gimmick
+        game.gimmickActive = true;
+        game.gimmickTimer = 36000; // 3 cycles * 12 seconds = 36 seconds
+        game.gimmickMaxTime = 36000;
+        game.gimmickInstruction = "공략법: 3단계의 정언명령 의무를 완수하며 격자 폭발을 피하십시오!";
+        
+        // Reset Kantian rules state
+        game.kantRuleViolation = false;
+        game.kantStillTimer = 0;
+        game.kantMoveTimer = 0;
+        
+        // Register Golden Line (도덕의 선)
+        game.kantDutyLine = { y: player.y };
       }
 
       if (this.isPatternActive) {
         this.speed = 0.3; // Stays mostly centered like a ticking clock
         this.kantTimer += dt;
+        
+        // Synchronize global gimmickTimer with kantTimer and kantCycle
+        game.gimmickTimer = Math.max(0, 36000 - ((this.kantCycle - 1) * 12000 + this.kantTimer));
+        
+        // Update instructions based on cycle
+        if (this.kantCycle === 1) {
+          game.gimmickInstruction = "정언명령 1단계: 황금빛 도덕의 선을 벗어나지 않고 횡이동하십시오!";
+        } else if (this.kantCycle === 2) {
+          game.gimmickInstruction = "정언명령 2단계: 보스 주변 영역에 머무르십시오!";
+        } else if (this.kantCycle === 3) {
+          game.gimmickInstruction = "정언명령 3단계: 움직이지 말고 제자리에 멈춰 서십시오!";
+        }
 
         if (!this.spawnedGridLines) {
           this.spawnedGridLines = true;
@@ -539,11 +675,21 @@ export class Boss {
           this.kantTimer = 0;
           this.kantCycle++;
           this.spawnedGridLines = false;
+          
+          if (this.kantCycle === 2) {
+            game.kantDutyLine = null; // Clear line for cycle 2
+          }
 
           if (this.kantCycle > 3) {
             this.isPatternActive = false;
             this.speed = 1.2;
             game.gridLines = [];
+            game.kantDutyLine = null;
+            
+            // Clear global gimmick
+            game.gimmickActive = false;
+            game.gimmickTimer = 0;
+            
             this.isStunned = true;
             this.stunTimer = 8000;
             game.showBossTooltip("🛡️ 실천이성 달성! 의무론의 원칙에 따라 칸트가 무력화되었습니다!");
@@ -556,19 +702,23 @@ export class Boss {
       }
     }
 
-    // Stage 6 (Nietzsche Relics): Nihilism grayscale relief
+    // Stage 6 (Nietzsche): Phase 1 & 2
     if (this.stageIndex === 5 && !this.isClone) {
       if (!this.nietzcheInitialized) {
         this.nietzcheInitialized = true;
-        this.isPatternActive = true;
-        game.spawnNietzcheRelics = () => {
-          game.nietzcheRelics = [
-            new NietzscheRelic(player.x - 180, player.y - 80, 'freedom'),
-            new NietzscheRelic(player.x + 180, player.y + 80, 'responsibility')
-          ];
-        };
-        game.spawnNietzcheRelics();
-        game.showBossTooltip("🦅 니체: 허무주의의 잿빛 심연 속에서, 자유와 책임의 유물(🔥)을 쟁취하여 초인(Übermensch)으로 각성하십시오!");
+        this.isPatternActive = false;
+        this.dragonActive = false;
+        this.nietzscheQuizTriggered = false;
+        game.showBossTooltip("🦅 니체: 신은 죽었다! 허무의 심연(Phase 1) 속에서 그의 그림자를 극복하십시오!");
+      }
+
+      // Check for Quiz at 50% HP
+      if (this.hp <= this.maxHp * 0.5 && !this.nietzscheQuizTriggered && !this.dragonActive) {
+        this.nietzscheQuizTriggered = true;
+        this.vx = 0;
+        this.vy = 0;
+        game.triggerNietzscheQuiz(this);
+        return;
       }
     }
 
@@ -598,7 +748,14 @@ export class Boss {
     this.isStunned = false;
     game.showBossTooltip("⚖️ 소피스트: 모든 진리는 상대적이다! 흔들리는 거짓 저울들 속에서, 흔들림 없는 진짜 저울(⚖️)을 찾으십시오!");
     
+    // Setup global gimmick
+    game.gimmickActive = true;
+    game.gimmickTimer = 20000; // 20 seconds
+    game.gimmickMaxTime = 20000;
+    game.gimmickInstruction = "공략법: 흔들림 없는 진짜 저울(분신)을 공격해 처치하십시오!";
+    
     this.clonesList = [];
+    const realIndex = Math.floor(Math.random() * 3);
     for (let i = 0; i < 3; i++) {
       const angle = (Math.PI * 2 / 3) * i + Math.random() * 0.5;
       const cx = this.x + Math.cos(angle) * 150;
@@ -609,8 +766,17 @@ export class Boss {
       clone.hp = clone.maxHp;
       clone.size = this.size;
       clone.parentBoss = this;
-      clone.swayPhase = Math.random() * Math.PI * 2;
-      clone.swaySpeed = 0.003 + Math.random() * 0.002;
+      
+      if (i === realIndex) {
+        clone.isRealClone = true;
+        clone.swayPhase = 0;
+        clone.swaySpeed = 0;
+      } else {
+        clone.isRealClone = false;
+        clone.swayPhase = Math.random() * Math.PI * 2;
+        clone.swaySpeed = 0.003 + Math.random() * 0.002;
+      }
+      
       game.enemies.push(clone);
       this.clonesList.push(clone);
     }
@@ -649,10 +815,39 @@ export class Boss {
         game.bossBullets.push(new BossBullet(this.x, this.y, a, 3, 'straight'));
       }
     } else { // 허무주의: heavy spiral
-      const cnt = this.phase2 ? 20 : 12;
-      for (let i = 0; i < cnt; i++) {
-        const a = (Math.PI * 2 / cnt) * i + this.time * 0.002;
-        game.bossBullets.push(new BossBullet(this.x, this.y, a, 4.5, 'spiral'));
+      if (si === 5 && this.dragonActive) {
+        if (!this.dragonPatternIndex) this.dragonPatternIndex = 0;
+        this.dragonPatternIndex = (this.dragonPatternIndex + 1) % 3;
+        
+        if (this.dragonPatternIndex === 0) {
+          // Spiral Barrage
+          const cnt = 24;
+          for (let i = 0; i < cnt; i++) {
+            const a = (Math.PI * 2 / cnt) * i + this.time * 0.0035;
+            game.bossBullets.push(new BossBullet(this.x, this.y, a, 5.0, 'spiral'));
+          }
+        } else if (this.dragonPatternIndex === 1) {
+          // Targeted Flame Warning Zones
+          for (let i = 0; i < 5; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const dist = Math.random() * 200;
+            const wx = player.x + Math.cos(angle) * dist;
+            const wy = player.y + Math.sin(angle) * dist;
+            game.warningZones.push(new WarningZone(wx, wy, 120, 40, 1000));
+          }
+        } else {
+          // Curved Wave Streams
+          for (let i = 0; i < 8; i++) {
+            const a = Math.atan2(player.y - this.y, player.x - this.x) + (i - 3.5) * 0.25;
+            game.bossBullets.push(new BossBullet(this.x, this.y, a, 5.5, 'curve'));
+          }
+        }
+      } else {
+        const cnt = this.phase2 ? 20 : 12;
+        for (let i = 0; i < cnt; i++) {
+          const a = (Math.PI * 2 / cnt) * i + this.time * 0.002;
+          game.bossBullets.push(new BossBullet(this.x, this.y, a, 4.5, 'spiral'));
+        }
       }
     }
     if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
@@ -694,8 +889,6 @@ export class Boss {
     else if (isSlowed) mainColor = '#54a0ff';
 
     ctx.fillStyle = mainColor;
-    ctx.shadowBlur = this.isStunned ? 10 : 25;
-    ctx.shadowColor = mainColor;
 
     const si = this.stageIndex;
 
@@ -730,7 +923,6 @@ export class Boss {
       // 2. Guardian of Apatheia: Tranquil teal crystal knight & wings
       ctx.save();
       ctx.fillStyle = 'rgba(76, 209, 149, 0.4)';
-      ctx.shadowBlur = 15; ctx.shadowColor = '#4cd137';
       ctx.beginPath();
       ctx.moveTo(0, 0); ctx.quadraticCurveTo(-45, -45, -65, -15); ctx.quadraticCurveTo(-35, 15, 0, 10); ctx.closePath(); ctx.fill();
       ctx.beginPath();
@@ -751,7 +943,6 @@ export class Boss {
       const shieldAngle = t * 0.0035;
       const shieldDist = this.size * 1.55;
       ctx.fillStyle = 'rgba(76, 209, 149, 0.75)';
-      ctx.shadowBlur = 10; ctx.shadowColor = '#4cd137';
       for (let i = 0; i < 2; i++) {
         const a = shieldAngle + i * Math.PI;
         const sx = Math.cos(a) * shieldDist;
@@ -784,7 +975,6 @@ export class Boss {
       ctx.translate(0, this.size * 0.8 + bookBob);
       ctx.rotate(Math.sin(t * 0.002) * 0.1);
       ctx.fillStyle = '#4b6584';
-      ctx.shadowBlur = 15; ctx.shadowColor = '#a55eea';
       ctx.beginPath();
       ctx.roundRect(-22, -14, 44, 28, 3);
       ctx.fill();
@@ -808,7 +998,6 @@ export class Boss {
       const gemColors = ['#81ecec', '#ff7675', '#fdcb6e', '#a29bfe'];
       for (let i = 0; i < 4; i++) {
         ctx.fillStyle = gemColors[i];
-        ctx.shadowBlur = 8; ctx.shadowColor = gemColors[i];
         ctx.beginPath();
         ctx.arc(-15 + i * 10, -this.size * 0.4, 3.5, 0, Math.PI*2);
         ctx.fill();
@@ -817,7 +1006,6 @@ export class Boss {
       ctx.save();
       const fistBob = Math.sin(t * 0.006) * 6;
       ctx.fillStyle = mainColor;
-      ctx.shadowBlur = 10; ctx.shadowColor = mainColor;
       ctx.beginPath(); ctx.roundRect(-this.size * 1.7, -10 + fistBob, 14, 20, 4); ctx.fill();
       ctx.beginPath(); ctx.roundRect(this.size * 1.7 - 14, -10 - fistBob, 14, 20, 4); ctx.fill();
       ctx.restore();
@@ -841,23 +1029,170 @@ export class Boss {
       ctx.beginPath(); ctx.arc(0, 0, 7, 0, Math.PI*2); ctx.fill();
     }
     else if (si === 5) {
-      // 6. Nietzsche Relic/Shadow: Void Blackhole sphere absorbing static
-      ctx.save();
-      ctx.shadowBlur = 30; ctx.shadowColor = '#000000';
-      ctx.fillStyle = '#0a0a0c';
-      ctx.beginPath(); ctx.arc(0, 0, this.size, 0, Math.PI*2); ctx.fill();
-      
-      ctx.strokeStyle = 'rgba(220, 220, 220, 0.7)'; ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, this.size * 1.35, this.size * 0.5, t * 0.002, 0, Math.PI*2);
-      ctx.stroke();
-      
-      ctx.fillStyle = '#ff4757'; ctx.shadowBlur = 15; ctx.shadowColor = '#ff4757';
-      ctx.beginPath();
-      ctx.ellipse(-8, -4, 4, 2, 0.1, 0, Math.PI*2);
-      ctx.ellipse(8, -4, 4, 2, -0.1, 0, Math.PI*2);
-      ctx.fill();
-      ctx.restore();
+      if (this.dragonActive) {
+        // Draw the Giant Black Dragon (허무의 종말룡)
+        ctx.save();
+        const angle = this.angle;
+        ctx.rotate(angle + Math.PI / 2);
+        
+        // 1. Giant Wings
+        const wingSway = Math.sin(t * 0.004) * 0.25;
+        ctx.fillStyle = '#1e1b26';
+        ctx.strokeStyle = '#8c7ae6';
+        ctx.lineWidth = 3.5;
+        
+        // Left Wing
+        ctx.save();
+        ctx.translate(-15, -10);
+        ctx.rotate(-wingSway - 0.2);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(-90, -80, -120, -20);
+        ctx.quadraticCurveTo(-70, 20, 0, 10);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        
+        ctx.strokeStyle = '#ff4757';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(-40, -30); ctx.lineTo(-110, -20);
+        ctx.moveTo(-30, -10); ctx.lineTo(-90, 0);
+        ctx.stroke();
+        ctx.restore();
+        
+        // Right Wing
+        ctx.save();
+        ctx.translate(15, -10);
+        ctx.rotate(wingSway + 0.2);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(90, -80, 120, -20);
+        ctx.quadraticCurveTo(70, 20, 0, 10);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        
+        ctx.strokeStyle = '#ff4757';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(40, -30); ctx.lineTo(110, -20);
+        ctx.moveTo(30, -10); ctx.lineTo(90, 0);
+        ctx.stroke();
+        ctx.restore();
+        
+        // 2. Tail
+        const tailSway = Math.sin(t * 0.005) * 0.4;
+        ctx.save();
+        ctx.translate(0, 45);
+        ctx.rotate(tailSway);
+        ctx.fillStyle = '#2f2a3f';
+        ctx.beginPath();
+        ctx.moveTo(-10, 0);
+        ctx.quadraticCurveTo(-15, 40, -5, 75);
+        ctx.lineTo(0, 90);
+        ctx.lineTo(5, 75);
+        ctx.quadraticCurveTo(15, 40, 10, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#8c7ae6';
+        ctx.stroke();
+        
+        const fl = 10 + Math.sin(t * 0.02) * 5;
+        const tailTipGrd = ctx.createRadialGradient(0, 90, 0, 0, 90, fl);
+        tailTipGrd.addColorStop(0, '#ff4757');
+        tailTipGrd.addColorStop(0.5, '#ffd200');
+        tailTipGrd.addColorStop(1, 'rgba(255, 71, 87, 0)');
+        ctx.fillStyle = tailTipGrd;
+        ctx.beginPath();
+        ctx.arc(0, 90, fl, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        
+        // 3. Main Body
+        ctx.fillStyle = '#0f0c1b';
+        ctx.strokeStyle = '#8c7ae6';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 40, 50, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        
+        ctx.fillStyle = '#ff4757';
+        for (let i = 0; i < 5; i++) {
+          const sy = -30 + i * 15;
+          ctx.beginPath();
+          ctx.moveTo(-6, sy);
+          ctx.lineTo(0, sy - 12);
+          ctx.lineTo(6, sy);
+          ctx.closePath();
+          ctx.fill();
+        }
+        
+        // 4. Head
+        ctx.save();
+        ctx.translate(0, -52);
+        ctx.fillStyle = '#0f0c1b';
+        ctx.strokeStyle = '#ff4757';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(-20, 15);
+        ctx.lineTo(-25, -15);
+        ctx.lineTo(0, -35);
+        ctx.lineTo(25, -15);
+        ctx.lineTo(20, 15);
+        ctx.quadraticCurveTo(0, 25, -20, 15);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        
+        ctx.strokeStyle = '#ffd200';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(-15, -10);
+        ctx.quadraticCurveTo(-25, -35, -35, -40);
+        ctx.moveTo(15, -10);
+        ctx.quadraticCurveTo(25, -35, 35, -40);
+        ctx.stroke();
+        
+        ctx.fillStyle = '#ff4757';
+        ctx.beginPath();
+        ctx.ellipse(-8, -8, 5, 2.5, -0.3, 0, Math.PI * 2);
+        ctx.ellipse(8, -8, 5, 2.5, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        
+        // 5. Chest Energy Core
+        const corePulse = 18 + Math.sin(t * 0.015) * 5;
+        const coreGrd = ctx.createRadialGradient(0, 0, 0, 0, 0, corePulse);
+        coreGrd.addColorStop(0, '#ffffff');
+        coreGrd.addColorStop(0.3, '#ff4757');
+        coreGrd.addColorStop(0.7, '#8c7ae6');
+        coreGrd.addColorStop(1, 'rgba(140, 122, 230, 0)');
+        ctx.fillStyle = coreGrd;
+        ctx.beginPath();
+        ctx.arc(0, 0, corePulse, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.restore();
+      } else {
+        // Nietzsche Relic/Shadow: Void Blackhole sphere absorbing static
+        ctx.save();
+        ctx.fillStyle = '#0a0a0c';
+        ctx.beginPath(); ctx.arc(0, 0, this.size, 0, Math.PI*2); ctx.fill();
+        
+        ctx.strokeStyle = 'rgba(220, 220, 220, 0.7)'; ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, this.size * 1.35, this.size * 0.5, t * 0.002, 0, Math.PI*2);
+        ctx.stroke();
+        
+        ctx.fillStyle = '#ff4757';
+        ctx.beginPath();
+        ctx.ellipse(-8, -4, 4, 2, 0.1, 0, Math.PI*2);
+        ctx.ellipse(8, -4, 4, 2, -0.1, 0, Math.PI*2);
+        ctx.fill();
+        ctx.restore();
+      }
     }
     else {
       ctx.beginPath(); ctx.arc(0, 0, this.size, 0, Math.PI * 2); ctx.fill();
@@ -881,19 +1216,72 @@ export class Boss {
       ctx.fillText('🛡️', rx, ry - this.size - 48);
     }
     
-    // Name
-    ctx.font = 'bold 13px Outfit, sans-serif';
-    ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
-    ctx.shadowColor = '#000'; ctx.shadowBlur = 5;
-    ctx.fillText(this.isClone ? "궤변의 분신" : this.name, rx, ry - this.size - 22);
+    // Name & HP bar (Only for clones, main boss is displayed on screen HUD top)
+    if (this.isClone) {
+      ctx.font = 'bold 13px Outfit, sans-serif';
+      ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
+      ctx.shadowColor = '#000'; ctx.shadowBlur = 5;
+      ctx.fillText("소피스트의 분신", rx, ry - this.size - 22);
+      
+      let displayHp;
+      if (this.isRealClone) {
+        displayHp = this.hp;
+      } else {
+        displayHp = this.maxHp * (0.22 + Math.sin(t * 0.005) * 0.4);
+      }
+      const bw = 120, bh = 8, bx = rx - 60, by = ry - this.size - 38;
+      ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.beginPath(); ctx.roundRect(bx-2, by-2, bw+4, bh+4, 4); ctx.fill();
+      ctx.fillStyle = this.isRealClone ? '#ff4757' : '#7f8c8d';
+      ctx.fillRect(bx, by, bw * Math.max(0, displayHp) / this.maxHp, bh);
+      ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 1; ctx.strokeRect(bx, by, bw, bh);
+    }
     
-    // HP bar
-    const displayHp = this.isClone ? this.maxHp * (0.22 + Math.sin(t * 0.005) * 0.4) : this.hp;
-    const bw = 120, bh = 8, bx = rx - 60, by = ry - this.size - 38;
-    ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.beginPath(); ctx.roundRect(bx-2, by-2, bw+4, bh+4, 4); ctx.fill();
-    ctx.fillStyle = this.isClone ? '#7f8c8d' : '#ff4757';
-    ctx.fillRect(bx, by, bw * displayHp / this.maxHp, bh);
-    ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 1; ctx.strokeRect(bx, by, bw, bh);
+    // Draw Dialogue Speech Bubble
+    if (!this.isClone && this.activeDialogue && this.dialogueDisplayTimer > 0) {
+      ctx.save();
+      ctx.font = '12px Outfit, sans-serif';
+      const textWidth = ctx.measureText(this.activeDialogue).width;
+      const padX = 14;
+      const padY = 8;
+      const rectW = textWidth + padX * 2;
+      const rectH = 14 + padY * 2;
+      
+      const bubbleX = rx - rectW / 2;
+      const bubbleY = ry - this.size - 50 - rectH;
+      
+      ctx.fillStyle = 'rgba(15, 18, 30, 0.88)';
+      ctx.strokeStyle = '#ffd200';
+      ctx.lineWidth = 1.5;
+      
+      ctx.beginPath();
+      ctx.roundRect(bubbleX, bubbleY, rectW, rectH, 8);
+      ctx.fill();
+      ctx.stroke();
+      
+      ctx.fillStyle = 'rgba(15, 18, 30, 0.88)';
+      ctx.beginPath();
+      ctx.moveTo(rx - 6, bubbleY + rectH);
+      ctx.lineTo(rx + 6, bubbleY + rectH);
+      ctx.lineTo(rx, bubbleY + rectH + 6);
+      ctx.closePath();
+      ctx.fill();
+      
+      ctx.strokeStyle = '#ffd200';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(rx - 6, bubbleY + rectH);
+      ctx.lineTo(rx, bubbleY + rectH + 6);
+      ctx.lineTo(rx + 6, bubbleY + rectH);
+      ctx.stroke();
+      
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(this.activeDialogue, rx, bubbleY + rectH / 2);
+      
+      ctx.restore();
+    }
+
     ctx.restore();
   }
 }

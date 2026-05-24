@@ -109,6 +109,25 @@ export function gameEvents() {
       return;
     }
 
+    // Nietzsche Checkpoint Quiz keyboard navigation
+    if (this.nietzscheQuizActive) {
+      if (k === 'arrowup' || k === 'w') {
+        e.preventDefault();
+        this.nietzscheQuizSelection = (this.nietzscheQuizSelection - 1 + 4) % 4;
+        this.updateNietzscheQuizSelection();
+        if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
+      } else if (k === 'arrowdown' || k === 's') {
+        e.preventDefault();
+        this.nietzscheQuizSelection = (this.nietzscheQuizSelection + 1) % 4;
+        this.updateNietzscheQuizSelection();
+        if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
+      } else if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        this.selectNietzscheQuizOption();
+      }
+      return;
+    }
+
     // ESC: pause
     if (e.key === 'Escape') {
       e.preventDefault();

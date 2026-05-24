@@ -26,6 +26,16 @@ export class Player {
     this.auraTier = 0;
     this.lastDirection = 'down';
     this.facing = 'left';
+    
+    // Gimmick failure debuff timers
+    this.confusedTimer = 0;
+    this.stunnedTimer = 0;
+    this.blindedTimer = 0;
+    this.kantStunnedTimer = 0;
+    this.nietzscheVortexTimer = 0;
+    this.knockbackTimer = 0;
+    this.knockbackX = 0;
+    this.knockbackY = 0;
   }
   recalculateStats() {
     this.dmgMultiplier = 1;
@@ -80,7 +90,12 @@ export class Player {
       window.gameInstance.applyAuraStats();
     }
   }
-  get effectiveSpeed() { return this.speed * (1 + this.auraSpeedBonus); }
+  get effectiveSpeed() { 
+    let baseSpeed = this.speed;
+    if (this.blindedTimer && this.blindedTimer > 0) baseSpeed *= 0.5;
+    if (this.nietzscheVortexTimer && this.nietzscheVortexTimer > 0) baseSpeed *= 0.4;
+    return baseSpeed * (1 + this.auraSpeedBonus); 
+  }
   takeDamage(dmg, game) {
     if (this.isInvincible) return;
     const reduced = Math.max(1, Math.floor(dmg * (1 - this.armorReduction) * (1 - (this.auraDamageReduction || 0))));
@@ -115,21 +130,40 @@ export class Player {
   update(dt, keys, joystickAngle, joystickStrength) {
     if (this.invincibilityFlash > 0) this.invincibilityFlash -= dt;
     this.animTime = (this.animTime || 0) + dt;
+
+    // Decay debuff timers
+    if (this.confusedTimer > 0) this.confusedTimer -= dt;
+    if (this.stunnedTimer > 0) this.stunnedTimer -= dt;
+    if (this.blindedTimer > 0) this.blindedTimer -= dt;
+    if (this.kantStunnedTimer > 0) this.kantStunnedTimer -= dt;
+    if (this.nietzscheVortexTimer > 0) this.nietzscheVortexTimer -= dt;
+    if (this.knockbackTimer > 0) this.knockbackTimer -= dt;
+
     let dx = 0, dy = 0;
-    if (joystickStrength > 0) {
-      dx = Math.cos(joystickAngle) * joystickStrength;
-      dy = Math.sin(joystickAngle) * joystickStrength;
-    } else {
-      if (keys['w'] || keys['arrowup']) dy -= 1;
-      if (keys['s'] || keys['arrowdown']) dy += 1;
-      if (keys['a'] || keys['arrowleft']) dx -= 1;
-      if (keys['d'] || keys['arrowright']) dx += 1;
+    if (this.stunnedTimer <= 0 && this.kantStunnedTimer <= 0) {
+      if (joystickStrength > 0) {
+        dx = Math.cos(joystickAngle) * joystickStrength;
+        dy = Math.sin(joystickAngle) * joystickStrength;
+      } else {
+        if (keys['w'] || keys['arrowup']) dy -= 1;
+        if (keys['s'] || keys['arrowdown']) dy += 1;
+        if (keys['a'] || keys['arrowleft']) dx -= 1;
+        if (keys['d'] || keys['arrowright']) dx += 1;
+      }
+
+      // 4단계 우상 Tribe의 이동 반대 디버프
+      if (window.gameInstance && window.gameInstance.activeIdols && window.gameInstance.activeIdols.has('tribe')) {
+        dx = -dx; dy = -dy;
+      }
+
+      // 1단계 소피스트 기믹 실패 혼란 디버프
+      if (this.confusedTimer > 0) {
+        dx = -dx; dy = -dy;
+      }
     }
-    if (window.gameInstance && window.gameInstance.activeIdols && window.gameInstance.activeIdols.has('tribe')) {
-      dx = -dx; dy = -dy;
-    }
+
     const len = Math.hypot(dx, dy);
-    if (len > 0) {
+    if (len > 0 && this.stunnedTimer <= 0 && this.kantStunnedTimer <= 0) {
       this.vx = (dx / len) * this.effectiveSpeed;
       this.vy = (dy / len) * this.effectiveSpeed;
       this.faceAngle = Math.atan2(dy, dx);
@@ -140,11 +174,27 @@ export class Player {
       } else {
         this.lastDirection = this.vy > 0 ? 'down' : 'up';
       }
-    } else { this.vx = 0; this.vy = 0; }
-    this.x += this.vx * dt * 0.06; this.y += this.vy * dt * 0.06;
+    } else {
+      this.vx = 0;
+      this.vy = 0;
+    }
+
+    // Apply knockback if active (4단계 기믹 실패 넉백)
+    if (this.knockbackTimer > 0) {
+      this.vx = this.knockbackX;
+      this.vy = this.knockbackY;
+      // Apply friction damping to the knockback speed
+      this.knockbackX *= Math.pow(0.92, dt / 16.666);
+      this.knockbackY *= Math.pow(0.92, dt / 16.666);
+    }
+
+    this.x += this.vx * dt * 0.06;
+    this.y += this.vy * dt * 0.06;
+
     const bounds = (window.gameInstance && window.gameInstance.bounds) ? window.gameInstance.bounds : 5000;
     this.x = Math.max(-bounds, Math.min(bounds, this.x));
     this.y = Math.max(-bounds, Math.min(bounds, this.y));
+
     const totalRegen = this.regenHp + (this.auraRegenBonus || 0);
     if (totalRegen > 0) {
       this.regenAccumulator += dt;
@@ -324,35 +374,45 @@ export class Player {
         ctx.restore();
       }
       
-      // 5. UNHOLY AURA (녹색 역오각형 소용돌이 + 녹색 원형 이펙트)
+      // 5. UNHOLY AURA (음산한 황혼빛 육망성 소용돌이 + 황혼빛 원형 이펙트)
       else if (auraKey === 'unholy') {
-        ctx.strokeStyle = 'rgba(46, 213, 115, 0.85)';
-        ctx.shadowColor = '#2ed573';
+        ctx.strokeStyle = 'rgba(255, 179, 0, 0.85)';
+        ctx.shadowColor = '#ffb300';
         
-        // Reverse pentagram
+        // Hexagram (Star of David)
         ctx.save();
         ctx.translate(rx, ry);
         ctx.rotate(-time * 0.0005);
         ctx.lineWidth = 2.2;
         
+        const hexRadius = radius * 0.95;
+        
+        // Triangle 1 (Pointing up)
         ctx.beginPath();
-        const pentRadius = radius * 0.95;
-        for (let i = 0; i < 5; i++) {
-          const starIdx = (i * 2) % 5;
-          const a = (Math.PI * 2 / 5) * starIdx - Math.PI / 2 + Math.PI; // Reverse rotation
-          ctx.lineTo(Math.cos(a) * pentRadius, Math.sin(a) * pentRadius);
+        for (let i = 0; i < 3; i++) {
+          const a = (Math.PI * 2 / 3) * i - Math.PI / 2;
+          ctx.lineTo(Math.cos(a) * hexRadius, Math.sin(a) * hexRadius);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        
+        // Triangle 2 (Pointing down)
+        ctx.beginPath();
+        for (let i = 0; i < 3; i++) {
+          const a = (Math.PI * 2 / 3) * i + Math.PI / 2;
+          ctx.lineTo(Math.cos(a) * hexRadius, Math.sin(a) * hexRadius);
         }
         ctx.closePath();
         ctx.stroke();
         
         // Outer concentric ring
         ctx.beginPath();
-        ctx.arc(0, 0, pentRadius, 0, Math.PI * 2);
+        ctx.arc(0, 0, hexRadius, 0, Math.PI * 2);
         ctx.stroke();
         ctx.restore();
         
-        // Healing green sparkles rising
-        ctx.fillStyle = 'rgba(46, 213, 115, 0.6)';
+        // Healing amber sparkles rising
+        ctx.fillStyle = 'rgba(255, 179, 0, 0.6)';
         for (let i = 0; i < 3; i++) {
           const seed = i * 400;
           const pct = ((time + seed) % 1800) / 1800;
@@ -1057,6 +1117,83 @@ export class Player {
     
     ctx.fillStyle = nameColor; ctx.shadowBlur = 0;
     ctx.fillText(name, rx + sway * 0.2, ry - 36);
+
+    // ─── Overhead Debuff Visual Indicators ───
+    // 1. Confused (Sophist failure)
+    if (this.confusedTimer > 0) {
+      ctx.save();
+      const angle = (Date.now() * 0.005) % (Math.PI * 2);
+      ctx.translate(rx, ry - 80);
+      ctx.rotate(angle);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = '16px serif';
+      ctx.fillText('🌀', -18, 0);
+      ctx.fillText('⭐', 0, -10);
+      ctx.fillText('🌀', 18, 0);
+      ctx.restore();
+    }
+
+    // 2. Ice Stun (Apatheia failure)
+    if (this.stunnedTimer > 0) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(116, 185, 255, 0.45)';
+      ctx.strokeStyle = '#0984e3';
+      ctx.lineWidth = 2.5;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = '#74b9ff';
+      ctx.beginPath();
+      ctx.moveTo(rx - 22, ry + 25);
+      ctx.lineTo(rx - 25, ry - 15);
+      ctx.lineTo(rx - 8, ry - 30);
+      ctx.lineTo(rx + 15, ry - 28);
+      ctx.lineTo(rx + 25, ry - 10);
+      ctx.lineTo(rx + 22, ry + 25);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(rx - 12, ry - 10);
+      ctx.lineTo(rx - 3, ry + 15);
+      ctx.lineTo(rx + 12, ry + 5);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // 5. Kant Time Lock (Kant failure)
+    if (this.kantStunnedTimer > 0) {
+      ctx.save();
+      const angle = (Date.now() * 0.003) % (Math.PI * 2);
+      ctx.translate(rx, ry - 80);
+      ctx.rotate(angle);
+      ctx.strokeStyle = '#ffd200';
+      ctx.lineWidth = 2.5;
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = '#ffd200';
+      ctx.beginPath();
+      ctx.arc(0, 0, 12, 0, Math.PI * 2);
+      ctx.stroke();
+      for (let i = 0; i < 8; i++) {
+        const a = (Math.PI * 2 / 8) * i;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(a) * 12, Math.sin(a) * 12);
+        ctx.lineTo(Math.cos(a) * 16, Math.sin(a) * 16);
+        ctx.stroke();
+      }
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(0, -8);
+      ctx.moveTo(0, 0);
+      ctx.lineTo(5, 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
     ctx.restore();
   }
 }
