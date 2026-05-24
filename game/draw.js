@@ -1,4 +1,4 @@
-import { PHILOSOPHY_DB } from '../db.js';
+import { PHILOSOPHY_DB, EVOLUTION_STAGES } from '../db.js';
 
 export function gameDraw() {
   const ctx = this.ctx;
@@ -23,6 +23,56 @@ export function gameDraw() {
 
   // Draw stage background
   this.drawStageBackground(camX, camY, W, H);
+
+  // Draw map bounds and outside shaded area
+  const bounds = this.bounds || 5000;
+  const left = -bounds - camX + W / 2;
+  const right = bounds - camX + W / 2;
+  const top = -bounds - camY + H / 2;
+  const bottom = bounds - camY + H / 2;
+
+  // 1. Draw a semi-transparent dark shade outside the boundary
+  ctx.save();
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+  ctx.beginPath();
+  ctx.rect(0, 0, W, H);
+  // Outer rectangle is clockwise, inner is counter-clockwise to subtract (evenodd rule)
+  ctx.rect(left, top, right - left, bottom - top);
+  ctx.closePath();
+  ctx.fill('evenodd');
+  ctx.restore();
+
+  // 2. Draw a beautiful glowing border
+  const stages = EVOLUTION_STAGES ? EVOLUTION_STAGES[this.player.lineage] : null;
+  const ev = stages ? stages[Math.min(this.player.evolutionIndex, stages.length - 1)] : null;
+  const themeColor = ev ? ev.color : '#ffd200';
+
+  ctx.save();
+  ctx.strokeStyle = themeColor;
+  ctx.lineWidth = 5;
+  ctx.shadowColor = themeColor;
+  ctx.shadowBlur = 20;
+  ctx.beginPath();
+  ctx.rect(left, top, right - left, bottom - top);
+  ctx.stroke();
+
+  // Draw inner dashed line to give a modern "barrier grid" warning effect
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([10, 15]);
+  ctx.shadowBlur = 0;
+  ctx.beginPath();
+  ctx.rect(left + 8, top + 8, right - left - 16, bottom - top - 16);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Draw a border label at the top and bottom
+  ctx.fillStyle = themeColor;
+  ctx.font = 'bold 16px Outfit, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🚧 진리의 경계선 (LIMIT OF TRUTH) 🚧', (left + right) / 2, top - 15);
+  ctx.fillText('🚧 진리의 경계선 (LIMIT OF TRUTH) 🚧', (left + right) / 2, bottom + 30);
+  ctx.restore();
 
   // Medieval darkness overlay
   if (this.medievalDarkness && this.currentBoss) {

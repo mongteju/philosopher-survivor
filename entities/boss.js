@@ -281,7 +281,7 @@ export class Boss {
   constructor(x, y, playerLevel, name, stageIndex) {
     this.x = x; this.y = y; this.type = 'boss'; this.isIdol = false;
     this.name = name; this.stageIndex = stageIndex;
-    const baseHps = [3000, 5000, 8000, 12000, 18000, 42000];
+    const baseHps = [1500, 5000, 8000, 12000, 18000, 42000];
     this.maxHp = (baseHps[stageIndex] || 5000) * (1 + (playerLevel - 1) * 0.1);
     this.hp = this.maxHp; this.size = 38; this.speed = 1.2;
     this.color = '#e84393'; this.xpVal = 50;

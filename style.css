@@ -2437,6 +2437,34 @@ button.keyboard-selected,
   100% { background-position: 200% center; }
 }
 
+/* --- GLITTER & SHIMMER FOR PROMOTION REWARD --- */
+@keyframes glitter-pulse {
+  0% {
+    text-shadow: 0 0 6px #f39c12, 0 0 12px #f1c40f, 0 0 20px #ffffff;
+    box-shadow: 0 0 15px rgba(241, 196, 15, 0.45), 0 0 25px rgba(255, 210, 0, 0.2), 4px 4px 0px #231F20;
+    transform: scale(1);
+  }
+  100% {
+    text-shadow: 0 0 12px #f39c12, 0 0 24px #f1c40f, 0 0 35px #ffffff, 0 0 45px #fff;
+    box-shadow: 0 0 30px rgba(241, 196, 15, 0.85), 0 0 50px rgba(255, 210, 0, 0.5), 4px 4px 0px #231F20;
+    transform: scale(1.03);
+  }
+}
+
+.promotion-reward-title {
+  background: linear-gradient(180deg, #ffe066 0%, #f5b041 100%) !important;
+  color: #231F20 !important;
+  border-color: #f1c40f !important;
+  box-shadow: 0 0 20px rgba(255, 210, 0, 0.6), 0 0 40px rgba(255, 159, 67, 0.45), 4px 4px 0px #231F20 !important;
+  animation: glitter-pulse 1.0s infinite alternate ease-in-out !important;
+  letter-spacing: 1.5px !important;
+}
+
+.promotion-reward-title::before,
+.promotion-reward-title::after {
+  display: none !important;
+}
+
 
 
 

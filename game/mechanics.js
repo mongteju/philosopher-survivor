@@ -281,9 +281,138 @@ export function resumeFromGacha() {
   this.player.evolutionIndex = Math.min(this.stageIndex, EVOLUTION_STAGES[this.player.lineage].length - 1);
   this.addDamageText(this.player.x, this.player.y - 80, `✨ ${EVOLUTION_STAGES[this.player.lineage][this.player.evolutionIndex].title} 전직!`, '#ffd200', 22);
   for (let i = 0; i < 5; i++) { this.spawnRandomMob(); }
-  this.isPlaying = true;
-  this.lastTime = performance.now();
-  requestAnimationFrame(t => this.loop(t));
+  
+  // Trigger Epic Promotion reward which will handle healing and pause screen
+  this.triggerEpicEvolutionUpgrade();
+}
+
+export function triggerEpicEvolutionUpgrade() {
+  this.isPlaying = false;
+  
+  // 1. Heal 30% of max HP
+  let healAmt = 0;
+  if (this.player) {
+    healAmt = Math.floor(this.player.maxHp * 0.3);
+    this.player.heal(healAmt);
+    this.addDamageText(this.player.x, this.player.y - 40, `💚 체력 회복 +${healAmt} (30%)`, '#2ed573', 20);
+  }
+
+  // 2. Setup the levelup screen visual with Epic Promotion styling
+  const ribbonTitle = document.querySelector('#levelup-screen .levelup-ribbon-title');
+  if (ribbonTitle) {
+    ribbonTitle.textContent = '✨ 전직 보상 ✨';
+    ribbonTitle.classList.add('promotion-reward-title');
+  }
+
+  const instructionsEl = document.querySelector('#levelup-screen .levelup-instructions');
+  if (instructionsEl) {
+    const stages = EVOLUTION_STAGES[this.player.lineage];
+    const ev = stages[Math.min(this.player.evolutionIndex, stages.length - 1)];
+    const classTitle = ev ? ev.title : '학자';
+    instructionsEl.innerHTML = `<span style="font-size:19px; color:#c0392b; font-weight:900; text-shadow: 1px 1px 0px rgba(0,0,0,0.15);">👑 [${classTitle}] 전직 완료! 👑</span><br>` +
+                               `<span style="font-size:14px; color:#2ed573; font-weight:bold; display:inline-block; margin: 4px 0 6px;">💚 체력 30% 회복 완료 (+${healAmt} HP)</span><br>` +
+                               `<span style="font-size:14px; color:#231F20; font-weight:700;">🎁 전직 기념 특별 에픽 등급 스킬 카드 중 하나를 선택하십시오!</span>`;
+  }
+
+  const linCards = PHILOSOPHY_DB[this.player.lineage];
+  
+  // Check if player has already awakened any weapon (active skill)
+  const hasAwakenedWeapon = Object.entries(this.player.activeSkills).some(([id, lvl]) => {
+    const card = linCards.find(c => c.id === id);
+    return card && card.type === 'weapon' && lvl >= card.maxLevel;
+  });
+
+  const available = linCards.filter(c => {
+    const curLvl = this.player.activeSkills[c.id] || 0;
+    const effectiveMaxLvl = (c.type === 'weapon' && hasAwakenedWeapon) ? Math.min(c.maxLevel, 3) : c.maxLevel;
+    return curLvl < effectiveMaxLvl;
+  });
+
+  available.sort(() => Math.random() - 0.5);
+  this.levelChoices = available.slice(0, 3);
+  this.cardSelectedIndex = 0;
+  const grid = document.getElementById('card-choices-container');
+  grid.innerHTML = '';
+
+  if (this.levelChoices.length === 0) {
+    // If no skills are available to upgrade, offer a huge sage's blessing stats boost!
+    const el = document.createElement('div');
+    el.className = 'choice-card choice-card-horizontal keyboard-selected epic-card';
+    el.innerHTML = `
+      <div class="card-left-section">
+        <div class="card-icon-box epic">
+          <div class="tier-ribbon epic">에픽</div>
+          <span class="card-skill-icon">👑</span>
+        </div>
+      </div>
+      <div class="card-right-section">
+        <div class="card-title-row">
+          <span class="card-skill-name">대현자의 지혜 (기본 능력치 증가)</span>
+          <span class="card-lv-badge">즉시</span>
+        </div>
+        <div class="card-skill-desc">모든 능력치를 대폭 증폭시킵니다. (대미지 +30%, 공격 범위 +30%, 이속 +20%)</div>
+      </div>
+    `;
+    el.onclick = () => {
+      this.player.dmgMultiplier += 0.30;
+      this.player.areaMultiplier += 0.30;
+      this.player.speed += 0.64;
+      this.player.recalculateStats();
+      this.closeLevelUp();
+    };
+    grid.appendChild(el);
+  } else {
+    this.levelChoices.forEach((upgrade, idx) => {
+      const curLvl = this.player.activeSkills[upgrade.id] || 0;
+      const nextLvl = curLvl + 1;
+      const isAwakening = nextLvl >= upgrade.maxLevel;
+
+      // Force to Epic tier!
+      const tier = 'epic';
+      upgrade.rolledTier = tier;
+
+      const categoryClass = upgrade.type === 'weapon' ? 'choice-card-weapon' : 'choice-card-passive';
+      const el = document.createElement('div');
+      el.className = `choice-card choice-card-horizontal ${categoryClass} ${this.player.lineage}-card ${tier}-card${isAwakening ? ' awakening-card' : ''}`;
+      if (idx === 0) el.classList.add('keyboard-selected');
+
+      const bonusSpan = `<span class="rarity-bonus-pill epic">+90% 보너스 스텟</span>`;
+      const lvLabel = isAwakening ? '각성' : `Lv.${nextLvl}`;
+      
+      el.innerHTML = `
+        <div class="card-left-section">
+          <div class="card-icon-box epic">
+            <div class="tier-ribbon epic">에픽</div>
+            <span class="card-skill-icon">${upgrade.icon || (upgrade.type === 'weapon' ? '⚔️' : '🧠')}</span>
+          </div>
+        </div>
+        <div class="card-right-section">
+          <div class="card-title-row">
+            <span class="card-skill-name">${upgrade.name}</span>
+            <div class="card-right-badge-stack">
+              <span class="card-lv-badge ${isAwakening ? 'awakening' : ''}">${lvLabel}</span>
+              ${bonusSpan}
+            </div>
+          </div>
+          <div class="card-skill-desc">${upgrade.desc || ''}</div>
+          ${isAwakening ? '<div class="awakening-badge-line">🔥 각성 특수 효과 발현!</div>' : ''}
+        </div>
+      `;
+      el.onclick = () => {
+        if (isAwakening && upgrade.type === 'weapon') {
+          const confirmAwake = confirm("🔥 정말로 이 스킬을 각성하시겠습니까?\n\n(한 번 각성하면 다른 액티브 스킬은 각성할 수 없으며 최대 레벨이 3으로 제한됩니다!)");
+          if (!confirmAwake) return;
+        }
+        this.applyCardSelection(upgrade, isAwakening);
+        this.closeLevelUp();
+      };
+      grid.appendChild(el);
+    });
+  }
+
+  // Focus and trigger UI active state
+  document.getElementById('levelup-screen').classList.add('active');
+  sfx.playLevelUp();
 }
 
 export function triggerLevelUp() {
@@ -410,6 +539,15 @@ export function applyCardSelection(upgrade, isAwakening) {
 
 export function closeLevelUp() {
   this.resetFocus();
+  const ribbonTitle = document.querySelector('#levelup-screen .levelup-ribbon-title');
+  if (ribbonTitle) {
+    ribbonTitle.textContent = '스킬 선택';
+    ribbonTitle.classList.remove('promotion-reward-title');
+  }
+  const instructionsEl = document.querySelector('#levelup-screen .levelup-instructions');
+  if (instructionsEl) {
+    instructionsEl.textContent = '방향키 [↑]/[↓]로 이동하고 [Enter]/[Space]로 선택하십시오.';
+  }
   document.getElementById('levelup-screen').classList.remove('active');
   this.isPlaying = true; this.lastTime = performance.now();
   requestAnimationFrame(t => this.loop(t));

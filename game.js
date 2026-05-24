@@ -31,6 +31,7 @@ import {
   _showGachaResult,
   applyAuraStats,
   resumeFromGacha,
+  triggerEpicEvolutionUpgrade,
   triggerLevelUp,
   applyCardSelection,
   closeLevelUp,
@@ -93,6 +94,18 @@ class Game {
     this.bgm = new Audio('music1.mp3');
     this.bgm.loop = true; this.bgm.volume = 0.35;
     this.bgmMuted = false; this.sfxMuted = false;
+    this.bounds = 5000;
+
+    // Start BGM on first interaction (fail-safe for browser autoplay policies)
+    const playBgmOnce = () => {
+      if (this.bgm && this.bgm.paused && !this.bgmMuted) {
+        this.bgm.play().catch(() => {});
+      }
+      window.removeEventListener('click', playBgmOnce);
+      window.removeEventListener('keydown', playBgmOnce);
+    };
+    window.addEventListener('click', playBgmOnce);
+    window.addEventListener('keydown', playBgmOnce);
 
     this._gachaSpun = false; this._gachaPendingTier = 1;
     this._gachaTierNames = []; this._gachaTierDescs = []; this._gachaTierColors = [];
@@ -210,6 +223,7 @@ class Game {
   _showGachaResult(rolledTier) { _showGachaResult.call(this, rolledTier); }
   applyAuraStats() { applyAuraStats.call(this); }
   resumeFromGacha() { resumeFromGacha.call(this); }
+  triggerEpicEvolutionUpgrade() { triggerEpicEvolutionUpgrade.call(this); }
   triggerLevelUp() { triggerLevelUp.call(this); }
   applyCardSelection(upgrade, isAwakening) { applyCardSelection.call(this, upgrade, isAwakening); }
   closeLevelUp() { closeLevelUp.call(this); }

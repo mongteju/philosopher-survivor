@@ -108,7 +108,7 @@ export class Player {
       }
     } else { this.vx = 0; this.vy = 0; }
     this.x += this.vx * dt * 0.06; this.y += this.vy * dt * 0.06;
-    const bounds = 1800;
+    const bounds = (window.gameInstance && window.gameInstance.bounds) ? window.gameInstance.bounds : 5000;
     this.x = Math.max(-bounds, Math.min(bounds, this.x));
     this.y = Math.max(-bounds, Math.min(bounds, this.y));
     if (this.regenHp > 0) {
