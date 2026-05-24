@@ -14,13 +14,13 @@ export const PHILOSOPHY_DB = {
       desc:'날카롭게 타오르는 사유의 검을 사방에 휘두릅니다.', quote:'나는 생각한다, 고로 존재한다.',
       stats:[{dmg:55,count:3,speed:6,cd:2000},{dmg:110,count:4,speed:8,cd:1700},{dmg:190,count:6,speed:10,cd:1400},{dmg:310,count:8,speed:13,cd:1000}] },
     { id:'passive_idealism_dmg', name:'이성의 광채', type:'passive', maxLevel:4, icon:'💥',
-      desc:'선험적 인식의 광채로 모든 공격력을 15% 증폭시킵니다.', quote:'순수 이성의 법칙은 확실하다.' },
+      desc:'선험적 인식의 광채로 모든 공격력을 증폭시킵니다.', quote:'순수 이성의 법칙은 확실하다.' },
     { id:'passive_idealism_area', name:'사유의 확장', type:'passive', maxLevel:4, icon:'🔮',
-      desc:'시간과 공간 인식을 넓혀, 모든 공격의 작용 범위를 15% 확장합니다.', quote:'공간은 선험적 인식의 형식이다.' },
+      desc:'시간과 공간 인식을 넓혀, 모든 공격의 작용 범위를 확장합니다.', quote:'공간은 선험적 인식의 형식이다.' },
     { id:'passive_speed', name:'이성의 신속', type:'passive', maxLevel:4, icon:'💨',
-      desc:'도덕적 주체로 각성하여 이동 속도를 15% 증가시킵니다.', quote:'자유 의지를 가진 인간은 행동의 주체다.' },
+      desc:'도덕적 주체로 각성하여 이동 속도를 증가시킵니다.', quote:'자유 의지를 가진 인간은 행동의 주체다.' },
     { id:'passive_cooldown', name:'사유의 회전', type:'passive', maxLevel:4, icon:'⏱️',
-      desc:'시간 흐름을 제어해 모든 스킬 쿨타임을 12% 단축합니다.', quote:'시간은 우리 내면의 직관 속에 정돈된다.' },
+      desc:'시간 흐름을 제어해 모든 스킬 쿨타임을 단축합니다.', quote:'시간은 우리 내면의 직관 속에 정돈된다.' },
     { id:'passive_regen', name:'정신적 치유', type:'passive', maxLevel:4, icon:'🩹',
       desc:'성찰과 명상을 통해 체력(HP)을 매초 지속 회복합니다.', quote:'성찰하는 영혼은 상처받지 않는다.' }
   ],
@@ -38,15 +38,15 @@ export const PHILOSOPHY_DB = {
       desc:'귀납적 얼음 결정을 몸 주변에 회전시켜 적을 타격합니다.', quote:'아는 것이 힘이다.',
       stats:[{dmg:30,count:1,radius:65,speed:0.045},{dmg:60,count:2,radius:80,speed:0.05},{dmg:110,count:4,radius:95,speed:0.06},{dmg:200,count:6,radius:115,speed:0.075}] },
     { id:'passive_empiricism_slow', name:'감각의 관찰', type:'passive', maxLevel:4, icon:'⛄',
-      desc:'감각적 관찰 능력을 높여 적 이동 속도를 15% 더 둔화시킵니다.', quote:'정신은 태어날 때 백지 상태다.' },
+      desc:'감각적 관찰 능력을 높여 적 이동 속도를 더 둔화시킵니다.', quote:'정신은 태어날 때 백지 상태다.' },
     { id:'passive_empiricism_xp', name:'경험의 축적', type:'passive', maxLevel:4, icon:'⭐',
-      desc:'경험 데이터를 축적하여 획득 경험치를 15% 늘립니다.', quote:'지식은 오직 경험에서 출발한다.' },
+      desc:'경험 데이터를 축적하여 획득 경험치를 늘립니다.', quote:'지식은 오직 경험에서 출발한다.' },
     { id:'passive_max_hp', name:'감각적 충만', type:'passive', maxLevel:4, icon:'❤️',
-      desc:'육체와 정신을 다져 최대 체력(HP)을 25 증가시킵니다.', quote:'신체와 마음의 결합이 자아를 안정시킨다.' },
+      desc:'육체와 정신을 다져 최대 체력(HP)을 증가시킵니다.', quote:'신체와 마음의 결합이 자아를 안정시킨다.' },
     { id:'passive_armor', name:'이성의 방패', type:'passive', maxLevel:4, icon:'🛡️',
-      desc:'우상을 극복하여 받는 모든 대미지를 15% 경감시킵니다.', quote:'논리적 의심의 방패로 편견을 물리쳐라.' },
+      desc:'우상을 극복하여 받는 모든 대미지를 경감시킵니다.', quote:'논리적 의심의 방패로 편견을 물리쳐라.' },
     { id:'passive_crit_dmg', name:'감각적 통찰', type:'passive', maxLevel:4, icon:'🎯',
-      desc:'실증적인 분석을 통해 크리티컬 피해를 25% 증폭시킵니다.', quote:'날카로운 관찰만이 핵심을 관통한다.' }
+      desc:'실증적인 분석을 통해 크리티컬 피해를 증폭시킵니다.', quote:'날카로운 관찰만이 핵심을 관통한다.' }
   ]
 };
 

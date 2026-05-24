@@ -95,6 +95,7 @@ class Game {
     this.bgm.loop = true; this.bgm.volume = 0.35;
     this.bgmMuted = false; this.sfxMuted = false;
     this.bounds = 5000;
+    this.bgm.play().catch(() => {});
 
     // Start BGM on first interaction (fail-safe for browser autoplay policies)
     const playBgmOnce = () => {

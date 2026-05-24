@@ -350,7 +350,7 @@ export function triggerEpicEvolutionUpgrade() {
           <span class="card-skill-name">대현자의 지혜 (기본 능력치 증가)</span>
           <span class="card-lv-badge">즉시</span>
         </div>
-        <div class="card-skill-desc">모든 능력치를 대폭 증폭시킵니다. (대미지 +30%, 공격 범위 +30%, 이속 +20%)</div>
+        <div class="card-skill-desc">모든 능력치를 대폭 증폭시킵니다. (대미지, 공격 범위, 이동 속도 증가)</div>
       </div>
     `;
     el.onclick = () => {
@@ -452,7 +452,7 @@ export function triggerLevelUp() {
           <span class="card-skill-name">체력 회복</span>
           <span class="card-lv-badge">즉시</span>
         </div>
-        <div class="card-skill-desc">즉시 최대 체력의 40%를 회복합니다. 배움의 길 끝에 잠시 휴식을 취합니다.</div>
+        <div class="card-skill-desc">즉시 최대 체력의 일부를 회복합니다. 배움의 길 끝에 잠시 휴식을 취합니다.</div>
       </div>
     `;
     el.onclick = () => { this.player.heal(Math.floor(this.player.maxHp * 0.4)); this.closeLevelUp(); };
