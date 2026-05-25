@@ -223,7 +223,8 @@ body {
 
 .overlay-screen.active {
   opacity: 1;
-  pointer-events: auto;
+  pointer-events: auto !important;
+  z-index: 9999 !important;
 }
 
 /* Modal Content boxes */
@@ -2118,6 +2119,8 @@ button.keyboard-selected,
   justify-content: flex-end;
   align-items: center;
   padding-bottom: 12%; /* bottom vertical float */
+  z-index: 10000 !important;
+  pointer-events: auto !important;
 }
 
 /* Rich Start Button Styling */
@@ -2134,6 +2137,7 @@ button.keyboard-selected,
   box-shadow: none;
   transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
   animation: start-float 3s infinite ease-in-out;
+  pointer-events: auto !important;
 }
 
 .btn-start-neon .btn-text {
