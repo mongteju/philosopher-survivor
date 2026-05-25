@@ -60,7 +60,9 @@ export class BossBullet {
     this.y += Math.sin(this.angle) * this.speed * dt * 0.06;
     this.life -= dt;
     const dx = this.x - player.x, dy = this.y - player.y;
-    if (Math.hypot(dx, dy) < this.size + player.size && !player.isInvincible) {
+    const distSq = dx * dx + dy * dy;
+    const limit = this.size + player.size;
+    if (!player.isInvincible && distSq < limit * limit) {
       const dmg = 18;
       player.takeDamage(dmg, window.gameInstance);
       this.life = 0;
@@ -166,7 +168,9 @@ export class WarningZone {
     if (this.timer >= this.delay && !this.hasDetonated) {
       this.hasDetonated = true;
       const p = game.player;
-      if (Math.hypot(p.x - this.x, p.y - this.y) < this.radius && !p.isInvincible) {
+      const dx = p.x - this.x;
+      const dy = p.y - this.y;
+      if (!p.isInvincible && (dx * dx + dy * dy) < this.radius * this.radius) {
         p.takeDamage(this.damage, game);
       }
       game.spawnParticles(this.x, this.y, '#ff4757', 6, 15, -3);
@@ -198,10 +202,15 @@ export class Candlestick {
     this.lit = false; this.size = 20;
   }
   update(player, game) {
-    if (!this.lit && Math.hypot(player.x - this.x, player.y - this.y) < this.size + player.size) {
-      this.lit = true;
-      game.spawnParticles(this.x, this.y, '#ffd200', 15, 8, -3);
-      if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
+    if (!this.lit) {
+      const dx = player.x - this.x;
+      const dy = player.y - this.y;
+      const limit = this.size + player.size;
+      if ((dx * dx + dy * dy) < limit * limit) {
+        this.lit = true;
+        game.spawnParticles(this.x, this.y, '#ffd200', 15, 8, -3);
+        if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
+      }
     }
   }
   draw(ctx, camera) {
@@ -313,14 +322,19 @@ export class NietzscheRelic {
     this.size = 20;
   }
   update(player, game) {
-    if (!this.collected && Math.hypot(player.x - this.x, player.y - this.y) < this.size + player.size) {
-      this.collected = true;
-      game.spawnParticles(this.x, this.y, this.type === 'freedom' ? '#ff9f43' : '#54a0ff', 15, 8, -3);
-      if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
-      
-      const relics = game.nietzcheRelics;
-      if (relics && relics.every(r => r.collected)) {
-        game.triggerUbermenschMode();
+    if (!this.collected) {
+      const dx = player.x - this.x;
+      const dy = player.y - this.y;
+      const limit = this.size + player.size;
+      if ((dx * dx + dy * dy) < limit * limit) {
+        this.collected = true;
+        game.spawnParticles(this.x, this.y, this.type === 'freedom' ? '#ff9f43' : '#54a0ff', 15, 8, -3);
+        if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
+        
+        const relics = game.nietzcheRelics;
+        if (relics && relics.every(r => r.collected)) {
+          game.triggerUbermenschMode();
+        }
       }
     }
   }
@@ -432,7 +446,10 @@ export class Boss {
       currentSlowMul = 1;
     }
 
-    if (player.auraEnemySlowAura && Math.hypot(player.x - this.x, player.y - this.y) < 180) {
+    const dx = player.x - this.x, dy = player.y - this.y;
+    const distSq = dx * dx + dy * dy;
+
+    if (player.auraEnemySlowAura && distSq < 32400) { // 180 * 180 = 32400
       currentSlowMul = Math.min(currentSlowMul, 0.75);
       this.slowTimer = Math.max(this.slowTimer, 100);
     }
@@ -736,9 +753,10 @@ export class Boss {
           
           const dx = targetX - this.x;
           const dy = targetY - this.y;
-          const dist = Math.hypot(dx, dy) || 1;
+          const distSqMove = dx * dx + dy * dy;
           
-          if (dist > 10) {
+          if (distSqMove > 100) { // 10 * 10 = 100
+            const dist = Math.sqrt(distSqMove) || 1;
             this.vx = (dx / dist) * this.speed * 2.5;
             this.vy = (dy / dist) * this.speed * 2.5;
             this.x += this.vx * dt * 0.06;
@@ -814,9 +832,10 @@ export class Boss {
       const targetY = center.y - H/2 + H * 0.3; // Center of Row 2 (C2)
       const dxTarget = targetX - this.x;
       const dyTarget = targetY - this.y;
-      const dist = Math.hypot(dxTarget, dyTarget) || 1;
+      const distSqTarget = dxTarget * dxTarget + dyTarget * dyTarget;
       
-      if (dist > 10) {
+      if (distSqTarget > 100) { // 10 * 10 = 100
+        const dist = Math.sqrt(distSqTarget) || 1;
         this.vx = (dxTarget / dist) * this.speed * 2.5;
         this.vy = (dyTarget / dist) * this.speed * 2.5;
         this.x += this.vx * dt * 0.06;
@@ -841,13 +860,12 @@ export class Boss {
       return; // Skip normal chasing movement
     }
 
-    const dx = player.x - this.x, dy = player.y - this.y;
-    const d = Math.hypot(dx, dy) || 1;
+    const d = Math.sqrt(distSq) || 1;
     const spd = (this.phase2 ? this.speed * 1.5 : this.speed) * currentSlowMul;
     this.vx = (dx / d) * spd; this.vy = (dy / d) * spd;
     this.x += this.vx * dt * 0.06; this.y += this.vy * dt * 0.06;
     this.angle = Math.atan2(dy, dx);
-    if (!player.isInvincible && d < this.size + player.size) {
+    if (!player.isInvincible && distSq < (this.size + player.size) * (this.size + player.size)) {
       player.takeDamage(22, game, this);
     }
     this.attackTimer += dt;

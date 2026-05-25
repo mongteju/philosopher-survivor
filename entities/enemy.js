@@ -46,19 +46,21 @@ export class Enemy {
       currentSlowMul = 1;
     }
     
+    const dx = player.x - this.x, dy = player.y - this.y;
+    const distSq = dx * dx + dy * dy;
+
     // 플레이어의 지배/영생 아우라로 인한 근접 적 25% 감속 및 파란색 시각 효과 처리
-    if (player.auraEnemySlowAura && Math.hypot(player.x - this.x, player.y - this.y) < 180) {
+    if (player.auraEnemySlowAura && distSq < 32400) { // 180 * 180 = 32400
       currentSlowMul = Math.min(currentSlowMul, 0.75);
       this.slowTimer = Math.max(this.slowTimer, 100); // 파란색 표시 유지를 위해 slowTimer 연장
     }
 
-    const dx = player.x - this.x, dy = player.y - this.y;
-    const d = Math.hypot(dx, dy) || 1;
+    const d = Math.sqrt(distSq) || 1;
     const spd = this.speed * currentSlowMul;
     this.vx = (dx / d) * spd; this.vy = (dy / d) * spd;
     this.x += this.vx * dt * 0.06; this.y += this.vy * dt * 0.06;
     this.angle = Math.atan2(dy, dx);
-    if (!player.isInvincible && Math.hypot(this.x - player.x, this.y - player.y) < this.size + player.size) {
+    if (!player.isInvincible && distSq < (this.size + player.size) * (this.size + player.size)) {
       player.takeDamage(12, window.gameInstance);
     }
   }
@@ -331,17 +333,19 @@ export class Idol {
       currentSlowMul = 1;
     }
 
-    if (player.auraEnemySlowAura && Math.hypot(player.x - this.x, player.y - this.y) < 180) {
+    const dx = player.x - this.x, dy = player.y - this.y;
+    const distSq = dx * dx + dy * dy;
+
+    if (player.auraEnemySlowAura && distSq < 32400) { // 180 * 180 = 32400
       currentSlowMul = Math.min(currentSlowMul, 0.75);
       this.slowTimer = Math.max(this.slowTimer, 100);
     }
 
-    const dx = player.x - this.x, dy = player.y - this.y;
-    const d = Math.hypot(dx, dy) || 1;
+    const d = Math.sqrt(distSq) || 1;
     const spd = 1.0 * currentSlowMul;
     this.x += (dx / d) * spd * dt * 0.06;
     this.y += (dy / d) * spd * dt * 0.06;
-    if (Math.hypot(this.x - player.x, this.y - player.y) < this.size + player.size && !player.isInvincible) {
+    if (!player.isInvincible && distSq < (this.size + player.size) * (this.size + player.size)) {
       player.takeDamage(10, game);
     }
   }

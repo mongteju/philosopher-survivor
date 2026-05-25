@@ -108,7 +108,7 @@ export function gameUpdate(dt) {
         // 2단계 아파테이아 기믹 성공 여부 판정
         if (this.stageIndex === 1) {
           const zone = this.ataraxiaZone;
-          const inside = zone && Math.hypot(this.player.x - zone.x, this.player.y - zone.y) < zone.radius;
+          const inside = zone && ((this.player.x - zone.x) * (this.player.x - zone.x) + (this.player.y - zone.y) * (this.player.y - zone.y)) < zone.radius * zone.radius;
           if (inside) {
             // SUCCESS!
             b.apatheiaActive = false;
@@ -207,9 +207,11 @@ export function gameUpdate(dt) {
 
   // Ataraxia safe zone BGM volume drop
   if (this.ataraxiaZone && this.bgm) {
-    const dZone = Math.hypot(this.player.x - this.ataraxiaZone.x, this.player.y - this.ataraxiaZone.y);
+    const dxZone = this.player.x - this.ataraxiaZone.x;
+    const dyZone = this.player.y - this.ataraxiaZone.y;
+    const distSq = dxZone * dxZone + dyZone * dyZone;
     try {
-      if (dZone < this.ataraxiaZone.radius) {
+      if (distSq < this.ataraxiaZone.radius * this.ataraxiaZone.radius) {
         this.bgm.volume = 0;
       } else {
         this.bgm.volume = this.bgmMuted ? 0 : 0.4;
@@ -383,8 +385,10 @@ export function gameUpdate(dt) {
   // XP frags
   this.xpFrags.forEach(f => f.update(dt, this.player));
   // Pickup
+  const px = this.player.x, py = this.player.y;
   this.xpFrags = this.xpFrags.filter(f => {
-    if (Math.hypot(f.x - this.player.x, f.y - this.player.y) < 20) {
+    const dx = f.x - px, dy = f.y - py;
+    if (dx * dx + dy * dy < 400) { // 20 * 20 = 400
       this.player.gainXp(f.val, this);
       return false;
     }
@@ -394,9 +398,10 @@ export function gameUpdate(dt) {
   // Magnet items
   this.magnetItems = this.magnetItems.filter(m => {
     m.update(dt);
-    if (Math.hypot(m.x - this.player.x, m.y - this.player.y) < 30) {
+    const dx = m.x - px, dy = m.y - py;
+    if (dx * dx + dy * dy < 900) { // 30 * 30 = 900
       this.xpFrags.forEach(f => f.magnet = true);
-      this.addDamageText(this.player.x, this.player.y - 60, '자석 활성화!', '#f368e0', 18);
+      this.addDamageText(px, py - 60, '자석 활성화!', '#f368e0', 18);
       return false;
     }
     return m.life > 0;
@@ -405,13 +410,17 @@ export function gameUpdate(dt) {
   // Ice floors
   this.iceFloors = this.iceFloors.filter(f => {
     f.life -= dt;
+    const fSizeSq = f.size * f.size;
     this.enemies.forEach(e => {
-      if (Math.hypot(e.x - f.x, e.y - f.y) < f.size) {
-        e.slowMul = 0.5;
-        e.slowTimer = 100; // 빙판 위 매 프레임 감속 연장
-        if (!e.iceFloorDmgTimer || e.iceFloorDmgTimer <= 0) {
-          this.dealDamageToEnemy(e, f.dmg);
-          e.iceFloorDmgTimer = 1000;
+      if (e.hp > 0) {
+        const dx = e.x - f.x, dy = e.y - f.y;
+        if (dx * dx + dy * dy < fSizeSq) {
+          e.slowMul = 0.5;
+          e.slowTimer = 100; // 빙판 위 매 프레임 감속 연장
+          if (!e.iceFloorDmgTimer || e.iceFloorDmgTimer <= 0) {
+            this.dealDamageToEnemy(e, f.dmg);
+            e.iceFloorDmgTimer = 1000;
+          }
         }
       }
     });
@@ -438,13 +447,16 @@ export function gameUpdate(dt) {
       const dmg = (stats.dmg || 30) * dmgM;
 
       this.enemies.forEach(e => {
-        if (!e.iceRingDmgTimer || e.iceRingDmgTimer <= 0) {
+        if (e.hp > 0 && (!e.iceRingDmgTimer || e.iceRingDmgTimer <= 0)) {
           let hit = false;
+          const checkLimit = 20 + e.size;
+          const checkLimitSq = checkLimit * checkLimit;
           for (let i = 0; i < count; i++) {
             const angle = this.orbitAngle + (Math.PI * 2 / count) * i;
-            const ox = this.player.x + Math.cos(angle) * radius;
-            const oy = this.player.y + Math.sin(angle) * radius;
-            if (Math.hypot(e.x - ox, e.y - oy) < 20 + e.size) {
+            const ox = px + Math.cos(angle) * radius;
+            const oy = py + Math.sin(angle) * radius;
+            const dx = e.x - ox, dy = e.y - oy;
+            if (dx * dx + dy * dy < checkLimitSq) {
               hit = true;
               break;
             }
@@ -555,10 +567,14 @@ export function handleWeaponTriggers(dt) {
 }
 
 export function getNearestEnemy() {
-  let nearest = null, minDist = 99999;
+  let nearest = null, minDistSq = 999999999;
+  const px = this.player.x, py = this.player.y;
   this.enemies.forEach(e => {
-    const d = Math.hypot(e.x - this.player.x, e.y - this.player.y);
-    if (d < minDist) { minDist = d; nearest = e; }
+    if (e.hp <= 0) return;
+    const dx = e.x - px;
+    const dy = e.y - py;
+    const dSq = dx * dx + dy * dy;
+    if (dSq < minDistSq) { minDistSq = dSq; nearest = e; }
   });
   return nearest;
 }
@@ -584,14 +600,19 @@ export function fireWeapon(id, lvl, stats, awakening) {
 
   if (id === 'fire_aura') {
     const radius = (stats.radius || 95) * sizeM;
+    const radiusSq = radius * radius;
     const dmg = (stats.dmg || 16) * dmgM;
+    const px = this.player.x, py = this.player.y;
     this.enemies.forEach(e => {
-      if (Math.hypot(e.x - this.player.x, e.y - this.player.y) < radius) {
-        this.dealDamageToEnemy(e, dmg);
-        this.spawnParticles(e.x, e.y, '#ff4757', 3, 5, -2);
+      if (e.hp > 0) {
+        const dx = e.x - px, dy = e.y - py;
+        if (dx * dx + dy * dy < radiusSq) {
+          this.dealDamageToEnemy(e, dmg);
+          this.spawnParticles(e.x, e.y, '#ff4757', 3, 5, -2);
+        }
       }
     });
-    this.spawnParticles(this.player.x, this.player.y, '#ff6b35', 6, 8, -3);
+    this.spawnParticles(px, py, '#ff6b35', 6, 8, -3);
   }
 
   if (id === 'fire_pillar') {
@@ -650,16 +671,21 @@ export function fireWeapon(id, lvl, stats, awakening) {
 
   if (id === 'ice_freeze') {
     const radius = (stats.radius || 170) * sizeM;
+    const radiusSq = radius * radius;
     const dmg = (stats.dmg || 50) * dmgM;
+    const px = this.player.x, py = this.player.y;
     this.enemies.forEach(e => {
-      if (Math.hypot(e.x - this.player.x, e.y - this.player.y) < radius) {
-        if (e.type !== 'boss' && !e.isClone) {
-          e.frozenTime = stats.freezeTime || 2000;
+      if (e.hp > 0) {
+        const dx = e.x - px, dy = e.y - py;
+        if (dx * dx + dy * dy < radiusSq) {
+          if (e.type !== 'boss' && !e.isClone) {
+            e.frozenTime = stats.freezeTime || 2000;
+          }
+          this.dealDamageToEnemy(e, dmg);
         }
-        this.dealDamageToEnemy(e, dmg);
       }
     });
-    this.spawnParticles(this.player.x, this.player.y, '#a8e6f0', 12, 10, -3);
+    this.spawnParticles(px, py, '#a8e6f0', 12, 10, -3);
     sfx.playFreeze();
   }
 
@@ -669,11 +695,28 @@ export function fireWeapon(id, lvl, stats, awakening) {
 }
 
 export function handleCombatCollisions() {
-  this.projectiles.forEach(proj => {
-    this.enemies.forEach(e => {
-      if (proj.hitEnemy.has(e)) return;
-      const dist = Math.hypot(e.x - proj.x, e.y - proj.y);
-      if (dist < proj.size + e.size) {
+  const projectiles = this.projectiles;
+  const enemies = this.enemies;
+  const numProj = projectiles.length;
+  const numEnemies = enemies.length;
+  
+  for (let i = 0; i < numProj; i++) {
+    const proj = projectiles[i];
+    if (proj.life <= 0) continue;
+    const px = proj.x;
+    const py = proj.y;
+    const pSize = proj.size;
+    
+    for (let j = 0; j < numEnemies; j++) {
+      const e = enemies[j];
+      if (e.hp <= 0 || proj.hitEnemy.has(e)) continue;
+      
+      const dx = e.x - px;
+      const dy = e.y - py;
+      const distSq = dx * dx + dy * dy;
+      const limit = pSize + e.size;
+      
+      if (distSq < limit * limit) {
         proj.hitEnemy.add(e);
         this.dealDamageToEnemy(e, proj.dmg, proj);
         if (proj.slowAmount && e.frozenTime <= 0) {
@@ -681,13 +724,19 @@ export function handleCombatCollisions() {
           e.slowTimer = 3000; // 3초 감속
         }
         if (proj.type === 'fire_explosion') {
-          const expRadius = proj.size * 1.4;
-          this.enemies.forEach(e2 => {
-            if (e2 !== e && Math.hypot(e2.x - proj.x, e2.y - proj.y) < expRadius) {
-              this.dealDamageToEnemy(e2, proj.dmg * 0.6);
+          const expRadius = pSize * 1.4;
+          const expRadiusSq = expRadius * expRadius;
+          for (let k = 0; k < numEnemies; k++) {
+            const e2 = enemies[k];
+            if (e2 !== e && e2.hp > 0) {
+              const dx2 = e2.x - px;
+              const dy2 = e2.y - py;
+              if (dx2 * dx2 + dy2 * dy2 < expRadiusSq) {
+                this.dealDamageToEnemy(e2, proj.dmg * 0.6);
+              }
             }
-          });
-          this.spawnParticles(proj.x, proj.y, '#ff4757', 10, 10, -3);
+          }
+          this.spawnParticles(px, py, '#ff4757', 10, 10, -3);
           proj.life = 0;
         } else if (proj.type !== 'fire_sword' && proj.type !== 'ice_pierce') {
           proj.life = 0;
@@ -695,9 +744,10 @@ export function handleCombatCollisions() {
           proj.pierceLeft = (proj.pierceLeft || 1) - 1;
           if (proj.pierceLeft <= 0) proj.life = 0;
         }
+        if (proj.life <= 0) break;
       }
-    });
-  });
+    }
+  }
 }
 
 export function dealDamageToEnemy(e, dmg, proj) {

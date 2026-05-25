@@ -8,16 +8,17 @@ export class XPFrag {
     this.color = val >= 5 ? '#ffd200' : '#2ed573';
   }
   update(dt, player) {
+    const dx = player.x - this.x, dy = player.y - this.y;
+    const distSq = dx * dx + dy * dy;
     if (this.magnet) {
-      const dx = player.x - this.x, dy = player.y - this.y;
-      const d = Math.hypot(dx, dy) || 1;
+      const d = Math.sqrt(distSq) || 1;
       this.x += (dx / d) * 12 * dt * 0.06;
       this.y += (dy / d) * 12 * dt * 0.06;
     } else {
-      const dx = player.x - this.x, dy = player.y - this.y;
-      if (Math.hypot(dx, dy) < 140) {
-        this.x += (dx / Math.hypot(dx, dy)) * 5 * dt * 0.06;
-        this.y += (dy / Math.hypot(dx, dy)) * 5 * dt * 0.06;
+      if (distSq < 19600) { // 140 * 140
+        const d = Math.sqrt(distSq) || 1;
+        this.x += (dx / d) * 5 * dt * 0.06;
+        this.y += (dy / d) * 5 * dt * 0.06;
       }
       this.vx *= 0.93; this.vy *= 0.93;
       this.x += this.vx * dt * 0.06; this.y += this.vy * dt * 0.06;
@@ -30,7 +31,6 @@ export class XPFrag {
     ctx.beginPath();
     ctx.arc(rx, ry, this.size, 0, Math.PI * 2);
     ctx.fillStyle = this.color;
-    ctx.shadowColor = this.color; ctx.shadowBlur = 8;
     ctx.fill();
     ctx.restore();
   }
