@@ -1,8 +1,40 @@
 // ─── AUDIO ENGINE ────────────────────────────────────────────────────
 export class PhilosophyAudio {
-  constructor() { this.ctx = null; }
+  constructor() {
+    this.ctx = null;
+    this.sounds = {
+      button: new Audio('sound/button.mp3'),
+      dragonRoar: new Audio('sound/dragon-roar.mp3'),
+      ending: new Audio('sound/ending.mp3'),
+      enemy: new Audio('sound/enemy.mp3'),
+      fireball: new Audio('sound/fireball.mp3'),
+      ice: new Audio('sound/ice.mp3'),
+      levelUp: new Audio('sound/level-up.mp3'),
+      keyboard: new Audio('sound/keyboard.mp3')
+    };
+  }
   init() { if (this.ctx) return; this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
   isSfxMuted() { return window.gameInstance && window.gameInstance.sfxMuted; }
+  
+  playFile(key, volume = 0.5) {
+    if (this.isSfxMuted()) return;
+    const sound = this.sounds[key];
+    if (!sound) return;
+    try {
+      if (key === 'keyboard') {
+        sound.volume = volume;
+        sound.currentTime = 0;
+        sound.play().catch(err => console.warn(`Failed to play sfx ${key}:`, err));
+      } else {
+        const clone = sound.cloneNode();
+        clone.volume = volume;
+        clone.play().catch(err => console.warn(`Failed to play sfx ${key}:`, err));
+      }
+    } catch (e) {
+      console.warn(e);
+    }
+  }
+
   _play(type, freq, endFreq, gain, dur, delay=0) {
     if (this.isSfxMuted()) return; this.init(); if (!this.ctx) return;
     const osc = this.ctx.createOscillator(), g = this.ctx.createGain();
@@ -13,7 +45,7 @@ export class PhilosophyAudio {
     g.gain.setValueAtTime(gain, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
     osc.start(t); osc.stop(t + dur);
   }
-  playTick() { this._play('sine', 800, null, 0.05, 0.05); }
+  playTick() { this.playFile('button', 0.4); }
   playHit() { this._play('triangle', 150, 40, 0.15, 0.1); }
   playExplosion() {
     // Layer 1: Bass combustion rumble (Triangle, deep low slide)
@@ -24,24 +56,17 @@ export class PhilosophyAudio {
     this._play('sine', 350, 80, 0.15, 0.15);
   }
   playFireShoot() {
-    // Whooshing fireball sound (fast sawtooth slide layered with short sine wave sweep)
-    this._play('sawtooth', 300, 80, 0.12, 0.16);
-    this._play('sine', 400, 150, 0.08, 0.10);
+    this.playFile('fireball', 0.2);
   }
   playFreeze() {
-    // Layer 1: Sparkling high glass chime 1 (Sine glide)
-    this._play('sine', 880, 1500, 0.1, 0.25);
-    // Layer 2: Sparkling high glass chime 2 (Delayed sine glide)
-    this._play('sine', 1200, 2200, 0.08, 0.3, 0.02);
-    // Layer 3: Frost crystal crackle 3 (Delayed high triangle glide)
-    this._play('triangle', 1500, 3000, 0.05, 0.35, 0.04);
-    // Layer 4: Low freeze presence (Sine slide)
-    this._play('sine', 300, 900, 0.12, 0.25);
+    this.playFile('ice', 0.2);
+  }
+  playEnemyShoot() {
+    this.playFile('enemy', 0.2);
   }
   playAlert() { this._play('sawtooth', 220, null, 0.2, 0.85); }
   playLevelUp() {
-    this.init(); if (!this.ctx) return;
-    [[261.63,0],[329.63,0.1],[392,0.2],[523.25,0.3]].forEach(([f,d]) => this._play('sine',f,null,0.15,0.5,d));
+    this.playFile('levelUp', 0.5);
   }
   playEvolve() {
     this.init(); if (!this.ctx) return;

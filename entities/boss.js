@@ -43,11 +43,11 @@ const BOSS_QUOTES = {
 
 // ─── BOSS BULLET ────────────────────────────────────────────────────
 export class BossBullet {
-  constructor(x, y, angle, speed, type) {
+  constructor(x, y, angle, speed, type, color) {
     this.x = x; this.y = y; this.angle = angle; this.speed = speed;
     this.type = type; this.size = 10; this.life = 7000; this.time = 0;
     this.baseAngle = angle; this.spawnX = x; this.spawnY = y;
-    this.color = type === 'spiral' ? '#ff6b81' : type === 'curve' ? '#a29bfe' : '#ff4757';
+    this.color = color || (type === 'spiral' ? '#ff6b81' : type === 'curve' ? '#a29bfe' : '#ff4757');
   }
   update(dt, player) {
     this.time += dt;
@@ -408,7 +408,7 @@ export class Boss {
         } else if (this.stageIndex === 4 && this.hp > 0) {
           this.isPatternActive = true;
           this.kantTrafficLight = 'green';
-          this.kantTrafficTimer = 5000;
+          this.kantTrafficTimer = 2500;
           game.kantTrafficLight = 'green';
         } else {
           game.showBossTooltip(null);
@@ -506,17 +506,16 @@ export class Boss {
       }
     }
 
-    // Stage 3 (Dogmatism): Medieval Darkness & Candlesticks
+    // Stage 3 (Dogmatism): Medieval Darkness & Candlesticks (Repeating Gimmick)
     if (this.stageIndex === 2 && !this.isClone) {
       if (!this.dogmatismInitialized) {
         this.dogmatismInitialized = true;
-        this.dogmatismMilestones = [1.0, 0.45];
-        this.dogmatismMilestonesTriggered = [false, false];
+        this.dogmatismTimer = 6000; // Trigger first time after 6 seconds
       }
-      for (let i = 0; i < this.dogmatismMilestones.length; i++) {
-        const milestone = this.dogmatismMilestones[i];
-        if (this.hp / this.maxHp <= milestone && !this.dogmatismMilestonesTriggered[i]) {
-          this.dogmatismMilestonesTriggered[i] = true;
+      
+      if (!this.isPatternActive && !this.isStunned) {
+        this.dogmatismTimer -= dt;
+        if (this.dogmatismTimer <= 0) {
           this.isPatternActive = true;
           game.medievalDarkness = true;
           game.showBossTooltip("🕯️ 교조주의: 교리가 세상을 어둠으로 덮었습니다! 신앙과 이성의 촛대(🕯️)를 활성화하여 빛을 찾으십시오!");
@@ -533,10 +532,9 @@ export class Boss {
           
           // Setup global gimmick
           game.gimmickActive = true;
-          game.gimmickTimer = 20000; // Increased to 20 seconds for 4 candlesticks
+          game.gimmickTimer = 20000; // 20 seconds for 4 candlesticks
           game.gimmickMaxTime = 20000;
           game.gimmickInstruction = "공략법: 20초 이내에 촛대(🕯️) 4개를 몸으로 터치하여 모두 활성화하십시오!";
-          break;
         }
       }
       if (this.isPatternActive && game.candlesticks && game.candlesticks.length > 0) {
@@ -553,23 +551,6 @@ export class Boss {
             game.warningZones.push(new WarningZone(wx, wy, 80, 25, 1200));
             if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
           }
-        }
-
-        const allLit = game.candlesticks.every(c => c.lit);
-        if (allLit) {
-          this.isPatternActive = false;
-          game.medievalDarkness = false;
-          game.candlesticks = [];
-          
-          // Clear global gimmick
-          game.gimmickActive = false;
-          game.gimmickTimer = 0;
-          
-          this.isStunned = true;
-          this.stunTimer = 8000;
-          game.showBossTooltip("🛡️ 어둠 극복! 신앙과 이성의 조화로 교독의 환각을 비추었습니다!");
-          game.addDamageText(this.x, this.y - 70, "✨ 교조 파괴! 보스 무력화!", "#ffd200", 24);
-          if (typeof sfx !== 'undefined' && sfx.playLevelUp) sfx.playLevelUp();
         }
       }
     }
@@ -606,10 +587,8 @@ export class Boss {
         game.gimmickInstruction = "공략법: 25초 이내에 보스 주위의 4대 우상(Idols)을 모두 파괴하십시오!";
       }
       if (this.isPatternActive) {
-        let allDead = true;
-        game.activeIdols.forEach((idol) => { if (idol.hp > 0) allDead = false; });
-        if (allDead && game.activeIdols.size > 0) {
-          game.activeIdols.clear();
+        // If all active idols are destroyed (size becomes 0)
+        if (game.activeIdols.size === 0) {
           this.isPatternActive = false;
           game.prejudiceWave = 0;
           game.restoreHUD();
@@ -649,12 +628,12 @@ export class Boss {
         this.kantInitialized = true;
         this.isPatternActive = true;
         this.kantTrafficLight = 'green';
-        this.kantTrafficTimer = 5000;
+        this.kantTrafficTimer = 2500;
         
         // Setup global gimmick
         game.gimmickActive = true;
-        game.gimmickTimer = 5000;
-        game.gimmickMaxTime = 5000;
+        game.gimmickTimer = 2500;
+        game.gimmickMaxTime = 2500;
         game.gimmickInstruction = "🟢 초록불: 자유롭게 이동하며 보스를 공격하십시오!";
         
         game.kantTrafficLight = 'green';
@@ -686,8 +665,8 @@ export class Boss {
             if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
           } else {
             this.kantTrafficLight = 'green';
-            this.kantTrafficTimer = 5000;
-            game.gimmickMaxTime = 5000;
+            this.kantTrafficTimer = 2500;
+            game.gimmickMaxTime = 2500;
             game.gimmickInstruction = "🟢 초록불: 자유롭게 이동하며 보스를 공격하십시오!";
           }
           game.kantTrafficLight = this.kantTrafficLight;
@@ -920,11 +899,13 @@ export class Boss {
 
   fireAttack(player, game) {
     const si = this.stageIndex;
+    let fired = false;
     if (si === 0) { // 소피스트: spiral burst
       for (let i = 0; i < (this.phase2 ? 12 : 8); i++) {
         const a = (Math.PI * 2 / (this.phase2 ? 12 : 8)) * i + this.time * 0.001;
         game.bossBullets.push(new BossBullet(this.x, this.y, a, 3.5, 'spiral'));
       }
+      fired = true;
     } else if (si === 1) { // 아파테이아: warning zones
       for (let i = 0; i < 3; i++) {
         const wx = player.x + (Math.random() - 0.5) * 300;
@@ -937,6 +918,7 @@ export class Boss {
         game.bossBullets.push(new BossBullet(this.x, this.y, a, 4, 'curve'));
         if (!game.medievalDarkness) game.medievalDarkness = true;
       }
+      fired = true;
     } else if (si === 3) { // 편견의 거인: warning zones + spiral
       const cnt = this.phase2 ? 5 : 3;
       for (let i = 0; i < cnt; i++) {
@@ -949,6 +931,7 @@ export class Boss {
         const a = (Math.PI * 2 / (this.phase2 ? 12 : 7)) * i + this.time * 0.001;
         game.bossBullets.push(new BossBullet(this.x, this.y, a, 3, 'straight'));
       }
+      fired = true;
     } else { // 허무주의: heavy spiral
       if (si === 5 && this.dragonActive) {
         if (!this.dragonPatternIndex) this.dragonPatternIndex = 0;
@@ -959,8 +942,9 @@ export class Boss {
           const cnt = 24;
           for (let i = 0; i < cnt; i++) {
             const a = (Math.PI * 2 / cnt) * i + this.time * 0.0035;
-            game.bossBullets.push(new BossBullet(this.x, this.y, a, 5.0, 'spiral'));
+            game.bossBullets.push(new BossBullet(this.x, this.y, a, 5.0, 'spiral', '#54a0ff'));
           }
+          fired = true;
         } else if (this.dragonPatternIndex === 1) {
           // Targeted Flame Warning Zones
           for (let i = 0; i < 5; i++) {
@@ -974,18 +958,23 @@ export class Boss {
           // Curved Wave Streams
           for (let i = 0; i < 8; i++) {
             const a = Math.atan2(player.y - this.y, player.x - this.x) + (i - 3.5) * 0.25;
-            game.bossBullets.push(new BossBullet(this.x, this.y, a, 5.5, 'curve'));
+            game.bossBullets.push(new BossBullet(this.x, this.y, a, 5.5, 'curve', '#54a0ff'));
           }
+          fired = true;
         }
       } else {
         const cnt = this.phase2 ? 20 : 12;
         for (let i = 0; i < cnt; i++) {
           const a = (Math.PI * 2 / cnt) * i + this.time * 0.002;
-          game.bossBullets.push(new BossBullet(this.x, this.y, a, 4.5, 'spiral'));
+          game.bossBullets.push(new BossBullet(this.x, this.y, a, 4.5, 'spiral', '#54a0ff'));
         }
+        fired = true;
       }
     }
-    if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
+    
+    if (fired) {
+      if (typeof sfx !== 'undefined' && sfx.playEnemyShoot) sfx.playEnemyShoot();
+    }
   }
 
   draw(ctx, camera) {

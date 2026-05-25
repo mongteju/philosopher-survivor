@@ -75,6 +75,19 @@ export function gameEvents() {
       return;
     }
 
+    // True ending screen Space/Enter return to menu
+    const trueEndingScreen = document.getElementById('true-ending-screen');
+    if (trueEndingScreen && trueEndingScreen.classList.contains('active')) {
+      const endToMenuBtn = document.getElementById('end-to-menu-btn');
+      if (endToMenuBtn && endToMenuBtn.style.display === 'block') {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          endToMenuBtn.click();
+        }
+      }
+      return;
+    }
+
     // Ending screen keyboard navigation
     const endingScreen = document.getElementById('ending-screen');
     if (endingScreen && endingScreen.classList.contains('active')) {
@@ -315,6 +328,10 @@ export function gameEvents() {
   document.getElementById('restart-game-btn').addEventListener('click', () => location.reload());
   document.getElementById('pause-resume-btn').addEventListener('click', () => this.togglePause());
   document.getElementById('pause-restart-btn').addEventListener('click', () => location.reload());
+  const endToMenu = document.getElementById('end-to-menu-btn');
+  if (endToMenu) {
+    endToMenu.addEventListener('click', () => location.reload());
+  }
   document.getElementById('pause-bgm-btn').addEventListener('click', () => {
     this.bgmMuted = !this.bgmMuted; this.bgm.muted = this.bgmMuted;
     document.getElementById('pause-bgm-btn').textContent = this.bgmMuted ? '음악: 꺼짐' : '음악: 켜짐'; sfx.playTick();
@@ -457,7 +474,11 @@ export function gameEvents() {
   if (dbgClear) {
     dbgClear.addEventListener('click', () => {
       if (this.currentBoss) {
-        this.currentBoss.hp = 0;
+        if (this.stageIndex === 5 && !this.currentBoss.dragonActive) {
+          this.currentBoss.hp = this.currentBoss.maxHp * 0.5;
+        } else {
+          this.currentBoss.hp = 0;
+        }
         if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
       }
     });

@@ -162,6 +162,7 @@ export function gameUpdate(dt) {
           // Dogmatism: Clear candlesticks and darkness
           this.candlesticks = [];
           this.medievalDarkness = false;
+          b.dogmatismTimer = 10000;
         } else if (this.stageIndex === 3) {
           // Prejudice: Clear idols
           this.enemies = this.enemies.filter(e => !e.isIdol);
@@ -250,7 +251,7 @@ export function gameUpdate(dt) {
     this.camera.x = this.player.x;
     this.camera.y = this.player.y;
   }
-  this.orbitAngle += 0.05 * dt * 0.06;
+  this.orbitAngle += 0.20 * dt * 0.06;
   this.scroll += dt * 0.05;
 
   // Magnet timer
@@ -275,6 +276,9 @@ export function gameUpdate(dt) {
 
   // Update enemies (boss first)
   this.enemies.forEach(e => {
+    if (e.iceRingDmgTimer > 0) e.iceRingDmgTimer -= dt;
+    if (e.type === 'boss' && e.iceFloorDmgTimer > 0) e.iceFloorDmgTimer -= dt;
+    
     if (e.type === 'boss') e.update(dt, this.player, this);
     else if (e.isIdol) e.update(dt, this.player, this);
     else e.update(dt, this.player);
@@ -299,6 +303,33 @@ export function gameUpdate(dt) {
   // Update candlesticks
   if (this.candlesticks) {
     this.candlesticks.forEach(c => c.update(this.player, this));
+    
+    // Check for success immediately in the same frame
+    if (this.candlesticks.length > 0 && this.candlesticks.every(c => c.lit)) {
+      const b = this.currentBoss;
+      if (b && b.stageIndex === 2) {
+        b.isPatternActive = false;
+        this.medievalDarkness = false;
+        this.candlesticks = [];
+        
+        // Clear global gimmick
+        this.gimmickActive = false;
+        this.gimmickTimer = 0;
+        
+        b.isStunned = true;
+        b.stunTimer = 8000;
+        this.showBossTooltip("🛡️ 어둠 극복! 신앙과 이성의 조화로 교독의 환각을 비추었습니다!");
+        this.addDamageText(b.x, b.y - 70, "✨ 교조 파괴! 보스 무력화!", "#ffd200", 24);
+        if (typeof sfx !== 'undefined' && sfx.playLevelUp) sfx.playLevelUp();
+        
+        // Reward player with a permanent +25% attack bonus
+        this.player.dmgMultiplier += 0.25;
+        this.addDamageText(this.player.x, this.player.y - 100, "공격력 보너스 +25%!", "#ffd200", 20);
+        
+        // Reset repeating timer
+        b.dogmatismTimer = 16000;
+      }
+    }
   }
 
   // Update Nietzsche relics
@@ -386,6 +417,46 @@ export function gameUpdate(dt) {
     });
     return f.life > 0;
   });
+
+  // 귀납의 고리 (Ice Ring) - 매 프레임 충돌 검사 및 개별 쿨다운 적용
+  const iceRingData = PHILOSOPHY_DB[this.player.lineage].find(c => c.id === 'ice_ring');
+  if (iceRingData) {
+    const lvl = this.player.activeSkills['ice_ring'] || 0;
+    if (lvl > 0) {
+      const stats = iceRingData.stats[lvl - 1];
+      const isAwakening = lvl >= iceRingData.maxLevel;
+      const count = (stats.count || 1) * (isAwakening ? 2 : 1) * 2;
+      
+      const skillTier = this.player.skillTiers['ice_ring'] || 'normal';
+      const tierMuls = { normal: 1.0, rare: 1.25, unique: 1.55, epic: 1.9 };
+      const tierMul = tierMuls[skillTier] || 1.0;
+      const sizeM = (isAwakening ? 1.1 : 1.0) * this.player.areaMultiplier * (1 + (tierMul - 1) * 0.5);
+      const isEmpiricism = this.player.lineage === 'empiricism';
+      const dmgM = (isAwakening ? (isEmpiricism ? 4.5 : 1.5) : 1.0) * this.player.dmgMultiplier * tierMul * (1 + (this.player.auraDamageBonus || 0));
+
+      const radius = (stats.radius || 65) * sizeM;
+      const dmg = (stats.dmg || 30) * dmgM;
+
+      this.enemies.forEach(e => {
+        if (!e.iceRingDmgTimer || e.iceRingDmgTimer <= 0) {
+          let hit = false;
+          for (let i = 0; i < count; i++) {
+            const angle = this.orbitAngle + (Math.PI * 2 / count) * i;
+            const ox = this.player.x + Math.cos(angle) * radius;
+            const oy = this.player.y + Math.sin(angle) * radius;
+            if (Math.hypot(e.x - ox, e.y - oy) < 20 + e.size) {
+              hit = true;
+              break;
+            }
+          }
+          if (hit) {
+            this.dealDamageToEnemy(e, dmg);
+            e.iceRingDmgTimer = 300; // 0.3초당 1회 타격
+          }
+        }
+      });
+    }
+  }
 
   // Weapon triggers
   this.handleWeaponTriggers(dt);
@@ -498,13 +569,14 @@ export function fireWeapon(id, lvl, stats, awakening) {
   const tierMul = tierMuls[skillTier] || 1.0;
 
   const sizeM = (awakening ? 1.1 : 1.0) * this.player.areaMultiplier * (1 + (tierMul - 1) * 0.5);
-  const dmgM = (awakening ? 1.5 : 1.0) * this.player.dmgMultiplier * tierMul * (1 + (this.player.auraDamageBonus || 0));
+  const isEmpiricism = this.player.lineage === 'empiricism';
+  const dmgM = (awakening ? (isEmpiricism ? 4.5 : 1.5) : 1.0) * this.player.dmgMultiplier * tierMul * (1 + (this.player.auraDamageBonus || 0));
 
   if (id === 'fire_projectile') {
     const target = this.getNearestEnemy();
     const tx = target ? target.x : this.player.x + Math.cos(this.player.faceAngle) * 300;
     const ty = target ? target.y : this.player.y + Math.sin(this.player.faceAngle) * 300;
-    const sz = (stats.size || 50) * sizeM;
+    const sz = (stats.size || 50) * sizeM * 0.5;
     const dmg = (stats.dmg || 35) * dmgM;
     this.projectiles.push(new Projectile(this.player.x, this.player.y, tx, ty, 6 * (1 + (this.player.auraProjSpeedBonus || 0)), sz, dmg, '#ff4757', 'fire_explosion'));
     sfx.playFireShoot();
@@ -548,7 +620,7 @@ export function fireWeapon(id, lvl, stats, awakening) {
       const p = new Projectile(
         this.player.x, this.player.y,
         this.player.x + Math.cos(angle), this.player.y + Math.sin(angle),
-        spd, (20 + (lvl * 5)) * sizeM, dmg, '#ff4757', 'fire_sword');
+        spd, (20 + (lvl * 5)) * sizeM * 0.5, dmg, '#ff4757', 'fire_sword');
       p.pierceLeft = 99;
       this.projectiles.push(p);
     }
@@ -571,7 +643,7 @@ export function fireWeapon(id, lvl, stats, awakening) {
   if (id === 'ice_floor') {
     const sz = (stats.size || 100) * sizeM;
     this.iceFloors.push({ x: this.player.x, y: this.player.y, size: sz, life: stats.duration || 3500,
-      dmg: (stats.dmg || 10) * dmgM });
+      dmg: (stats.dmg || 10) * dmgM * 10 });
     this.spawnParticles(this.player.x, this.player.y, '#00d2d3', 8, 6, -2);
     sfx.playFreeze();
   }
@@ -581,7 +653,9 @@ export function fireWeapon(id, lvl, stats, awakening) {
     const dmg = (stats.dmg || 50) * dmgM;
     this.enemies.forEach(e => {
       if (Math.hypot(e.x - this.player.x, e.y - this.player.y) < radius) {
-        e.frozenTime = stats.freezeTime || 2000;
+        if (e.type !== 'boss' && !e.isClone) {
+          e.frozenTime = stats.freezeTime || 2000;
+        }
         this.dealDamageToEnemy(e, dmg);
       }
     });
@@ -590,20 +664,7 @@ export function fireWeapon(id, lvl, stats, awakening) {
   }
 
   if (id === 'ice_ring') {
-    // Handled in draw via orbitAngle
-    const count = (stats.count || 1) * (awakening ? 2 : 1);
-    const radius = (stats.radius || 65) * sizeM;
-    const dmg = (stats.dmg || 30) * dmgM;
-    this.enemies.forEach(e => {
-      for (let i = 0; i < count; i++) {
-        const angle = this.orbitAngle + (Math.PI * 2 / count) * i;
-        const ox = this.player.x + Math.cos(angle) * radius;
-        const oy = this.player.y + Math.sin(angle) * radius;
-        if (Math.hypot(e.x - ox, e.y - oy) < 20) {
-          this.dealDamageToEnemy(e, dmg);
-        }
-      }
-    });
+    // Handled dynamically every frame in gameUpdate
   }
 }
 

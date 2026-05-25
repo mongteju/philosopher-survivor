@@ -1060,12 +1060,36 @@ export function triggerEnding() {
   const typingContainer = document.getElementById('typing-container');
   const creditsContainer = document.getElementById('credits-container');
   
+  // Update playtime display
+  const totalSecs = Math.floor(this.realSurvivalTimer);
+  const m = Math.floor(totalSecs / 60);
+  const s = totalSecs % 60;
+  const playtimeStr = `${m}분 ${s}초`;
+  const playtimeEl = document.getElementById('true-ending-playtime');
+  if (playtimeEl) playtimeEl.textContent = `플레이타임: ${playtimeStr}`;
+  
+  // Hide return to menu button initially
+  const menuBtn = document.getElementById('end-to-menu-btn');
+  if (menuBtn) {
+    menuBtn.style.display = 'none';
+    menuBtn.style.opacity = '0';
+  }
+  
   if (typingContainer) {
     typingContainer.innerHTML = '';
     if (creditsContainer) creditsContainer.style.opacity = '0';
     
     const text = "소피스트의 궤변에서 시작하여...\n에피쿠로스의 평정심과 아우구스티누스의 맹목적인 믿음을 거쳐,\n데카르트의 회의와 칸트의 정언명령,\n그리고 마침내 니체의 심연과 마주하였다.\n\n수많은 사상의 소용돌이 속에서\n진정한 초인(Übermensch)으로 각성한 당신은,\n이제 찬란한 깨달음을 안고\n현실로 돌아간다.";
     
+    // Play typing sfx loop while typing is ongoing
+    const keyboardSound = (typeof sfx !== 'undefined' && sfx.sounds) ? sfx.sounds.keyboard : null;
+    if (keyboardSound) {
+      keyboardSound.loop = true;
+      keyboardSound.volume = 0.35;
+      keyboardSound.currentTime = 0;
+      keyboardSound.play().catch(err => console.warn("Failed to play keyboard loop:", err));
+    }
+
     let i = 0;
     const typingInterval = setInterval(() => {
       if (i < text.length) {
@@ -1077,11 +1101,30 @@ export function triggerEnding() {
         i++;
       } else {
         clearInterval(typingInterval);
+        
+        // Stop typing loop when typing ends
+        if (keyboardSound) {
+          keyboardSound.pause();
+          keyboardSound.currentTime = 0;
+          keyboardSound.loop = false;
+        }
+
         setTimeout(() => {
           if (creditsContainer) creditsContainer.style.opacity = '1';
+          
+          // Show the menu return button 1.0s after credits fade in
+          setTimeout(() => {
+            const restartBtn = document.getElementById('end-to-menu-btn');
+            if (restartBtn) {
+              restartBtn.style.display = 'block';
+              void restartBtn.offsetWidth; // trigger reflow
+              restartBtn.style.opacity = '1';
+              restartBtn.focus();
+            }
+          }, 1000);
         }, 1500);
       }
-    }, 120); // 120ms per character for dramatic effect
+    }, 154); // Increased speed by 1.3x (200 / 1.3 ≈ 154ms)
   }
   
   if (typeof sfx !== 'undefined' && sfx.playLevelUp) sfx.playLevelUp();
@@ -1199,55 +1242,103 @@ export function selectNietzscheQuizOption() {
 export function endNietzscheQuiz() {
   document.getElementById('nietzsche-quiz-screen').classList.remove('active');
   this.nietzscheQuizActive = false;
-  this.isPlaying = true;
-  this.lastTime = performance.now();
 
   const boss = this.nietzscheQuizBoss;
-  
-  if (this.bgm) {
-    try { this.bgm.play().catch(err => console.warn(err)); } catch (e) {}
-  }
 
   if (this.nietzscheQuizScore >= 3) {
-    // SUCCESS: Phase 2 Giant Dragon!
-    boss.dragonActive = true;
-    boss.size = 85;
-    boss.maxHp = boss.maxHp * 1.5;
-    boss.hp = boss.maxHp;
-    boss.speed = 1.8;
-    boss.isPatternActive = false;
-    this.nietzcheRelics = [];
-    
-    // Confine player and display boundaries
-    this.nietzscheArenaActive = true;
-    this.nietzscheArenaCenter = { x: this.player.x, y: this.player.y };
-    this.nietzscheArenaWidth = window.innerWidth || 1200;
-    this.nietzscheArenaHeight = window.innerHeight || 800;
-    this.cameraLocked = true; // Lock camera to center
-    this.nietzscheSafeZone = null;
-    
-    // Trigger Mirror Shatter Effect
-    const flashEl = document.getElementById('flash-overlay');
-    if (flashEl) {
-      flashEl.classList.remove('mirror-shatter');
-      void flashEl.offsetWidth; // trigger reflow
-      flashEl.classList.add('mirror-shatter');
+    // 1. Stop/pause existing BGM
+    if (this.bgm) {
+      try { this.bgm.pause(); } catch (err) {}
     }
     
-    // Remove grayscale after the shatter effect peaks (0.5s)
-    setTimeout(() => {
-      const canvasEl = document.getElementById('game-canvas');
-      if (canvasEl) {
-        canvasEl.classList.remove('grayscale-filter');
-      }
-    }, 500);
-
-    if (typeof sfx !== 'undefined' && sfx.playExplosion) sfx.playExplosion();
+    // 2. Freeze the screen (isPlaying = false keeps drawing particles/damage text but freezes core logic)
+    this.isPlaying = false;
     
-    this.addDamageText(boss.x, boss.y - 120, '🔥 허무의 종말룡 각성!! 🔥', '#ffd200', 30, true);
-    this.showBossTooltip("🐉 허무의 종말룡: 허무주의의 지배자! 거대한 암흑룡의 불꽃 세례를 극복하고 진리에 도달하십시오!");
-    sfx.playLevelUp();
+    // 3. Play dragon roar sound
+    if (typeof sfx !== 'undefined') {
+      sfx.playFile('dragonRoar', 0.6);
+      
+      const roarSound = sfx.sounds.dragonRoar;
+      const onRoarEnd = () => {
+        // Change BGM to ending song
+        if (this.bgm) {
+          try { this.bgm.pause(); } catch (err) {}
+        }
+        this.bgm = new Audio('sound/ending.mp3');
+        this.bgm.loop = true;
+        this.bgm.volume = 0.35;
+        this.bgm.muted = this.bgmMuted;
+        if (!this.bgmMuted) {
+          this.bgm.play().catch(err => console.warn(err));
+        }
+        
+        // SUCCESS: Phase 2 Giant Dragon!
+        boss.dragonActive = true;
+        boss.size = 85;
+        boss.maxHp = boss.maxHp * 1.5;
+        boss.hp = boss.maxHp;
+        boss.speed = 1.8;
+        boss.isPatternActive = false;
+        this.nietzcheRelics = [];
+        
+        // Confine player and display boundaries
+        this.nietzscheArenaActive = true;
+        this.nietzscheArenaCenter = { x: this.player.x, y: this.player.y };
+        this.nietzscheArenaWidth = window.innerWidth || 1200;
+        this.nietzscheArenaHeight = window.innerHeight || 800;
+        this.cameraLocked = true; // Lock camera to center
+        this.nietzscheSafeZone = null;
+        
+        // Trigger Mirror Shatter Effect
+        const flashEl = document.getElementById('flash-overlay');
+        if (flashEl) {
+          flashEl.classList.remove('mirror-shatter');
+          void flashEl.offsetWidth; // trigger reflow
+          flashEl.classList.add('mirror-shatter');
+        }
+        
+        // Remove grayscale after the shatter effect peaks (0.5s)
+        setTimeout(() => {
+          const canvasEl = document.getElementById('game-canvas');
+          if (canvasEl) {
+            canvasEl.classList.remove('grayscale-filter');
+          }
+        }, 500);
+
+        if (sfx.playExplosion) sfx.playExplosion();
+        
+        this.addDamageText(boss.x, boss.y - 120, '🔥 허무의 종말룡 각성!! 🔥', '#ffd200', 30, true);
+        this.showBossTooltip("🐉 허무의 종말룡: 허무주의의 지배자! 거대한 암흑룡의 불꽃 세례를 극복하고 진리에 도달하십시오!");
+        
+        // Resume game loop
+        this.isPlaying = true;
+        this.lastTime = performance.now();
+      };
+      
+      let triggered = false;
+      const triggerTransition = () => {
+        if (triggered) return;
+        triggered = true;
+        roarSound.removeEventListener('ended', triggerTransition);
+        onRoarEnd();
+      };
+      
+      roarSound.addEventListener('ended', triggerTransition);
+      // Fallback timeout of 3.5s in case audio ended event does not fire
+      setTimeout(triggerTransition, 3500);
+    } else {
+      // Fallback if sfx is undefined
+      this.isPlaying = true;
+      this.lastTime = performance.now();
+    }
   } else {
+    this.isPlaying = true;
+    this.lastTime = performance.now();
+    
+    if (this.bgm) {
+      try { this.bgm.play().catch(err => console.warn(err)); } catch (e) {}
+    }
+    
     // FAILURE: Take 50% damage, restore boss HP to 55%, apply blind & slow debuff
     const penaltyDmg = Math.floor(this.player.maxHp * 0.5);
     this.player.takeDamage(penaltyDmg, this);

@@ -198,8 +198,13 @@ class Game {
       },
       killBoss: () => {
         if (this.currentBoss) {
-          this.currentBoss.hp = 0;
-          console.log("[Debug] Boss instantly killed.");
+          if (this.stageIndex === 5 && !this.currentBoss.dragonActive) {
+            this.currentBoss.hp = this.currentBoss.maxHp * 0.5;
+            console.log("[Debug] Stage 6 boss HP dropped to 50% for quiz transition.");
+          } else {
+            this.currentBoss.hp = 0;
+            console.log("[Debug] Boss instantly killed.");
+          }
         } else {
           console.log("[Debug] No active boss to kill.");
         }

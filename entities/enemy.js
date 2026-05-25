@@ -13,8 +13,18 @@ export class Enemy {
       machine:{hp:150,spd:2.2,sz:16,col:'#2f3542',xp:4}
     };
     const d = mobDefs[mobType] || mobDefs.orc;
-    this.maxHp = Math.floor(d.hp * lvMul);
-    this.hp = this.maxHp; this.speed = d.spd; this.size = d.sz;
+    
+    // Scale HP and speed based on stage (mobType)
+    let hpMultiplier = 1;
+    let speedMultiplier = 1;
+    if (mobType === 'beast') { hpMultiplier = 2; speedMultiplier = 1.3; }
+    else if (mobType === 'undead') { hpMultiplier = 3; speedMultiplier = 1.3; }
+    else if (mobType === 'golem') { hpMultiplier = 4; speedMultiplier = 1.3; }
+    else if (mobType === 'steam') { hpMultiplier = 5; speedMultiplier = 1.3; }
+    else if (mobType === 'machine') { hpMultiplier = 6; speedMultiplier = 1.3; }
+    
+    this.maxHp = Math.floor(d.hp * lvMul * hpMultiplier);
+    this.hp = this.maxHp; this.speed = d.spd * speedMultiplier; this.size = d.sz;
     this.color = d.col; this.xpVal = d.xp; this.mobType = mobType;
     this.frozenTime = 0; this.slowMul = 1; this.slowTimer = 0; this.iceFloorDmgTimer = 0;
     this.vx = 0; this.vy = 0;

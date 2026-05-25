@@ -87,20 +87,99 @@ export function gameDraw() {
     ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
   }
 
+  // Ice floors (Rendered first so safe zones and characters draw on top of them)
+  this.iceFloors.forEach(f => {
+    const rx = f.x - camX + W / 2, ry = f.y - camY + H / 2;
+    ctx.save();
+    ctx.fillStyle = 'rgba(168, 230, 240, 0.35)';
+    ctx.strokeStyle = '#00d2d3'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(rx, ry, f.size, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.restore();
+  });
+
   // Ataraxia safe zone
   if (this.ataraxiaZone) {
     const rx = this.ataraxiaZone.x - camX + W / 2, ry = this.ataraxiaZone.y - camY + H / 2;
     const radius = this.ataraxiaZone.radius || 110;
-    ctx.save();
-    ctx.strokeStyle = 'rgba(46, 213, 115, 0.8)'; ctx.lineWidth = 4;
-    const p = (Math.sin(Date.now() * 0.005) + 1) * 0.5;
-    ctx.beginPath(); ctx.arc(rx, ry, radius + p * 8, 0, Math.PI * 2); ctx.stroke();
-    ctx.fillStyle = 'rgba(46, 213, 115, 0.08)'; ctx.fill();
     
-    ctx.font = 'bold 13px sans-serif';
+    // Check if player is inside the safe zone
+    const dZone = Math.hypot(this.player.x - this.ataraxiaZone.x, this.player.y - this.ataraxiaZone.y);
+    const isInside = dZone < radius;
+    
+    ctx.save();
+    
+    // 1. Draw glowing background gradient
+    const grad = ctx.createRadialGradient(rx, ry, radius * 0.3, rx, ry, radius);
+    if (isInside) {
+      // Warm, safe glowing emerald green fill
+      grad.addColorStop(0, 'rgba(46, 213, 115, 0.32)');
+      grad.addColorStop(0.65, 'rgba(46, 213, 115, 0.16)');
+      grad.addColorStop(1, 'rgba(46, 213, 115, 0.01)');
+    } else {
+      // Slightly more alert, dimmer green/teal fill
+      grad.addColorStop(0, 'rgba(46, 213, 115, 0.18)');
+      grad.addColorStop(0.7, 'rgba(46, 213, 115, 0.08)');
+      grad.addColorStop(1, 'rgba(46, 213, 115, 0)');
+    }
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(rx, ry, radius, 0, Math.PI * 2); ctx.fill();
+    
+    // 2. Draw outer pulsing boundary stroke with high-end glow
+    const p = (Math.sin(Date.now() * 0.005) + 1) * 0.5; // pulsing variable 0 to 1
+    ctx.strokeStyle = isInside ? 'rgba(46, 213, 115, 0.95)' : 'rgba(46, 213, 115, 0.7)';
+    ctx.lineWidth = isInside ? 5 : 3;
+    ctx.shadowColor = '#2ed573';
+    ctx.shadowBlur = isInside ? 16 + p * 8 : 8 + p * 4;
+    ctx.beginPath();
+    ctx.arc(rx, ry, radius + p * 6, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    // Reset shadow for inner elements
+    ctx.shadowBlur = 0;
+    
+    // 3. Draw a spinning dashed inner ring to emphasize the zone's "active" state
+    ctx.strokeStyle = isInside ? 'rgba(255, 255, 255, 0.75)' : 'rgba(255, 255, 255, 0.4)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([8, 12]);
+    const rotSpeed = isInside ? 0.0012 : 0.0006;
+    const rot = (Date.now() * rotSpeed) % (Math.PI * 2);
+    ctx.beginPath();
+    ctx.arc(rx, ry, radius - 8, rot, rot + Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // 4. Draw label with dark outline/shadow for ultimate readability
+    ctx.font = 'bold 14px Outfit, sans-serif';
     ctx.fillStyle = '#2ed573';
     ctx.textAlign = 'center';
-    ctx.fillText('🟢 아파테이아 (Apatheia)', rx, ry - radius - 15);
+    
+    // Add text shadow manual drop-effect for maximum readability over bright textures
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 1;
+    
+    const statusText = isInside ? '🟢 아파테이아 [안전 (SAFE)]' : '🟢 아파테이아 (Apatheia)';
+    ctx.fillText(statusText, rx, ry - radius - 18);
+    
+    // 5. Draw countdown timer if gimmick is active
+    if (this.gimmickActive && this.gimmickTimer > 0) {
+      ctx.fillStyle = isInside ? '#ffffff' : '#ff4757';
+      ctx.font = 'bold 18px Share Tech Mono, monospace, sans-serif';
+      
+      // Flash red timer when running out (under 2 seconds)
+      if (this.gimmickTimer < 2000) {
+        ctx.fillStyle = (Math.floor(Date.now() / 150) % 2 === 0) ? '#ff4757' : '#ffffff';
+      }
+      
+      ctx.fillText(`${(this.gimmickTimer / 1000).toFixed(1)}s`, rx, ry + 6);
+      
+      // Draw subtext
+      ctx.font = 'bold 11px Outfit, sans-serif';
+      ctx.fillStyle = isInside ? 'rgba(255, 255, 255, 0.75)' : 'rgba(255, 71, 87, 0.85)';
+      ctx.fillText(isInside ? '평정 유지 중' : '영역 안으로 대피!', rx, ry + 24);
+    }
+    
     ctx.restore();
   }
 
@@ -180,16 +259,6 @@ export function gameDraw() {
     
     ctx.restore();
   }
-
-  // Ice floors
-  this.iceFloors.forEach(f => {
-    const rx = f.x - camX + W / 2, ry = f.y - camY + H / 2;
-    ctx.save();
-    ctx.fillStyle = 'rgba(168, 230, 240, 0.35)';
-    ctx.strokeStyle = '#00d2d3'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(rx, ry, f.size, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.restore();
-  });
 
   // Warning zones
   this.warningZones.forEach(w => w.draw(ctx, this.camera));
@@ -398,7 +467,7 @@ export function gameDraw() {
     if (lvl > 0) {
       const stats = iceRingData.stats[lvl - 1];
       const isAwakening = lvl >= iceRingData.maxLevel;
-      const count = (stats.count || 1) * (isAwakening ? 2 : 1);
+      const count = (stats.count || 1) * (isAwakening ? 2 : 1) * 2;
       const radius = (stats.radius || 65) * this.player.areaMultiplier;
       const prx = W / 2, pry = H / 2;
       for (let i = 0; i < count; i++) {
@@ -407,6 +476,7 @@ export function gameDraw() {
         
         ctx.save();
         ctx.translate(ox, oy);
+        ctx.scale(1.8, 1.8);
         ctx.rotate(this.orbitAngle * 2.5 + i); // Spinning individual snowflakes
         
         ctx.strokeStyle = '#00d2d3';
