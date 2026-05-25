@@ -300,11 +300,36 @@ export function gameEvents() {
       this.showMenuScreen();
     });
   }
-  document.getElementById('card-idealism').addEventListener('click', () => { this.menuSelectedIndex = 0; this.selectLineage('idealism'); this.updateMenuKeyboardSelection(); });
-  document.getElementById('card-empiricism').addEventListener('click', () => { this.menuSelectedIndex = 1; this.selectLineage('empiricism'); this.updateMenuKeyboardSelection(); });
-  document.getElementById('start-game-btn').addEventListener('click', () => this.startGame());
-  document.getElementById('tutorial-yes-btn').addEventListener('click', () => this.acceptTutorial(true));
-  document.getElementById('tutorial-no-btn').addEventListener('click', () => this.acceptTutorial(false));
+  const cardIdealism = document.getElementById('card-idealism');
+  if (cardIdealism) {
+    cardIdealism.addEventListener('click', () => { this.menuSelectedIndex = 0; this.selectLineage('idealism'); this.updateMenuKeyboardSelection(); });
+    cardIdealism.addEventListener('mouseenter', () => { this.menuSelectedIndex = 0; this.updateMenuKeyboardSelection(); });
+  }
+
+  const cardEmpiricism = document.getElementById('card-empiricism');
+  if (cardEmpiricism) {
+    cardEmpiricism.addEventListener('click', () => { this.menuSelectedIndex = 1; this.selectLineage('empiricism'); this.updateMenuKeyboardSelection(); });
+    cardEmpiricism.addEventListener('mouseenter', () => { this.menuSelectedIndex = 1; this.updateMenuKeyboardSelection(); });
+  }
+
+  const startGameBtn = document.getElementById('start-game-btn');
+  if (startGameBtn) {
+    startGameBtn.addEventListener('click', () => this.startGame());
+    startGameBtn.addEventListener('mouseenter', () => { this.menuSelectedIndex = 2; this.updateMenuKeyboardSelection(); });
+  }
+
+  const tutYesBtn = document.getElementById('tutorial-yes-btn');
+  if (tutYesBtn) {
+    tutYesBtn.addEventListener('click', () => this.acceptTutorial(true));
+    tutYesBtn.addEventListener('mouseenter', () => { this.tutorialSelectedIndex = 0; this.updateTutorialKeyboardSelection(); });
+  }
+
+  const tutNoBtn = document.getElementById('tutorial-no-btn');
+  if (tutNoBtn) {
+    tutNoBtn.addEventListener('click', () => this.acceptTutorial(false));
+    tutNoBtn.addEventListener('mouseenter', () => { this.tutorialSelectedIndex = 1; this.updateTutorialKeyboardSelection(); });
+  }
+
   document.getElementById('gacha-close-btn').addEventListener('click', () => this.resumeFromGacha());
   const spinBtn = document.getElementById('gacha-spin-btn');
   if (spinBtn) spinBtn.addEventListener('click', () => this.triggerGachaSpin());
@@ -354,6 +379,18 @@ export function gameEvents() {
 
   // Final ending quiz option buttons
   document.querySelectorAll('.quiz-option-btn').forEach(btn => {
+    btn.addEventListener('mouseenter', (e) => {
+      const qBox = e.currentTarget.closest('.quiz-question');
+      if (qBox) {
+        const btns = Array.from(qBox.querySelectorAll('.quiz-option-btn'));
+        const idx = btns.indexOf(e.currentTarget);
+        if (idx !== -1) {
+          this.examSelectedIndex = idx;
+          this.updateExamKeyboardSelection();
+        }
+      }
+    });
+
     btn.addEventListener('click', (e) => {
       const isCorrect = e.currentTarget.getAttribute('data-correct') === 'true';
       if (isCorrect) {

@@ -659,6 +659,11 @@ export function triggerEpicEvolutionUpgrade() {
       el.className = `choice-card choice-card-horizontal ${categoryClass} ${this.player.lineage}-card ${tier}-card${isAwakening ? ' awakening-card' : ''}`;
       if (idx === 0) el.classList.add('keyboard-selected');
 
+      el.addEventListener('mouseenter', () => {
+        this.cardSelectedIndex = idx;
+        this.updateKeyboardCardSelection();
+      });
+
       const bonusSpan = `<span class="rarity-bonus-pill epic">+90% 보너스 스텟</span>`;
       const lvLabel = isAwakening ? '각성' : `Lv.${nextLvl}`;
       
@@ -766,6 +771,11 @@ export function triggerLevelUp() {
       const el = document.createElement('div');
       el.className = `choice-card choice-card-horizontal ${categoryClass} ${this.player.lineage}-card ${tier}-card${isAwakening ? ' awakening-card' : ''}`;
       if (idx === 0) el.classList.add('keyboard-selected');
+
+      el.addEventListener('mouseenter', () => {
+        this.cardSelectedIndex = idx;
+        this.updateKeyboardCardSelection();
+      });
 
       const percentMap = { rare: '+25% 보너스 스텟', unique: '+55% 보너스 스텟', epic: '+90% 보너스 스텟' };
       const bonusSpan = tier !== 'normal' ? `<span class="rarity-bonus-pill ${tier}">${percentMap[tier]}</span>` : '';
@@ -1200,6 +1210,10 @@ export function renderNietzscheQuizQuestion() {
       btn.addEventListener('click', () => {
         this.nietzscheQuizSelection = idx;
         this.selectNietzscheQuizOption();
+      });
+      btn.addEventListener('mouseenter', () => {
+        this.nietzscheQuizSelection = idx;
+        this.updateNietzscheQuizSelection();
       });
       container.appendChild(btn);
     });
