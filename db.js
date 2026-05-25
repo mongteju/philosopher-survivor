@@ -76,7 +76,7 @@ export const TIMELINE = [
   {name:'헬레니즘',mobType:'beast',bossName:'아파테이아 수호자'},
   {name:'중세 시대',mobType:'undead',bossName:'교조주의의 망령'},
   {name:'근대 시작',mobType:'golem',bossName:'편견의 거인 (4대 우상)'},
-  {name:'근대 성숙',mobType:'steam',bossName:'도덕의 심판자 (칸트)'},
+  {name:'근대 성숙',mobType:'steam',bossName:'도덕의 심판관 (정언명령)'},
   {name:'현대 사회',mobType:'machine',bossName:'허무주의의 그림자'}
 ];
 

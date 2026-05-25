@@ -143,6 +143,9 @@ export function onBossDefeated(boss) {
   this.kantRule = null;
   this.kantDutyLine = null;
   this.ataraxiaZone = null; // 아파테이아 평정 구역 안전지대 즉시 제거
+  this.nietzscheArenaActive = false;
+  this.nietzscheArenaCenter = null;
+  this.nietzscheSafeZone = null;
   this.bossBullets = []; this.warningZones = [];
   
   // Clear gimmick overlays and state
@@ -994,6 +997,7 @@ export function updatePauseStatusPanel() {
 }
 
 export function addDamageText(x, y, val, color, size, isCrit) {
+  if (typeof val === 'number') val = Math.floor(val);
   this.damageTexts.push(new DamageText(x, y, val, color, size, isCrit));
 }
 
@@ -1045,31 +1049,42 @@ export function gameOver() {
 
 export function triggerEnding() {
   this.isPlaying = false;
-  this.examScore = 0;
-  this.currentQuestionIndex = 1;
-  this.examSelectedIndex = 0;
-
-  document.querySelectorAll('.overlay-screen').forEach(scr => scr.classList.remove('active'));
-
-  document.querySelectorAll('.quiz-question').forEach(q => q.classList.remove('active'));
-  const q1 = document.getElementById('q1');
-  if (q1) q1.classList.add('active');
-  const examResult = document.getElementById('exam-result');
-  if (examResult) examResult.style.display = 'none';
-
-  const overlay = document.getElementById('exam-overlay-visual');
-  if (overlay) {
-    overlay.textContent = this.player && this.player.lineage === 'idealism' ? '🔥' : '❄️';
-  }
-
-  const secs = Math.floor(this.finalBossKillTime);
-  const totalSecs = Math.floor(this.realSurvivalTimer);
-  document.getElementById('exam-boss-kill-time').textContent = `${secs}초`;
-  document.getElementById('exam-total-clear-time').textContent = `${Math.floor(totalSecs / 60)}분 ${totalSecs % 60}초`;
-  document.getElementById('ending-screen').classList.add('active');
   
-  this.updateExamKeyboardSelection();
-  sfx.playExamBell();
+  // Hide all screens
+  document.querySelectorAll('.overlay-screen').forEach(scr => scr.classList.remove('active'));
+  
+  // Show the true cinematic ending screen
+  const endingScreen = document.getElementById('true-ending-screen');
+  if (endingScreen) endingScreen.classList.add('active');
+  
+  const typingContainer = document.getElementById('typing-container');
+  const creditsContainer = document.getElementById('credits-container');
+  
+  if (typingContainer) {
+    typingContainer.innerHTML = '';
+    if (creditsContainer) creditsContainer.style.opacity = '0';
+    
+    const text = "소피스트의 궤변에서 시작하여...\n에피쿠로스의 평정심과 아우구스티누스의 맹목적인 믿음을 거쳐,\n데카르트의 회의와 칸트의 정언명령,\n그리고 마침내 니체의 심연과 마주하였다.\n\n수많은 사상의 소용돌이 속에서\n진정한 초인(Übermensch)으로 각성한 당신은,\n이제 찬란한 깨달음을 안고\n현실로 돌아간다.";
+    
+    let i = 0;
+    const typingInterval = setInterval(() => {
+      if (i < text.length) {
+        if (text[i] === '\n') {
+          typingContainer.innerHTML += '<br>';
+        } else {
+          typingContainer.innerHTML += text[i];
+        }
+        i++;
+      } else {
+        clearInterval(typingInterval);
+        setTimeout(() => {
+          if (creditsContainer) creditsContainer.style.opacity = '1';
+        }, 1500);
+      }
+    }, 120); // 120ms per character for dramatic effect
+  }
+  
+  if (typeof sfx !== 'undefined' && sfx.playLevelUp) sfx.playLevelUp();
 }
 
 // ─── NIETZSCHE CHECKPOINT QUIZ & UNIQUE DEBUFF ACTIONS ────────────────
@@ -1203,8 +1218,34 @@ export function endNietzscheQuiz() {
     boss.isPatternActive = false;
     this.nietzcheRelics = [];
     
+    // Confine player and display boundaries
+    this.nietzscheArenaActive = true;
+    this.nietzscheArenaCenter = { x: this.player.x, y: this.player.y };
+    this.nietzscheArenaWidth = window.innerWidth || 1200;
+    this.nietzscheArenaHeight = window.innerHeight || 800;
+    this.cameraLocked = true; // Lock camera to center
+    this.nietzscheSafeZone = null;
+    
+    // Trigger Mirror Shatter Effect
+    const flashEl = document.getElementById('flash-overlay');
+    if (flashEl) {
+      flashEl.classList.remove('mirror-shatter');
+      void flashEl.offsetWidth; // trigger reflow
+      flashEl.classList.add('mirror-shatter');
+    }
+    
+    // Remove grayscale after the shatter effect peaks (0.5s)
+    setTimeout(() => {
+      const canvasEl = document.getElementById('game-canvas');
+      if (canvasEl) {
+        canvasEl.classList.remove('grayscale-filter');
+      }
+    }, 500);
+
+    if (typeof sfx !== 'undefined' && sfx.playExplosion) sfx.playExplosion();
+    
     this.addDamageText(boss.x, boss.y - 120, '🔥 허무의 종말룡 각성!! 🔥', '#ffd200', 30, true);
-    this.showBossTooltip("🐉 니체: 허무주의의 지배자! 거대한 암흑룡의 불꽃 세례를 극복하고 진리에 도달하십시오!");
+    this.showBossTooltip("🐉 허무의 종말룡: 허무주의의 지배자! 거대한 암흑룡의 불꽃 세례를 극복하고 진리에 도달하십시오!");
     sfx.playLevelUp();
   } else {
     // FAILURE: Take 50% damage, restore boss HP to 55%, apply blind & slow debuff
@@ -1218,7 +1259,7 @@ export function endNietzscheQuiz() {
     this.player.nietzscheVortexTimer = 3000;
     
     this.addDamageText(this.player.x, this.player.y - 80, '❌ 시험 낙제! 50% 피해 & 심연의 저주!', '#ff4757', 24);
-    this.showBossTooltip("🦅 니체: 그대의 깨달음이 부족하군. 잿빛의 심연 속에서 다시 한 번 진리를 갈구해라!");
+    this.showBossTooltip("🦅 허무주의의 그림자: 그대의 깨달음이 부족하군. 잿빛의 심연 속에서 다시 한 번 진리를 갈구해라!");
     sfx.playAlert();
   }
 }

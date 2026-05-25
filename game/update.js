@@ -88,12 +88,21 @@ export function gameUpdate(dt) {
 
   // Update and tick down global Gimmick timer
   if (this.gimmickActive) {
-    this.gimmickTimer -= dt;
-    if (this.gimmickTimer <= 0) {
-      this.gimmickActive = false;
-      this.gimmickTimer = 0;
-      
-      if (this.player && this.currentBoss) {
+    if (this.stageIndex === 4 || this.stageIndex === 5) {
+      // Stage 5 (Kant) traffic light is persistent.
+      // Stage 6 (Nietzsche) safe zone logic is handled in boss.js.
+      // We still tick the timer for UI, but skip default failure penalty.
+      if (this.stageIndex === 5 && this.gimmickTimer > 0) {
+         this.gimmickTimer -= dt;
+         if (this.gimmickTimer <= 0) this.gimmickTimer = 0;
+      }
+    } else {
+      this.gimmickTimer -= dt;
+      if (this.gimmickTimer <= 0) {
+        this.gimmickActive = false;
+        this.gimmickTimer = 0;
+        
+        if (this.player && this.currentBoss) {
         const b = this.currentBoss;
         
         // 2단계 아파테이아 기믹 성공 여부 판정
@@ -172,57 +181,26 @@ export function gameUpdate(dt) {
       }
     }
   }
+}
 
-  // Kantian moral rules verification
-  if (this.stageIndex === 4 && this.currentBoss && this.currentBoss.isPatternActive && this.gimmickActive && !this.kantRuleViolation) {
+  // Kantian moral rules verification: Traffic Light System
+  if (this.stageIndex === 4 && this.currentBoss && this.currentBoss.isPatternActive && this.gimmickActive) {
     const b = this.currentBoss;
     const playerVel = Math.hypot(this.player.vx, this.player.vy);
-    const isMoving = playerVel > 0.3; // Check if player is moving
+    const isMoving = playerVel > 0.45; // slightly higher threshold to prevent micro-drift triggers
     
-    if (b.kantCycle === 1) {
-      // Rule 1: Must stay on the Golden Line of Duty (Y deviation <= 35px)
-      if (this.kantDutyLine) {
-        const deviation = Math.abs(this.player.y - this.kantDutyLine.y);
-        if (deviation > 35) {
-          this.kantRuleViolation = true;
-        }
-      }
-    } else if (b.kantCycle === 2) {
-      // Rule 2: Must stay close to boss (distance <= 350px)
-      const dist = Math.hypot(this.player.x - b.x, this.player.y - b.y);
-      if (dist > 350) {
-        this.kantRuleViolation = true;
-      }
-    } else if (b.kantCycle === 3) {
-      // Rule 3: Must stay completely still
-      if (isMoving) {
-        this.kantMoveTimer = (this.kantMoveTimer || 0) + dt;
-        if (this.kantMoveTimer >= 1500) { // moving for 1.5s -> VIOLATION!
-          this.kantRuleViolation = true;
-        }
-      } else {
-        this.kantMoveTimer = 0;
-      }
-    }
-    
-    if (this.kantRuleViolation) {
+    if (this.kantTrafficLight === 'red' && isMoving && !this.kantViolatedInThisRedTurn) {
+      this.kantViolatedInThisRedTurn = true; // prevent multiple damage ticks in same red light turn
+      
       if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
       
       const penaltyDmg = Math.ceil(this.player.maxHp * 0.5);
       this.player.takeDamage(penaltyDmg, this, b);
-      this.addDamageText(this.player.x, this.player.y - 80, `💥 규율 위반! -${penaltyDmg} HP`, '#ff4757', 24, true);
-      this.showBossTooltip("💥 정언명령 위배: 정당한 도덕적 의무를 성실히 이행하지 못해 심판(최대 체력의 50% 피해)을 받았습니다!");
+      this.addDamageText(this.player.x, this.player.y - 80, `💥 신호 위반! -${penaltyDmg} HP`, '#ff4757', 24, true);
+      this.showBossTooltip(`💥 신호 위반: 빨간불에 움직여 정언명령을 위배하고 시간 속에 속박됩니다!`);
       
       // Apply unique hit action (5단계 칸트: 시간 속박)
       this.applyUniqueHitAction(4);
-      
-      // Fail the whole gimmick immediately
-      this.gimmickActive = false;
-      this.gimmickTimer = 0;
-      b.isPatternActive = false;
-      this.gridLines = [];
-      this.kantDutyLine = null;
-      b.speed = 1.2;
     }
   }
 
@@ -265,8 +243,13 @@ export function gameUpdate(dt) {
   }
 
   this.player.update(dt, this.keys, this.joystick.angle, this.joystick.strength);
-  this.camera.x = this.player.x;
-  this.camera.y = this.player.y;
+  if (this.cameraLocked && this.nietzscheArenaCenter) {
+    this.camera.x = this.nietzscheArenaCenter.x;
+    this.camera.y = this.nietzscheArenaCenter.y;
+  } else {
+    this.camera.x = this.player.x;
+    this.camera.y = this.player.y;
+  }
   this.orbitAngle += 0.05 * dt * 0.06;
   this.scroll += dt * 0.05;
 
@@ -359,7 +342,7 @@ export function gameUpdate(dt) {
         this.currentBoss.isPatternActive = true;
         this.currentBoss.isStunned = false;
         this.spawnNietzcheRelics();
-        this.showBossTooltip("🦅 니체: 허무주의의 잿빛 심연 속에서, 자유와 책임의 유물(🔥)을 다시 모으십시오!");
+        this.showBossTooltip("🦅 허무주의의 그림자: 허무의 잿빛 심연 속에서, 자유와 책임의 유물(🔥)을 다시 모으십시오!");
       } else {
         this.showBossTooltip(null);
       }
@@ -662,7 +645,7 @@ export function dealDamageToEnemy(e, dmg, proj) {
     return;
   }
 
-  if (e.type === 'boss' && e.isPatternActive) {
+  if (e.type === 'boss' && e.isPatternActive && e.stageIndex !== 4) {
     this.addDamageText(e.x, e.y - e.size - 10, "🛡️ 무적 (기믹 진행 중)", "#a4b0be", 14, false);
     this.spawnParticles(e.x, e.y, '#ffffff', 3, 5, -2);
     return;

@@ -1,4 +1,4 @@
-import { TIMELINE } from './db.js';
+import { TIMELINE, EVOLUTION_STAGES } from './db.js';
 import { sfx } from './audio.js';
 import {
   gameUpdate,
@@ -140,7 +140,7 @@ class Game {
     this.bgm = new Audio('music1.mp3');
     this.bgm.loop = true; this.bgm.volume = 0.35;
     this.bgmMuted = false; this.sfxMuted = false;
-    this.bounds = 5000;
+    this.bounds = 10000;
     this.bgm.play().catch(() => {});
 
     // Start BGM on first interaction (fail-safe for browser autoplay policies)
@@ -211,8 +211,40 @@ class Game {
         }
       },
       spawnBoss: () => {
-        this.spawnBossImmediate();
-        console.log("[Debug] Boss spawned manually.");
+        const input = prompt("몇 번째 보스를 소환하시겠습니까? (1~6)\n1: 소피스트\n2: 아파테이아 수호자\n3: 교조주의의 망령\n4: 편견의 거인\n5: 도덕의 심판관(정언명령)\n6: 허무주의의 그림자");
+        const idx = parseInt(input);
+        if (!isNaN(idx) && idx >= 1 && idx <= 6) {
+          this.stageIndex = idx - 1;
+          this.stage = TIMELINE[this.stageIndex];
+          this.eraSurvivalTime = 60;
+          
+          // Clear all current entities and visual states
+          this.enemies = []; 
+          this.bossBullets = []; 
+          this.warningZones = [];
+          this.gridLines = []; 
+          this.candlesticks = []; 
+          this.nietzcheRelics = [];
+          this.activeIdols.clear();
+          this.medievalDarkness = false; 
+          this.kantRule = null;
+          this.kantDutyLine = null;
+          this.ataraxiaZone = null;
+          this.nietzscheArenaActive = false;
+          this.nietzscheArenaCenter = null;
+          this.nietzscheSafeZone = null;
+          
+          // Align player evolution styling
+          if (this.player) {
+            this.player.evolutionIndex = Math.min(this.stageIndex, EVOLUTION_STAGES[this.player.lineage].length - 1);
+            this.addDamageText(this.player.x, this.player.y - 80, `✨ ${EVOLUTION_STAGES[this.player.lineage][this.player.evolutionIndex].title} 전직!`, '#ffd200', 22);
+          }
+          
+          this.currentBoss = null;
+          this.spawnBossImmediate();
+          this.restoreHUD();
+          console.log(`[Debug] Teleported to stage ${idx} and spawned boss.`);
+        }
       }
     };
 
@@ -252,17 +284,25 @@ class Game {
       
       const curPulse = this._heartbeatPulse;
       if (this.isPlaying && this._lastCheckedPulse === curPulse) {
-        console.warn("[Debug Heartbeat] WARNING: Game update loop is FROZEN!");
+        console.warn("[Debug Heartbeat] WARNING: Game update loop is FROZEN! Automatically resuming...");
         
+        // Show auto-resume notice briefly
         let alertBox = document.getElementById('debug-visual-alert');
         if (!alertBox) {
           alertBox = document.createElement('div');
           alertBox.id = 'debug-visual-alert';
-          alertBox.style.cssText = 'position:fixed; bottom:20px; left:20px; background:rgba(255, 71, 87, 0.95); border:2px solid #ff6b81; border-radius:12px; color:#fff; padding:15px; font-family:sans-serif; z-index:999999; max-width:400px; box-shadow:0 10px 30px rgba(0,0,0,0.5); font-size:12px; word-break:break-all;';
+          alertBox.style.cssText = 'position:fixed; bottom:20px; left:20px; background:rgba(46, 213, 115, 0.95); border:2px solid #2ed573; border-radius:12px; color:#fff; padding:15px; font-family:sans-serif; z-index:999999; max-width:400px; box-shadow:0 10px 30px rgba(0,0,0,0.5); font-size:12px; transition: opacity 0.5s;';
           document.body.appendChild(alertBox);
         }
         alertBox.style.display = 'block';
-        alertBox.innerHTML = `<strong>⚠️ 게임 루프 정지(Freeze) 감지!</strong><br><span style="color:#ffeaa7;">isPlaying 상태이지만 화면 프레임 갱신이 중단되었습니다.</span><br><br><button onclick="window.gameDebug.resume()" style="background:#fff; color:#ff4757; border:none; padding:4px 8px; border-radius:4px; font-weight:bold; cursor:pointer;">루프 강제 복구(Resume)</button>`;
+        alertBox.style.opacity = '1';
+        alertBox.innerHTML = `<strong>🔄 루프 자동 복구 완료!</strong><br><span style="color:#f1f2f6;">멈춤 현상이 감지되어 자동으로 루프를 재시작했습니다.</span>`;
+        
+        setTimeout(() => { alertBox.style.opacity = '0'; }, 2000);
+        
+        if (window.gameDebug && typeof window.gameDebug.resume === 'function') {
+           window.gameDebug.resume();
+        }
       }
       this._lastCheckedPulse = curPulse;
     }, 3000);
@@ -270,6 +310,10 @@ class Game {
     // Custom Stage pattern helpers
     this.candlesticks = [];
     this.nietzcheRelics = [];
+    this.nietzscheArenaActive = false;
+    this.nietzscheArenaCenter = null;
+    this.nietzscheArenaRadius = 450;
+    this.nietzscheSafeZone = null;
     this.gridLines = [];
     this.uberMenschMode = false;
     this.prejudiceWave = 0;

@@ -1,12 +1,77 @@
 import { PHILOSOPHY_DB, AURA_DB, EVOLUTION_STAGES } from '../db.js';
 
+// ─── PLAYER QUOTES DATABASE ──────────────────────────────────────────
+const PLAYER_QUOTES = {
+  '플라톤': [
+    "현실은 이데아의 그림자일 뿐이다.",
+    "철학자가 왕이 되거나, 왕이 철학을 해야 한다.",
+    "이성의 지도를 받는 기개와 욕망만이 영혼의 조화를 이룬다."
+  ],
+  '에픽테토스': [
+    "그대 스스로 통제할 수 없는 것에 집착하지 마라.",
+    "우리를 괴롭히는 것은 사물 자체가 아니라 그것에 대한 의견이다.",
+    "내면의 자유는 아무도 빼앗을 수 없는 이성의 요새이다."
+  ],
+  '아우구스티누스': [
+    "믿기 위해 알라, 알기 위해 믿으라.",
+    "시간은 신이 창조한 것이며, 우리 영혼의 내적인 연장이다.",
+    "내면의 진리를 향할 때만 영원한 참을 발견할 수 있다."
+  ],
+  '데카르트': [
+    "나는 생각한다, 고로 존재한다 (Cogito, ergo sum).",
+    "모든 진리를 의심한 끝에 도달한 확고한 기초를 신뢰하라.",
+    "나의 정신은 신체와 완전히 분리되어 있는 사유 실체다."
+  ],
+  '칸트': [
+    "네 의지의 준칙이 항상 보편적 법칙이 되게 하라!",
+    "하늘에는 별, 내 마음속에는 도덕 법칙!",
+    "의무는 실천이성이 내리는 타협 없는 명령이다.",
+    "사람을 언제나 목적으로 대우하고 결코 수단으로 삼지 마라."
+  ],
+  '사르트르': [
+    "실존은 본질에 앞선다 (L'existence précède l'essence).",
+    "인간은 자유라는 무거운 선고를 받은 존재다.",
+    "자신을 어떤 존재로 규정하고 행동할지는 전적으로 본인에게 달렸다."
+  ],
+  '아리스토텔레스': [
+    "덕은 양 극단 사이의 조화로운 중용에 존재한다.",
+    "인간은 공동체 안에서 자아를 완성하는 사회적 동물이다.",
+    "탁월성은 행동이 아닌 습관을 통해 비로소 축적된다."
+  ],
+  '에피쿠로스': [
+    "쾌락은 고통과 불안이 없는 평온한 상태(Ataraxia)다.",
+    "죽음은 우리에게 아무것도 아니다. 우리는 그것을 인지할 수 없기 때문이다.",
+    "단순하고 자연스러운 욕구에 만족할 때 진정한 자유를 얻는다."
+  ],
+  '토마스 아퀴나스': [
+    "이성과 신앙은 모순되지 않고 상호 보완한다.",
+    "인간의 모든 자연적 이성은 하나님의 영원법을 투영한다.",
+    "신비로운 은총은 인간의 자연적 성품을 파괴하지 않고 완성한다."
+  ],
+  '베이컨': [
+    "아는 것이 곧 힘이다 (Knowledge is Power)!",
+    "마음속 네 가지 우상(종족, 동굴, 시장, 극장)을 깨뜨려라.",
+    "순수한 관찰과 정교한 경험적 실증을 통해 자연을 지배하라."
+  ],
+  '밀': [
+    "배부른 돼지보다 배고픈 소크라테스가 되는 것이 훨씬 낫다.",
+    "사회 전체의 최대 행복과 쾌락을 증진하는 것이 옳음의 기준이다.",
+    "타인에게 해를 끼치지 않는 한, 개인의 의사는 무조건 존중되어야 한다."
+  ],
+  '듀이': [
+    "우리는 실천하고 행동함으로써 진정으로 배운다 (Learning by doing).",
+    "고정된 진리란 없다. 지식은 삶의 도구로서 계속 검증되어야 한다.",
+    "민주주의는 단지 통치 형태가 아니라 공동체의 적극적 참여 방식이다."
+  ]
+};
+
 // ─── PLAYER CLASS ────────────────────────────────────────────────────
 export class Player {
   constructor(lineage) {
     this.lineage = lineage; this.x = 0; this.y = 0;
     this.size = 18; this.speed = 3.2;
     this.maxHp = 120; this.hp = 120; this.level = 1; this.xp = 0;
-    this.maxXp = 12; this.evolutionIndex = 0;
+    this.maxXp = 10; this.evolutionIndex = 0;
     this.activeSkills = {}; this.skillTiers = {}; this.faceAngle = 0;
     this.vx = 0; this.vy = 0; this.isInvincible = false;
     this.invincibilityFlash = 0;
@@ -36,6 +101,11 @@ export class Player {
     this.knockbackTimer = 0;
     this.knockbackX = 0;
     this.knockbackY = 0;
+    
+    // Dialogue properties
+    this.dialogueTimer = 4000 + Math.random() * 3000;
+    this.dialogueDisplayTimer = 0;
+    this.activeDialogue = "";
   }
   recalculateStats() {
     this.dmgMultiplier = 1;
@@ -122,7 +192,7 @@ export class Player {
     this.xp += val * this.xpMultiplier;
     while (this.xp >= this.maxXp) {
       this.xp -= this.maxXp; this.level++;
-      this.maxXp = Math.floor(this.maxXp * 1.55 + 6);
+      this.maxXp = Math.floor(this.maxXp * 1.12 + 2);
       game.triggerLevelUp();
     }
     document.getElementById('hud-xp-fill').style.width = `${(this.xp / this.maxXp) * 100}%`;
@@ -150,6 +220,28 @@ export class Player {
     if (this.kantStunnedTimer > 0) this.kantStunnedTimer -= dt;
     if (this.nietzscheVortexTimer > 0) this.nietzscheVortexTimer -= dt;
     if (this.knockbackTimer > 0) this.knockbackTimer -= dt;
+
+    // Dialogue update
+    if (this.dialogueDisplayTimer > 0) {
+      this.dialogueDisplayTimer -= dt;
+      if (this.dialogueDisplayTimer <= 0) {
+        this.activeDialogue = "";
+      }
+    }
+    this.dialogueTimer -= dt;
+    if (this.dialogueTimer <= 0) {
+      const stages = EVOLUTION_STAGES[this.lineage];
+      if (stages) {
+        const ev = stages[Math.min(this.evolutionIndex, stages.length - 1)];
+        const philName = ev ? ev.title : '';
+        const quotes = PLAYER_QUOTES[philName];
+        if (quotes && quotes.length > 0) {
+          this.activeDialogue = quotes[Math.floor(Math.random() * quotes.length)];
+          this.dialogueDisplayTimer = 2500; // Show for 2.5s
+        }
+      }
+      this.dialogueTimer = 8000 + Math.random() * 5000; // Trigger every 8-13s
+    }
 
     let dx = 0, dy = 0;
     if (this.stunnedTimer <= 0 && this.kantStunnedTimer <= 0) {
@@ -203,9 +295,59 @@ export class Player {
     this.x += this.vx * dt * 0.06;
     this.y += this.vy * dt * 0.06;
 
-    const bounds = (window.gameInstance && window.gameInstance.bounds) ? window.gameInstance.bounds : 5000;
-    this.x = Math.max(-bounds, Math.min(bounds, this.x));
-    this.y = Math.max(-bounds, Math.min(bounds, this.y));
+    if (window.gameInstance && window.gameInstance.nietzscheArenaActive && window.gameInstance.nietzscheArenaCenter) {
+      const center = window.gameInstance.nietzscheArenaCenter;
+      const W = window.gameInstance.nietzscheArenaWidth || 1200;
+      const H = window.gameInstance.nietzscheArenaHeight || 800;
+      
+      const left = center.x - W / 2;
+      const right = center.x + W / 2;
+      // Top 20% (Row 1) is blocked. Playable area is bottom 80% (Rows 2, 3, 4, 5)
+      const top = center.y - H / 2 + H * (1 / 5);
+      const bottom = center.y + H / 2;
+      
+      this.x = Math.max(left + 20, Math.min(right - 20, this.x));
+      this.y = Math.max(top + 20, Math.min(bottom - 20, this.y));
+      
+      // Check Safe Column (Ubermensch Invincibility)
+      if (window.gameInstance.nietzscheSafeColumn !== undefined && window.gameInstance.nietzscheSafeColumn !== null) {
+        const col = window.gameInstance.nietzscheSafeColumn;
+        const colWidth = W / 5;
+        const colLeft = center.x - W / 2 + col * colWidth;
+        const colRight = colLeft + colWidth;
+        
+        if (this.x >= colLeft && this.x <= colRight) {
+           if (!this.ubermenschTriggered) {
+             this.ubermenschTriggered = true;
+             this.isInvincible = true;
+             this.dmgMultiplier *= 2; // 2x damage buff
+             window.gameInstance.addDamageText(this.x, this.y - 60, "👑 초인 각성! 무적 & 데미지 2배!", "#ffd200", 22);
+             // Spawn buff particles around player
+             if (window.gameInstance.spawnParticles) {
+                 window.gameInstance.spawnParticles(this.x, this.y, '#ffd200', 15, 8, -5);
+             }
+           }
+        } else {
+           if (this.ubermenschTriggered) {
+             this.ubermenschTriggered = false;
+             this.isInvincible = false;
+             this.dmgMultiplier /= 2; // remove buff
+           }
+        }
+      } else {
+        if (this.ubermenschTriggered) {
+           this.ubermenschTriggered = false;
+           this.isInvincible = false;
+           this.dmgMultiplier /= 2;
+        }
+      }
+    } else {
+      const bounds = (window.gameInstance && window.gameInstance.bounds) ? window.gameInstance.bounds : 5000;
+      this.x = Math.max(-bounds, Math.min(bounds, this.x));
+      this.y = Math.max(-bounds, Math.min(bounds, this.y));
+    }
+
+
 
     const totalRegen = this.regenHp + (this.auraRegenBonus || 0);
     if (totalRegen > 0) {
@@ -1203,6 +1345,52 @@ export class Player {
       ctx.moveTo(0, 0);
       ctx.lineTo(5, 2);
       ctx.stroke();
+      ctx.restore();
+    }
+
+    // Draw Dialogue Speech Bubble for Player
+    if (this.activeDialogue && this.dialogueDisplayTimer > 0) {
+      ctx.save();
+      ctx.font = '12px Outfit, sans-serif';
+      const textWidth = ctx.measureText(this.activeDialogue).width;
+      const padX = 14;
+      const padY = 8;
+      const rectW = textWidth + padX * 2;
+      const rectH = 14 + padY * 2;
+      
+      const bubbleX = rx - rectW / 2;
+      const bubbleY = ry - this.size - 40 - rectH;
+      
+      ctx.fillStyle = 'rgba(15, 18, 30, 0.88)';
+      ctx.strokeStyle = themeColor; // Match player's evolution stage color!
+      ctx.lineWidth = 1.5;
+      
+      ctx.beginPath();
+      ctx.roundRect(bubbleX, bubbleY, rectW, rectH, 8);
+      ctx.fill();
+      ctx.stroke();
+      
+      ctx.fillStyle = 'rgba(15, 18, 30, 0.88)';
+      ctx.beginPath();
+      ctx.moveTo(rx - 6, bubbleY + rectH);
+      ctx.lineTo(rx + 6, bubbleY + rectH);
+      ctx.lineTo(rx, bubbleY + rectH + 6);
+      ctx.closePath();
+      ctx.fill();
+      
+      ctx.strokeStyle = themeColor;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(rx - 6, bubbleY + rectH);
+      ctx.lineTo(rx, bubbleY + rectH + 6);
+      ctx.lineTo(rx + 6, bubbleY + rectH);
+      ctx.stroke();
+      
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(this.activeDialogue, rx, bubbleY + rectH / 2);
+      
       ctx.restore();
     }
 

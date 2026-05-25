@@ -15,7 +15,7 @@ export function gameDraw() {
   // Full grayscale/contrast filter for Stage 6 and Prejudice Wave using GPU-accelerated CSS filters
   const canvasEl = this.canvas;
   if (canvasEl) {
-    const isGrayscale = !!(this.stageIndex === 5 && this.currentBoss && !this.uberMenschMode);
+    const isGrayscale = !!(this.stageIndex === 5 && this.currentBoss && !this.currentBoss.dragonActive && !this.uberMenschMode);
     const isPrejudice = !!(this.prejudiceWave === 3);
 
     if (canvasEl.classList.contains('grayscale-filter') !== isGrayscale) {
@@ -104,6 +104,83 @@ export function gameDraw() {
     ctx.restore();
   }
 
+  // Nietzsche Arena Boundary & 5x5 Grid
+  if (this.nietzscheArenaActive && this.nietzscheArenaCenter) {
+    ctx.save();
+    const rx = this.nietzscheArenaCenter.x - camX + W / 2;
+    const ry = this.nietzscheArenaCenter.y - camY + H / 2;
+    const arenaW = this.nietzscheArenaWidth || 1200;
+    const arenaH = this.nietzscheArenaHeight || 800;
+    
+    const left = rx - arenaW / 2;
+    const top = ry - arenaH / 2;
+    
+    // Draw 5x5 grid lines
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let i = 1; i < 5; i++) {
+      // vertical
+      ctx.moveTo(left + i * (arenaW / 5), top);
+      ctx.lineTo(left + i * (arenaW / 5), top + arenaH);
+      // horizontal
+      ctx.moveTo(left, top + i * (arenaH / 5));
+      ctx.lineTo(left + arenaW, top + i * (arenaH / 5));
+    }
+    ctx.stroke();
+
+    // Draw Inaccessible rows (Row 1)
+    ctx.fillStyle = 'rgba(255, 71, 87, 0.2)';
+    ctx.fillRect(left, top, arenaW, arenaH * (1 / 5));
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(left, top, arenaW, arenaH * (1 / 5));
+    
+    // Boundary line for Inaccessible rows
+    ctx.strokeStyle = '#ff4757';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(left, top + arenaH * (1 / 5));
+    ctx.lineTo(left + arenaW, top + arenaH * (1 / 5));
+    ctx.stroke();
+    
+    ctx.fillStyle = '#ff4757';
+    ctx.font = 'bold 16px Outfit, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('⚡ 절대 접근 금지 구역 ⚡', rx, top + arenaH * 0.1);
+
+    // Draw Nietzsche Safe Column
+    if (this.nietzscheSafeColumn !== undefined && this.nietzscheSafeColumn !== null) {
+      const col = this.nietzscheSafeColumn;
+      const colLeft = left + col * (arenaW / 5);
+      const colWidth = arenaW / 5;
+      
+      // Glowing green safe zone
+      const p = (Math.sin(Date.now() * 0.008) + 1) * 0.5;
+      const alpha = 0.3 + p * 0.3;
+      
+      const grad = ctx.createLinearGradient(colLeft, top, colLeft + colWidth, top);
+      grad.addColorStop(0, `rgba(46, 213, 115, 0)`);
+      grad.addColorStop(0.2, `rgba(46, 213, 115, ${alpha})`);
+      grad.addColorStop(0.8, `rgba(46, 213, 115, ${alpha})`);
+      grad.addColorStop(1, `rgba(46, 213, 115, 0)`);
+      
+      ctx.fillStyle = grad;
+      ctx.fillRect(colLeft, top, colWidth, arenaH);
+      
+      ctx.strokeStyle = '#2ed573';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(colLeft, top, colWidth, arenaH);
+      
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 24px Share Tech Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('🟢 SAFE ZONE 🟢', colLeft + colWidth / 2, top + arenaH * 0.6);
+      ctx.fillText('초인 각성', colLeft + colWidth / 2, top + arenaH * 0.6 + 30);
+    }
+    
+    ctx.restore();
+  }
+
   // Ice floors
   this.iceFloors.forEach(f => {
     const rx = f.x - camX + W / 2, ry = f.y - camY + H / 2;
@@ -127,11 +204,83 @@ export function gameDraw() {
     this.nietzcheRelics.forEach(r => r.draw(ctx, this.camera));
   }
 
-  // Draw Kantian Golden Line (도덕의 선)
+  // Draw Kantian Traffic Light System (정언명령 신호등)
+  if (this.stageIndex === 4 && this.currentBoss && this.currentBoss.isPatternActive && this.kantTrafficLight) {
+    ctx.save();
+    
+    // Draw traffic light box at top center (under the boss health bar)
+    const boxW = 160;
+    const boxH = 50;
+    const boxX = W / 2 - boxW / 2;
+    const boxY = 185; // safe distance from boss HP bar at top center (Y=110)
+    
+    // Draw background panel
+    ctx.fillStyle = 'rgba(20, 20, 20, 0.85)';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(boxX, boxY, boxW, boxH, 12);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Light centers
+    const cy = boxY + boxH / 2;
+    const r = 11;
+    const spacing = 38;
+    const redX = W / 2 - spacing;
+    const yellowX = W / 2;
+    const greenX = W / 2 + spacing;
+    
+    const curLight = this.kantTrafficLight; // 'red', 'yellow', 'green'
+    
+    // 1. Red Light
+    ctx.save();
+    if (curLight === 'red') {
+      ctx.shadowColor = 'rgba(255, 71, 87, 1)';
+      ctx.shadowBlur = 18;
+      ctx.fillStyle = '#ff4757';
+    } else {
+      ctx.fillStyle = 'rgba(255, 71, 87, 0.18)';
+    }
+    ctx.beginPath(); ctx.arc(redX, cy, r, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    
+    // 2. Yellow Light
+    ctx.save();
+    if (curLight === 'yellow') {
+      ctx.shadowColor = 'rgba(255, 210, 0, 1)';
+      ctx.shadowBlur = 18;
+      ctx.fillStyle = '#ffd200';
+    } else {
+      ctx.fillStyle = 'rgba(255, 210, 0, 0.18)';
+    }
+    ctx.beginPath(); ctx.arc(yellowX, cy, r, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    
+    // 3. Green Light
+    ctx.save();
+    if (curLight === 'green') {
+      ctx.shadowColor = 'rgba(46, 213, 115, 1)';
+      ctx.shadowBlur = 18;
+      ctx.fillStyle = '#2ed573';
+    } else {
+      ctx.fillStyle = 'rgba(46, 213, 115, 0.18)';
+    }
+    ctx.beginPath(); ctx.arc(greenX, cy, r, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    
+    // Draw label "KANTIAN TRAFFIC RULES"
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 9px Outfit, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('⚖️ KANTIAN IMPERATIVE LIGHT ⚖️', W / 2, boxY - 8);
+    ctx.restore();
+  }
+
+  // Draw Kantian Golden Line (도덕의 선) - Kept fallback just in case
   if (this.kantDutyLine) {
     ctx.save();
     const ry = this.kantDutyLine.y - camY + H / 2;
-    
     ctx.strokeStyle = 'rgba(255, 210, 0, 0.75)';
     ctx.lineWidth = 4;
     ctx.beginPath();
@@ -147,11 +296,6 @@ export function gameDraw() {
     ctx.lineTo(W, ry);
     ctx.stroke();
     ctx.setLineDash([]);
-    
-    ctx.fillStyle = '#ffd200';
-    ctx.font = 'bold 12px Share Tech Mono, monospace';
-    ctx.textAlign = 'left';
-    ctx.fillText('⚖️ 도덕의 선 (LINE OF DUTY) ⚖️', 20, ry - 8);
     ctx.restore();
   }
 
@@ -192,6 +336,52 @@ export function gameDraw() {
     grad.addColorStop(1, 'rgba(0,0,0,0.98)');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+  }
+
+  // Draw Kantian Traffic Light Screen-wide Vignette Indicator (정언명령 화면 신호등 비네트)
+  if (this.stageIndex === 4 && this.currentBoss && this.currentBoss.isPatternActive && this.kantTrafficLight) {
+    ctx.save();
+    const curLight = this.kantTrafficLight;
+    let baseColor = '';
+    let pulseSpeed = 0.003;
+    let minAlpha = 0.05;
+    let maxAlpha = 0.15;
+    
+    if (curLight === 'green') {
+      baseColor = '46, 213, 115'; // Green
+      pulseSpeed = 0.005;
+      minAlpha = 0.25;
+      maxAlpha = 0.45; // much stronger green
+    } else if (curLight === 'yellow') {
+      baseColor = '255, 210, 0'; // Yellow
+      pulseSpeed = 0.01; // slightly faster pulse
+      minAlpha = 0.30;
+      maxAlpha = 0.50;
+    } else if (curLight === 'red') {
+      baseColor = '255, 71, 87'; // Red
+      pulseSpeed = 0.015; // intense fast pulse
+      minAlpha = 0.35;
+      maxAlpha = 0.60;
+    }
+    
+    const wave = (Math.sin(Date.now() * pulseSpeed) + 1) * 0.5; // 0 to 1
+    const currentAlpha = minAlpha + wave * maxAlpha;
+    
+    // Draw a vignette gradient around the screen edges (darker outer band for intense glow)
+    const grad = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.30, W / 2, H / 2, Math.max(W, H) * 0.65);
+    grad.addColorStop(0, `rgba(${baseColor}, 0)`);
+    grad.addColorStop(0.7, `rgba(${baseColor}, ${currentAlpha * 0.5})`);
+    grad.addColorStop(1, `rgba(${baseColor}, ${currentAlpha})`);
+    
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+    
+    // Draw a thick glowing border around the canvas for maximum readability
+    ctx.strokeStyle = `rgba(${baseColor}, ${0.50 + wave * 0.50})`;
+    ctx.lineWidth = 36; // significantly thicker border
+    ctx.strokeRect(0, 0, W, H);
+    
     ctx.restore();
   }
 

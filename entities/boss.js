@@ -4,46 +4,40 @@ import { Idol } from './enemy.js';
 // ─── BOSS QUOTES DATABASE ───────────────────────────────────────────
 const BOSS_QUOTES = {
   0: [ // 소피스트 (Sophist)
-    "인간은 만물의 척도라네.",
-    "진리는 절대적이지 않고, 상대적이지.",
-    "말재주만 있으면 어떤 학설이든 설파할 수 있어.",
-    "의견이 다를 뿐, 틀린 진리는 없다네.",
-    "유창한 웅변으로 세상을 논박하겠네!"
+    "당신이 아는 진리가 절대적이라고 확신하는가?",
+    "상대방을 설득하지 못한다면 그것이 무슨 소용인가?",
+    "이 세상에 과연 보편적인 진리라는 게 존재하는가?",
+    "말재주조차 진리의 일부분이 아니란 말인가?"
   ],
-  1: [ // 아파테이아 수호자 (Apatheia Guardian / Stoic)
-    "운명을 사랑하라 (Amor Fati).",
-    "그대가 제어할 수 없는 것에 마음을 빼앗기지 마라.",
-    "모든 마음의 격정을 잠재우고 고요를 찾으라.",
-    "외부의 자극은 무의미하다, 내면의 이성에 복종하라.",
-    "평정(Ataraxia)만이 그대를 진정 자유롭게 하리니."
+  1: [ // 평정의 감시관 (Apatheia Guardian / Stoic)
+    "왜 외부의 사소한 자극에 흔들리고 고통받는가?",
+    "그대가 제어할 수 없는 운명을 겸허히 받아들일 수 있는가?",
+    "일시적인 격정에 휘둘리는 그대의 이성은 온전한가?",
+    "어째서 내면의 고요함을 찾으려 하지 않는가?"
   ],
   2: [ // 교조주의의 망령 (Dogmatism Ghost / Medieval)
-    "믿기 위해 알라, 알기 위해 믿으라.",
-    "신앙과 이성의 조화만이 구원을 가져오리라.",
-    "절대적인 교리는 세상의 어둠을 비추는 횃불이다.",
-    "의심하지 마라, 맹목적인 믿음이야말로 진리이니.",
-    "교리의 수호자가 되어 이단을 척결하겠노라!"
+    "그대는 왜 성스러운 교리를 의심하려 드는가?",
+    "맹목적인 믿음이 없이 어찌 구원의 빛을 얻으려 하는가?",
+    "절대적인 신념보다 인간의 얄팍한 이성이 앞서는가?",
+    "진리의 경계를 넘는 이단적 사상을 품고 있진 않은가?"
   ],
-  3: [ // 편견의 거인 (Francis Bacon / Empiricism)
-    "아는 것이 힘이다 (Knowledge is Power)!",
-    "인간의 마음속 네 가지 우상을 타파하라!",
-    "동굴의 어둠에 갇혀 세상을 편협하게 보지 마라.",
-    "시장의 뜬소문과 왜곡된 언어가 세상을 병들게 한다.",
-    "편견의 안개를 걷어내고 경험적 사실을 직시하라!"
+  3: [ // 우상의 거인 (Prejudice Giant / Empiricism)
+    "그대의 선입견과 마음속 우상을 완전히 비워내었는가?",
+    "그대 스스로 보고 믿는 동굴 속 그림자가 진짜 세상인가?",
+    "시장의 뜬소문과 왜곡된 언어에 현혹되지 않을 자신이 있는가?",
+    "경험하지 않은 지식을 어찌 참된 힘이라 부를 수 있겠는가?"
   ],
-  4: [ // 도덕의 심판자 (Kant / Deontology)
-    "네 의지의 준칙이 항상 보편적 법칙이 되게 하라!",
-    "인격을 결코 수단으로 대하지 말고 목적으로 대하라.",
-    "하늘에는 별, 내 안에는 도덕 법칙!",
-    "의무는 실천이성의 절대적인 도덕적 명령이다.",
-    "사변적 집착에서 벗어나 실천을 통해 원칙을 증명하라!"
+  4: [ // 도덕의 심판관 (Morality Judge)
+    "그대의 행동 준칙은 보편적 법칙이 될 자격이 있는가?",
+    "그대는 타인의 인격을 목적 그 자체로 대하고 있는가?",
+    "정당한 의무가 아닌 순간의 동정심으로 선을 행하는가?",
+    "도덕적 결단을 성실히 실천하고 있는가?"
   ],
-  5: [ // 허무주의의 그림자 (Nietzsche / Existentialism)
-    "신은 죽었다! 그리고 우리가 그를 죽였다!",
-    "나를 죽이지 못하는 고통은 나를 더 강하게 만든다.",
-    "영원회귀의 삶을 사랑하고 극복하여 초인(Übermensch)이 되라!",
-    "괴물과 싸우는 자는 스스로 괴물이 되지 않도록 경계해야 한다.",
-    "기존의 모든 가치를 재평가하고 허무를 창조로 극복하라!"
+  5: [ // 허무의 그림자 / 종말룡 (Nihilism Shadow / Dragon)
+    "신이 사라진 세상에서 스스로의 가치를 창조했는가?",
+    "그대 영혼을 무겁게 짓누르는 고통의 삶을 진정 사랑할 수 있는가?",
+    "절망의 심연 속에서 허무를 극복할 창조적 불꽃을 보았는가?",
+    "그대는 잿빛 파멸을 딛고 일어설 참된 초인(Übermensch)인가?"
   ]
 };
 
@@ -77,57 +71,83 @@ export class BossBullet {
     const ry = this.y - camera.y + ctx.canvas.height / 2;
     ctx.save();
     
+    // Apply a harsh shadow/glow specific to boss projectiles
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = this.color;
+
     if (this.type === 'spiral') {
-      // Spinning dark magic vortex
+      // Distinct Boss Spiral: A dark, pulsating saw-blade instead of flower petals
       ctx.translate(rx, ry);
-      ctx.rotate(this.time * 0.008);
+      ctx.rotate(this.time * 0.012);
+      
+      const pulse = 1 + Math.sin(this.time * 0.01) * 0.2;
+      const s = this.size * 1.6 * pulse;
+      
       ctx.fillStyle = this.color;
-      for (let i = 0; i < 3; i++) {
-        ctx.rotate((Math.PI * 2) / 3);
+      ctx.beginPath();
+      ctx.arc(0, 0, s * 0.7, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Black jagged spikes
+      ctx.fillStyle = '#1e272e';
+      const spikes = 8;
+      for (let i = 0; i < spikes; i++) {
+        ctx.rotate((Math.PI * 2) / spikes);
         ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.quadraticCurveTo(this.size * 1.1, -this.size * 0.6, this.size * 1.5, 0);
-        ctx.quadraticCurveTo(this.size * 0.7, this.size * 0.5, 0, 0);
+        ctx.moveTo(-s * 0.2, s * 0.5);
+        ctx.lineTo(0, s);
+        ctx.lineTo(s * 0.2, s * 0.5);
+        ctx.closePath();
         ctx.fill();
       }
+      
       ctx.fillStyle = '#ffffff';
-      ctx.beginPath(); ctx.arc(0, 0, 3.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI * 2); ctx.fill();
     }
     else if (this.type === 'curve') {
-      // Comet-like wavy bullet with long tail aligned with movement angle
+      // Distinct Boss Comet: Evil ghostly phantom shape with dark borders
       ctx.translate(rx, ry);
       ctx.rotate(this.angle);
       
-      const grd = ctx.createLinearGradient(-this.size * 2, 0, 0, 0);
-      grd.addColorStop(0, 'rgba(162, 155, 254, 0)');
-      grd.addColorStop(1, this.color);
+      const grd = ctx.createLinearGradient(-this.size * 3, 0, this.size, 0);
+      grd.addColorStop(0, 'rgba(0, 0, 0, 0)');
+      grd.addColorStop(0.5, this.color);
+      grd.addColorStop(1, '#ffffff');
+      
       ctx.fillStyle = grd;
+      ctx.strokeStyle = '#1e272e';
+      ctx.lineWidth = 3;
+      
       ctx.beginPath();
       ctx.moveTo(-this.size * 2.5, 0);
-      ctx.lineTo(0, -this.size * 0.85);
-      ctx.lineTo(0, this.size * 0.85);
+      ctx.lineTo(-this.size * 0.5, -this.size * 1.2);
+      ctx.lineTo(this.size * 1.2, 0);
+      ctx.lineTo(-this.size * 0.5, this.size * 1.2);
       ctx.closePath();
       ctx.fill();
-      
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath(); ctx.arc(0, 0, this.size * 0.7, 0, Math.PI * 2); ctx.fill();
+      ctx.stroke(); // Add black border to differentiate from player's borderless magic
     }
     else {
-      // Straight: moral razor needle (golden/crimson shard)
+      // Distinct Boss Straight: Aggressive spiked diamond with dark core
       ctx.translate(rx, ry);
       ctx.rotate(this.angle);
       
       ctx.fillStyle = this.color;
+      ctx.strokeStyle = '#1e272e';
+      ctx.lineWidth = 3;
+      
       ctx.beginPath();
       ctx.moveTo(-this.size * 1.5, 0);
-      ctx.lineTo(0, -this.size * 0.4);
-      ctx.lineTo(this.size * 1.5, 0); // sharp tip
-      ctx.lineTo(0, this.size * 0.4);
+      ctx.lineTo(0, -this.size * 0.8);
+      ctx.lineTo(this.size * 2, 0); // Very long sharp tip
+      ctx.lineTo(0, this.size * 0.8);
       ctx.closePath();
       ctx.fill();
+      ctx.stroke();
       
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath(); ctx.arc(0, 0, 3, 0, Math.PI * 2); ctx.fill();
+      // Dark evil core instead of white dot
+      ctx.fillStyle = '#1e272e';
+      ctx.beginPath(); ctx.arc(0, 0, this.size * 0.4, 0, Math.PI * 2); ctx.fill();
     }
     
     ctx.restore();
@@ -342,6 +362,7 @@ export class Boss {
     this.isStunned = false;
     this.stunTimer = 0;
     this.isClone = false;
+    this.prejudiceInitialized = false;
 
     // Dialogue properties
     this.dialogueTimer = 3000 + Math.random() * 2000;
@@ -383,7 +404,12 @@ export class Boss {
         if (this.stageIndex === 5 && this.hp > 0 && !game.uberMenschMode) {
           this.isPatternActive = true;
           game.spawnNietzcheRelics();
-          game.showBossTooltip("🦅 니체: 허무주의의 잿빛 심연 속에서, 자유와 책임의 유물(🔥)을 다시 모으십시오!");
+          game.showBossTooltip("🦅 허무주의의 그림자: 허무의 잿빛 심연 속에서, 자유와 책임의 유물(🔥)을 다시 모으십시오!");
+        } else if (this.stageIndex === 4 && this.hp > 0) {
+          this.isPatternActive = true;
+          this.kantTrafficLight = 'green';
+          this.kantTrafficTimer = 5000;
+          game.kantTrafficLight = 'green';
         } else {
           game.showBossTooltip(null);
         }
@@ -617,95 +643,63 @@ export class Boss {
       }
     }
 
-    // Stage 5 (Kant Clock): Rhythmic blast cycles
+    // Stage 5 (Kant Clock): Traffic Light Gimmick (Kantian Imperative)
     if (this.stageIndex === 4 && !this.isClone) {
       if (!this.kantInitialized) {
         this.kantInitialized = true;
         this.isPatternActive = true;
-        this.kantCycle = 1;
-        this.kantTimer = 0;
-        this.kantCycleDuration = 12000; // Increased to 12s
-        this.spawnedGridLines = false;
-        game.showBossTooltip("⏰ 도덕적 정언명령: 절대 법칙의 리듬에 맞추어 격자 경고선(💥)을 회피하십시오! 3사이클 생존 시 약화됩니다.");
+        this.kantTrafficLight = 'green';
+        this.kantTrafficTimer = 5000;
         
         // Setup global gimmick
         game.gimmickActive = true;
-        game.gimmickTimer = 36000; // 3 cycles * 12 seconds = 36 seconds
-        game.gimmickMaxTime = 36000;
-        game.gimmickInstruction = "공략법: 3단계의 정언명령 의무를 완수하며 격자 폭발을 피하십시오!";
+        game.gimmickTimer = 5000;
+        game.gimmickMaxTime = 5000;
+        game.gimmickInstruction = "🟢 초록불: 자유롭게 이동하며 보스를 공격하십시오!";
         
-        // Reset Kantian rules state
-        game.kantRuleViolation = false;
-        game.kantStillTimer = 0;
-        game.kantMoveTimer = 0;
+        game.kantTrafficLight = 'green';
+        game.kantViolatedInThisRedTurn = false;
         
-        // Register Golden Line (도덕의 선)
-        game.kantDutyLine = { y: player.y };
+        // Clear old grid/line variables
+        game.gridLines = [];
+        game.kantDutyLine = null;
       }
 
       if (this.isPatternActive) {
-        this.speed = 0.3; // Stays mostly centered like a ticking clock
-        this.kantTimer += dt;
+        this.speed = 0.45; // Walk slowly like a clock hand
+        this.kantTrafficTimer -= dt;
+        game.gimmickTimer = Math.max(0, this.kantTrafficTimer);
         
-        // Synchronize global gimmickTimer with kantTimer and kantCycle
-        game.gimmickTimer = Math.max(0, 36000 - ((this.kantCycle - 1) * 12000 + this.kantTimer));
-        
-        // Update instructions based on cycle
-        if (this.kantCycle === 1) {
-          game.gimmickInstruction = "정언명령 1단계: 황금빛 도덕의 선을 벗어나지 않고 횡이동하십시오!";
-        } else if (this.kantCycle === 2) {
-          game.gimmickInstruction = "정언명령 2단계: 보스 주변 영역에 머무르십시오!";
-        } else if (this.kantCycle === 3) {
-          game.gimmickInstruction = "정언명령 3단계: 움직이지 말고 제자리에 멈춰 서십시오!";
+        if (this.kantTrafficTimer <= 0) {
+          if (this.kantTrafficLight === 'green') {
+            this.kantTrafficLight = 'yellow';
+            this.kantTrafficTimer = 2000;
+            game.gimmickMaxTime = 2000;
+            game.gimmickInstruction = "🟡 노란불: 곧 빨간불이 켜집니다! 정지할 준비를 하십시오!";
+            if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
+          } else if (this.kantTrafficLight === 'yellow') {
+            this.kantTrafficLight = 'red';
+            this.kantTrafficTimer = 3000;
+            game.gimmickMaxTime = 3000;
+            game.gimmickInstruction = "🔴 빨간불: 정지하십시오! 움직이면 최대 체력의 50% 피해!";
+            game.kantViolatedInThisRedTurn = false; // Reset violation flag for this red turn
+            if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
+          } else {
+            this.kantTrafficLight = 'green';
+            this.kantTrafficTimer = 5000;
+            game.gimmickMaxTime = 5000;
+            game.gimmickInstruction = "🟢 초록불: 자유롭게 이동하며 보스를 공격하십시오!";
+          }
+          game.kantTrafficLight = this.kantTrafficLight;
         }
 
-        if (!this.spawnedGridLines) {
-          this.spawnedGridLines = true;
-          game.gridLines = [];
-          const px = player.x, py = player.y;
-          if (this.kantCycle === 1) {
-            game.gridLines.push(new RhythmicGridLine(false, py - 120, game));
-            game.gridLines.push(new RhythmicGridLine(false, py, game));
-            game.gridLines.push(new RhythmicGridLine(false, py + 120, game));
-          } else if (this.kantCycle === 2) {
-            game.gridLines.push(new RhythmicGridLine(true, px - 120, game));
-            game.gridLines.push(new RhythmicGridLine(true, px, game));
-            game.gridLines.push(new RhythmicGridLine(true, px + 120, game));
-          } else {
-            game.gridLines.push(new RhythmicGridLine(false, py - 90, game));
-            game.gridLines.push(new RhythmicGridLine(false, py + 90, game));
-            game.gridLines.push(new RhythmicGridLine(true, px - 90, game));
-            game.gridLines.push(new RhythmicGridLine(true, px + 90, game));
-          }
-        }
-
-        if (this.kantTimer >= this.kantCycleDuration) {
-          this.kantTimer = 0;
-          this.kantCycle++;
-          this.spawnedGridLines = false;
-          
-          if (this.kantCycle === 2) {
-            game.kantDutyLine = null; // Clear line for cycle 2
-          }
-
-          if (this.kantCycle > 3) {
-            this.isPatternActive = false;
-            this.speed = 1.2;
-            game.gridLines = [];
-            game.kantDutyLine = null;
-            
-            // Clear global gimmick
-            game.gimmickActive = false;
-            game.gimmickTimer = 0;
-            
-            this.isStunned = true;
-            this.stunTimer = 8000;
-            game.showBossTooltip("🛡️ 실천이성 달성! 의무론의 원칙에 따라 칸트가 무력화되었습니다!");
-            game.addDamageText(this.x, this.y - 70, "✨ 실천 완료! 보스 무력화!", "#2ed573", 24);
-            if (typeof sfx !== 'undefined' && sfx.playLevelUp) sfx.playLevelUp();
-          } else {
-            game.showBossTooltip(`⏰ 도덕적 정언명령: [사이클 ${this.kantCycle}/3] 절대 법칙의 기하학적 리듬이 거세집니다!`);
-          }
+        // Show warning text as a boss tooltip
+        if (this.kantTrafficLight === 'green') {
+          game.showBossTooltip("🟢 신호등 [초록불]: 자유롭게 이동 가능");
+        } else if (this.kantTrafficLight === 'yellow') {
+          game.showBossTooltip("🟡 신호등 [노란불]: 경고! 곧 정지하십시오!");
+        } else {
+          game.showBossTooltip("🔴 신호등 [빨간불]: 정지! 움직임 감지 시 치명상!");
         }
       }
     }
@@ -717,7 +711,7 @@ export class Boss {
         this.isPatternActive = false;
         this.dragonActive = false;
         this.nietzscheQuizTriggered = false;
-        game.showBossTooltip("🦅 니체: 신은 죽었다! 허무의 심연(Phase 1) 속에서 그의 그림자를 극복하십시오!");
+        game.showBossTooltip("🦅 허무주의의 그림자: 신은 죽었다! 허무의 심연(Phase 1) 속에서 그의 그림자를 극복하십시오!");
       }
 
       // Check for Quiz at 50% HP
@@ -728,11 +722,144 @@ export class Boss {
         game.triggerNietzscheQuiz(this);
         return;
       }
+
+      if (this.dragonActive) {
+        if (this.dragonBreathTimer === undefined) {
+          this.dragonBreathTimer = 10000; // 10 seconds before first breath
+          this.dragonBreathState = 'none'; // 'none', 'warning', 'firing'
+          this.dragonBreathDuration = 0;
+        }
+
+        if (this.dragonBreathState === 'none') {
+          this.dragonBreathTimer -= dt;
+          if (this.dragonBreathTimer <= 0) {
+            this.dragonBreathState = 'warning';
+            this.dragonBreathDuration = 5000; // 5 seconds safe zone duration
+            
+            game.nietzscheSafeZone = null;
+            game.nietzscheSafeColumn = Math.floor(Math.random() * 5); // 0 to 4
+            
+            game.gimmickActive = true;
+            game.gimmickTimer = 5000;
+            game.gimmickMaxTime = 5000;
+            game.gimmickInstruction = "공략법: 5초 내에 빛나는 거대 안전 구역(열)으로 진입하십시오!";
+            game.showBossTooltip("🐉 허무의 종말룡: 5초 뒤 전멸기가 발동됩니다! 🟢안전 구역에서 초인으로 각성하십시오!");
+            if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
+          }
+        } else if (this.dragonBreathState === 'warning') {
+          this.dragonBreathDuration -= dt;
+          
+          // Move to C2 (Center of Row 2)
+          const center = game.nietzscheArenaCenter || { x: player.x, y: player.y };
+          const H = game.nietzscheArenaHeight || 800;
+          const targetX = center.x;
+          const targetY = center.y - H/2 + H * 0.3; // Center of Row 2
+          
+          const dx = targetX - this.x;
+          const dy = targetY - this.y;
+          const dist = Math.hypot(dx, dy) || 1;
+          
+          if (dist > 10) {
+            this.vx = (dx / dist) * this.speed * 2.5;
+            this.vy = (dy / dist) * this.speed * 2.5;
+            this.x += this.vx * dt * 0.06;
+            this.y += this.vy * dt * 0.06;
+          } else {
+            this.vx = 0;
+            this.vy = 0;
+            this.x = targetX;
+            this.y = targetY;
+          }
+          this.angle = Math.atan2(player.y - this.y, player.x - this.x);
+          
+          if (this.dragonBreathDuration <= 0) {
+            this.dragonBreathState = 'firing';
+            this.dragonBreathDuration = 1500; // 1.5 seconds explosion
+            game.gimmickInstruction = "💥 파멸의 심연 브레스 발동!";
+            game.showBossTooltip("🔥 허무의 종말룡: 거대한 불길이 투기장을 휩씁니다!");
+            if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
+            
+            // Execute the massive attack!
+            if (!player.superInvincible && !player.isInvincible) {
+              player.takeDamage(9999, game); // Insta-kill if not in safe zone
+              game.addDamageText(player.x, player.y - 60, "💥 파멸!", "#ff4757", 30, true);
+            }
+          }
+        } else if (this.dragonBreathState === 'firing') {
+          this.dragonBreathDuration -= dt;
+          this.vx = 0;
+          this.vy = 0;
+          
+          // Face the player
+          const dx = player.x - this.x;
+          const dy = player.y - this.y;
+          this.angle = Math.atan2(dy, dx);
+          
+          // Spawn massive particles everywhere except the safe column
+          const center = game.nietzscheArenaCenter || { x: player.x, y: player.y };
+          const W = game.nietzscheArenaWidth || 1200;
+          const H = game.nietzscheArenaHeight || 800;
+          
+          for (let i = 0; i < 8; i++) {
+            const px = center.x - W/2 + Math.random() * W;
+            const py = center.y - H/2 + Math.random() * H;
+            const col = game.nietzscheSafeColumn;
+            if (col !== undefined && col !== null && px >= center.x - W/2 + col*(W/5) && px <= center.x - W/2 + (col+1)*(W/5)) {
+               continue; // safe column
+            }
+            game.spawnParticles(px, py, Math.random() < 0.5 ? '#ff4757' : '#2d3436', 2, 10, -2);
+          }
+          
+          if (this.dragonBreathDuration <= 0) {
+            this.dragonBreathState = 'none';
+            this.dragonBreathTimer = 15000; // 15s cooldown
+            game.nietzscheSafeColumn = null;
+            player.superInvincible = false;
+            game.gimmickActive = false;
+            game.showBossTooltip("🐉 허무의 종말룡: 심연 브레스 종료. 투기장에 적막이 흐릅니다...");
+          }
+          return;
+        }
+      }
     }
 
     // Clone animation sway
     if (this.isClone) {
       this.swayPhase = (this.swayPhase || 0) + (this.swaySpeed || 0.05) * dt;
+    }
+
+    if (this.stageIndex === 5 && this.dragonActive) {
+      const center = game.nietzscheArenaCenter || { x: player.x, y: player.y };
+      const H = game.nietzscheArenaHeight || 800;
+      const targetX = center.x;
+      const targetY = center.y - H/2 + H * 0.3; // Center of Row 2 (C2)
+      const dxTarget = targetX - this.x;
+      const dyTarget = targetY - this.y;
+      const dist = Math.hypot(dxTarget, dyTarget) || 1;
+      
+      if (dist > 10) {
+        this.vx = (dxTarget / dist) * this.speed * 2.5;
+        this.vy = (dyTarget / dist) * this.speed * 2.5;
+        this.x += this.vx * dt * 0.06;
+        this.y += this.vy * dt * 0.06;
+      } else {
+        this.vx = 0;
+        this.vy = 0;
+        this.x = targetX;
+        this.y = targetY;
+      }
+      
+      const dxP = player.x - this.x, dyP = player.y - this.y;
+      this.angle = Math.atan2(dyP, dxP);
+      
+      // Removed collision damage since boss is in Row 1 and player in Row 3-5, they shouldn't collide
+      
+      this.attackTimer += dt;
+      if (this.attackTimer >= this.attackCd) {
+        this.attackTimer = 0;
+        this.fireAttack(player, game);
+      }
+      return; // Skip normal chasing movement
     }
 
     const dx = player.x - this.x, dy = player.y - this.y;
@@ -1043,8 +1170,26 @@ export class Boss {
         const angle = this.angle;
         ctx.rotate(angle + Math.PI / 2);
         
+        let t_mod = t;
+        let flyOffset = 0;
+        if (this.dragonBreathState === 'warning' || this.dragonBreathState === 'firing') {
+          flyOffset = -15 - Math.sin(t * 0.005) * 10;
+          
+          // Draw ground shadow under dragon
+          ctx.save();
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+          ctx.scale(1.2, 0.8);
+          ctx.beginPath();
+          ctx.arc(0, 30 / 0.8, 38, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+          
+          ctx.translate(0, flyOffset);
+          t_mod = t * 2.0; // speed up wing flap when flying
+        }
+        
         // 1. Giant Wings
-        const wingSway = Math.sin(t * 0.004) * 0.25;
+        const wingSway = Math.sin(t_mod * 0.004) * 0.25;
         ctx.fillStyle = '#1e1b26';
         ctx.strokeStyle = '#8c7ae6';
         ctx.lineWidth = 3.5;
@@ -1090,7 +1235,7 @@ export class Boss {
         ctx.restore();
         
         // 2. Tail
-        const tailSway = Math.sin(t * 0.005) * 0.4;
+        const tailSway = Math.sin(t_mod * 0.005) * 0.4;
         ctx.save();
         ctx.translate(0, 45);
         ctx.rotate(tailSway);
@@ -1181,6 +1326,39 @@ export class Boss {
         ctx.beginPath();
         ctx.arc(0, 0, corePulse, 0, Math.PI * 2);
         ctx.fill();
+        
+        // 6. Dragon Breath Flame Spewing
+        if (this.dragonBreathState === 'firing') {
+          ctx.save();
+          const breathLength = 320 + Math.sin(t * 0.06) * 40;
+          const breathWidth = 90 + Math.sin(t * 0.04) * 15;
+          
+          const flameGrad = ctx.createLinearGradient(0, -52, 0, -52 - breathLength);
+          flameGrad.addColorStop(0, '#ffffff');
+          flameGrad.addColorStop(0.15, '#ffd200');
+          flameGrad.addColorStop(0.55, '#ff4757');
+          flameGrad.addColorStop(1, 'rgba(255, 71, 87, 0)');
+          
+          ctx.fillStyle = flameGrad;
+          ctx.beginPath();
+          ctx.moveTo(0, -52);
+          ctx.quadraticCurveTo(-breathWidth / 2, -52 - breathLength / 2, -breathWidth, -52 - breathLength);
+          ctx.lineTo(breathWidth, -52 - breathLength);
+          ctx.quadraticCurveTo(breathWidth / 2, -52 - breathLength / 2, 0, -52);
+          ctx.closePath();
+          ctx.fill();
+          
+          // Flame sparks
+          ctx.fillStyle = 'rgba(255, 210, 0, 0.5)';
+          for (let i = 0; i < 6; i++) {
+            const rx = (Math.random() - 0.5) * breathWidth * 1.5;
+            const ry = -52 - Math.random() * breathLength;
+            ctx.beginPath();
+            ctx.arc(rx, ry, 4 + Math.random() * 8, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
+        }
         
         ctx.restore();
       } else {

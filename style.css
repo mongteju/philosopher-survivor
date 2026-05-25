@@ -2726,3 +2726,45 @@ button.keyboard-selected,
   0% { background-position: 0 0; }
   100% { background-position: 28px 0; }
 }
+
+/* Mirror Shatter Transition Effect */
+@keyframes mirror-shatter-anim {
+  0% {
+    opacity: 0;
+    transform: scale(1);
+    backdrop-filter: brightness(1) contrast(1);
+  }
+  10% {
+    opacity: 1;
+    transform: scale(1);
+    backdrop-filter: brightness(2.5) contrast(1.5) blur(2px);
+    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1.02);
+    backdrop-filter: brightness(2) contrast(2) blur(4px);
+    background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 70%), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%25" height="100%25"><path d="M50%25 50%25 L0 0 M50%25 50%25 L100%25 0 M50%25 50%25 L0 100%25 M50%25 50%25 L100%25 100%25 M50%25 50%25 L20%25 0 M50%25 50%25 L80%25 100%25 M50%25 50%25 L0 40%25 M50%25 50%25 L100%25 60%25 M20%25 20%25 L30%25 80%25" stroke="white" stroke-width="4" fill="none"/></svg>');
+    background-size: cover;
+  }
+  25% { transform: scale(1.02) translate(15px, -15px); }
+  30% { transform: scale(1.02) translate(-15px, 15px); }
+  35% { transform: scale(1.05) translate(10px, -10px); }
+  45% {
+    opacity: 1;
+    transform: scale(1.1) translate(0, 0);
+  }
+  100% {
+    transform: scale(1.3);
+    opacity: 0;
+    backdrop-filter: brightness(1) contrast(1);
+  }
+}
+
+.mirror-shatter {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  z-index: 9999;
+  pointer-events: none;
+  animation: mirror-shatter-anim 1.5s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+}

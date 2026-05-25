@@ -444,10 +444,12 @@ export function gameEvents() {
   if (dbgBoss) {
     dbgBoss.addEventListener('click', () => {
       if (!this.player) return;
-      if (!this.currentBoss) {
+      if (window.gameDebug && typeof window.gameDebug.spawnBoss === 'function') {
+        window.gameDebug.spawnBoss();
+      } else {
         this.spawnBossImmediate();
-        if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
       }
+      if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
     });
   }
 
