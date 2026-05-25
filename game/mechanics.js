@@ -997,7 +997,11 @@ export function updatePauseStatusPanel() {
 }
 
 export function addDamageText(x, y, val, color, size, isCrit) {
-  if (typeof val === 'number') val = Math.floor(val);
+  if (typeof val === 'number') {
+    val = Math.floor(val);
+  } else if (typeof val === 'string') {
+    val = val.replace(/\b(\d+)\.\d+\b/g, '$1');
+  }
   this.damageTexts.push(new DamageText(x, y, val, color, size, isCrit));
 }
 
@@ -1149,9 +1153,9 @@ const NIETZSCHE_QUIZ_DATA = [
     correct: 1
   },
   {
-    q: "Q4. 프랜시스 베이컨이 경고한 인간의 4대 우상(편견) 중, 잘못된 언어와 소문의 유포, 시장에서의 왜곡된 소통으로 인해 발생하는 오류는?",
-    options: ["1) 종족의 우상 (Idol of the Tribe)", "2) 동굴의 우상 (Idol of the Cave)", "3) 시장의 우상 (Idol of the Market)", "4) 극장의 우상 (Idol of the Theater)"],
-    correct: 2
+    q: "Q4. 본 모험(게임) 중에 플레이어가 읊조린 철학적 명언 중 '마음속 네 가지 우상(종족, 동굴, 시장, 극장)을 깨뜨려라.'라고 말하며 아는 것이 힘임을 강조한 철학자는 누구인가?",
+    options: ["1) 데카르트", "2) 아리스토텔레스", "3) 칸트", "4) 베이컨"],
+    correct: 3
   },
   {
     q: "Q5. 임마누엘 칸트의 윤리학에서, 결과나 조건에 상관없이 인간이 마땅히 지켜야 할 절대적이고 무조건적인 도덕적 명령은 무엇인가?",

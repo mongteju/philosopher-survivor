@@ -238,8 +238,19 @@ export function gameUpdate(dt) {
   // Enemy spawn
   if (!this.currentBoss) {
     const normalEnemyCount = this.enemies.filter(e => e.type !== 'boss' && !e.isIdol).length;
-    if (normalEnemyCount < 50 + this.player.level * 3) {
-      if (Math.random() < 0.08 * (dt * 0.06)) {
+    let spawnLimit = 50 + this.player.level * 3;
+    let spawnChance = 0.08;
+    
+    if (this.stageIndex >= 5) { // 6단계
+      spawnLimit *= 3;
+      spawnChance *= 3;
+    } else if (this.stageIndex >= 2) { // 3단계 이상 (3, 4, 5단계)
+      spawnLimit *= 2;
+      spawnChance *= 2;
+    }
+    
+    if (normalEnemyCount < spawnLimit) {
+      if (Math.random() < spawnChance * (dt * 0.06)) {
         this.spawnRandomMob();
       }
     }

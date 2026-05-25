@@ -233,27 +233,27 @@ export function gameDraw() {
       const colLeft = left + col * (arenaW / 5);
       const colWidth = arenaW / 5;
       
-      // Glowing green safe zone
+      // Glowing gold safe zone
       const p = (Math.sin(Date.now() * 0.008) + 1) * 0.5;
       const alpha = 0.3 + p * 0.3;
       
       const grad = ctx.createLinearGradient(colLeft, top, colLeft + colWidth, top);
-      grad.addColorStop(0, `rgba(46, 213, 115, 0)`);
-      grad.addColorStop(0.2, `rgba(46, 213, 115, ${alpha})`);
-      grad.addColorStop(0.8, `rgba(46, 213, 115, ${alpha})`);
-      grad.addColorStop(1, `rgba(46, 213, 115, 0)`);
+      grad.addColorStop(0, `rgba(255, 215, 0, 0)`);
+      grad.addColorStop(0.2, `rgba(255, 215, 0, ${alpha})`);
+      grad.addColorStop(0.8, `rgba(255, 215, 0, ${alpha})`);
+      grad.addColorStop(1, `rgba(255, 215, 0, 0)`);
       
       ctx.fillStyle = grad;
       ctx.fillRect(colLeft, top, colWidth, arenaH);
       
-      ctx.strokeStyle = '#2ed573';
+      ctx.strokeStyle = '#ffd200';
       ctx.lineWidth = 3;
       ctx.strokeRect(colLeft, top, colWidth, arenaH);
       
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 24px Share Tech Mono, monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('🟢 SAFE ZONE 🟢', colLeft + colWidth / 2, top + arenaH * 0.6);
+      ctx.fillText('👑 SAFE ZONE 👑', colLeft + colWidth / 2, top + arenaH * 0.6);
       ctx.fillText('초인 각성', colLeft + colWidth / 2, top + arenaH * 0.6 + 30);
     }
     

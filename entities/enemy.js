@@ -1,3 +1,5 @@
+import { BossBullet } from './boss.js';
+
 // ─── ENEMY ──────────────────────────────────────────────────────────
 export class Enemy {
   constructor(x, y, playerLevel, mobType) {
@@ -19,7 +21,7 @@ export class Enemy {
     let speedMultiplier = 1;
     if (mobType === 'beast') { hpMultiplier = 2; speedMultiplier = 1.3; }
     else if (mobType === 'undead') { hpMultiplier = 3; speedMultiplier = 1.3; }
-    else if (mobType === 'golem') { hpMultiplier = 4; speedMultiplier = 1.3; }
+    else if (mobType === 'golem') { hpMultiplier = 4; speedMultiplier = 1.3 * 2; }
     else if (mobType === 'steam') { hpMultiplier = 5; speedMultiplier = 1.3; }
     else if (mobType === 'machine') { hpMultiplier = 6; speedMultiplier = 1.3; }
     
@@ -29,6 +31,7 @@ export class Enemy {
     this.frozenTime = 0; this.slowMul = 1; this.slowTimer = 0; this.iceFloorDmgTimer = 0;
     this.vx = 0; this.vy = 0;
     this.angle = 0;
+    this.shootTimer = 2000 + Math.random() * 3000;
   }
   update(dt, player) {
     if (this.frozenTime > 0) { this.frozenTime -= dt; return; }
@@ -62,6 +65,38 @@ export class Enemy {
     this.angle = Math.atan2(dy, dx);
     if (!player.isInvincible && distSq < (this.size + player.size) * (this.size + player.size)) {
       player.takeDamage(12, window.gameInstance);
+    }
+
+    // 5단계부터 일반 몹 원거리 공격 추가
+    if ((this.mobType === 'steam' || this.mobType === 'machine') && !this.isClone && !this.isIdol) {
+      if (this.shootTimer === undefined) {
+        this.shootTimer = 2000 + Math.random() * 3000;
+      }
+      this.shootTimer -= dt;
+      if (this.shootTimer <= 0) {
+        this.shootTimer = 3500 + Math.random() * 2000;
+        const game = window.gameInstance;
+        if (game && game.bossBullets) {
+          const ang = Math.atan2(player.y - this.y, player.x - this.x);
+          const bullet = new BossBullet(this.x, this.y, ang, 3.2, 'straight', '#ff7675');
+          bullet.dmg = 8;
+          bullet.size = 7;
+          bullet.update = function(dt, player) {
+            this.time += dt;
+            this.x += Math.cos(this.angle) * this.speed * dt * 0.06;
+            this.y += Math.sin(this.angle) * this.speed * dt * 0.06;
+            this.life -= dt;
+            const dx = this.x - player.x, dy = this.y - player.y;
+            const distSq = dx * dx + dy * dy;
+            const limit = this.size + player.size;
+            if (!player.isInvincible && distSq < limit * limit) {
+              player.takeDamage(this.dmg, window.gameInstance);
+              this.life = 0;
+            }
+          };
+          game.bossBullets.push(bullet);
+        }
+      }
     }
   }
   draw(ctx, camera) {
@@ -305,7 +340,7 @@ export class Idol {
     this.idolType = idolType; // cave/tribe/market/theater
     this.type = 'idol'; this.isIdol = true;
     this.boss = boss; this.size = 20;
-    this.maxHp = 200; this.hp = this.maxHp;
+    this.maxHp = 400; this.hp = this.maxHp;
     this.vx = 0; this.vy = 0;
     const defs = {
       cave:   {color:'#81ecec', label:'동굴의 우상'},

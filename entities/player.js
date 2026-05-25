@@ -189,7 +189,11 @@ export class Player {
   }
   heal(amt) { this.hp = Math.min(this.maxHp, this.hp + amt); }
   gainXp(val, game) {
-    this.xp += val * this.xpMultiplier;
+    let mult = this.xpMultiplier;
+    if (this.level >= 5 && this.level <= 10) {
+      mult *= 0.8;
+    }
+    this.xp += val * mult;
     while (this.xp >= this.maxXp) {
       this.xp -= this.maxXp; this.level++;
       this.maxXp = Math.floor(this.maxXp * 1.12 + 2);
