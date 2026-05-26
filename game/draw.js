@@ -12,14 +12,18 @@ export function gameDraw() {
     this.screenShake *= 0.8; if (this.screenShake < 0.5) this.screenShake = 0;
   }
 
+  const isGrayscale = !!(this.stageIndex === 5 && this.currentBoss && !this.currentBoss.dragonActive && !this.uberMenschMode);
+  if (isGrayscale) {
+    ctx.filter = 'grayscale(100%) contrast(110%)';
+  }
+
   // Full grayscale/contrast filter for Stage 6 and Prejudice Wave using GPU-accelerated CSS filters
   const canvasEl = this.canvas;
   if (canvasEl) {
-    const isGrayscale = !!(this.stageIndex === 5 && this.currentBoss && !this.currentBoss.dragonActive && !this.uberMenschMode);
     const isPrejudice = !!(this.prejudiceWave === 3);
 
-    if (canvasEl.classList.contains('grayscale-filter') !== isGrayscale) {
-      canvasEl.classList.toggle('grayscale-filter', isGrayscale);
+    if (canvasEl.classList.contains('grayscale-filter')) {
+      canvasEl.classList.remove('grayscale-filter');
     }
     if (canvasEl.classList.contains('prejudice-filter') !== isPrejudice) {
       canvasEl.classList.toggle('prejudice-filter', isPrejudice);
@@ -516,7 +520,13 @@ export function gameDraw() {
   this.projectiles.forEach(p => p.draw(ctx, this.camera));
 
   // Boss bullets
+  if (isGrayscale) {
+    ctx.filter = 'none';
+  }
   this.bossBullets.forEach(b => b.draw(ctx, this.camera));
+  if (isGrayscale) {
+    ctx.filter = 'grayscale(100%) contrast(110%)';
+  }
 
   // Particles
   this.particles.forEach(p => p.draw(ctx, this.camera));
