@@ -22,7 +22,9 @@ export const PHILOSOPHY_DB = {
     { id:'passive_cooldown', name:'사유의 회전', type:'passive', maxLevel:4, icon:'⏱️',
       desc:'시간 흐름을 제어해 모든 스킬 쿨타임을 단축합니다.', quote:'시간은 우리 내면의 직관 속에 정돈된다.' },
     { id:'passive_regen', name:'정신적 치유', type:'passive', maxLevel:4, icon:'🩹',
-      desc:'성찰과 명상을 통해 체력(HP)을 매초 지속 회복합니다.', quote:'성찰하는 영혼은 상처받지 않는다.' }
+      desc:'성찰과 명상을 통해 체력(HP)을 매초 지속 회복합니다.', quote:'성찰하는 영혼은 상처받지 않는다.' },
+    { id:'passive_armor', name:'이성의 방패', type:'passive', maxLevel:4, icon:'🛡️',
+      desc:'우상을 극복하여 받는 모든 대미지를 경감시킵니다.', quote:'논리적 의심의 방패로 편견을 물리쳐라.' }
   ],
   empiricism: [
     { id:'ice_projectile', name:'중용의 얼음 송곳', type:'weapon', maxLevel:4, icon:'❄️',
@@ -46,7 +48,9 @@ export const PHILOSOPHY_DB = {
     { id:'passive_armor', name:'이성의 방패', type:'passive', maxLevel:4, icon:'🛡️',
       desc:'우상을 극복하여 받는 모든 대미지를 경감시킵니다.', quote:'논리적 의심의 방패로 편견을 물리쳐라.' },
     { id:'passive_crit_dmg', name:'감각적 통찰', type:'passive', maxLevel:4, icon:'🎯',
-      desc:'실증적인 분석을 통해 크리티컬 피해를 증폭시킵니다.', quote:'날카로운 관찰만이 핵심을 관통한다.' }
+      desc:'실증적인 분석을 통해 크리티컬 피해를 증폭시킵니다.', quote:'날카로운 관찰만이 핵심을 관통한다.' },
+    { id:'passive_regen', name:'정신적 치유', type:'passive', maxLevel:4, icon:'🩹',
+      desc:'성찰과 명상을 통해 체력(HP)을 매초 지속 회복합니다.', quote:'성찰하는 영혼은 상처받지 않는다.' }
   ]
 };
 
