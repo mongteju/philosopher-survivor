@@ -78,10 +78,12 @@ export function acceptTutorial(accepted) {
     guideEl.style.opacity = '1';
     const phase1 = document.getElementById('guide-phase-1');
     const phase2 = document.getElementById('guide-phase-2');
+    const phase3 = document.getElementById('guide-phase-3');
     if (phase1) phase1.style.display = 'block';
     if (phase2) phase2.style.display = 'none';
+    if (phase3) phase3.style.display = 'none';
   }
-  this.guideTimer = 30000; // 30 seconds total (15s Phase 1 + 15s Phase 2)
+  this.guideTimer = 30000; // 30 seconds total (10s Phase 1, 10s Phase 2, 10s Phase 3)
   this.gimmickActive = false;
   this.gimmickTimer = 0;
   

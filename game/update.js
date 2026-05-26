@@ -16,15 +16,21 @@ export function gameUpdate(dt) {
     this.guideTimer -= dt;
     const guideEl = document.getElementById('guide-panel');
     if (guideEl) {
-      if (this.guideTimer <= 15000) {
-        const phase1 = document.getElementById('guide-phase-1');
-        const phase2 = document.getElementById('guide-phase-2');
-        if (phase1 && phase1.style.display !== 'none') {
-          phase1.style.display = 'none';
-        }
-        if (phase2 && phase2.style.display !== 'block') {
-          phase2.style.display = 'block';
-        }
+      const phase1 = document.getElementById('guide-phase-1');
+      const phase2 = document.getElementById('guide-phase-2');
+      const phase3 = document.getElementById('guide-phase-3');
+      if (this.guideTimer > 20000) {
+        if (phase1 && phase1.style.display !== 'block') phase1.style.display = 'block';
+        if (phase2 && phase2.style.display !== 'none') phase2.style.display = 'none';
+        if (phase3 && phase3.style.display !== 'none') phase3.style.display = 'none';
+      } else if (this.guideTimer > 10000) {
+        if (phase1 && phase1.style.display !== 'none') phase1.style.display = 'none';
+        if (phase2 && phase2.style.display !== 'block') phase2.style.display = 'block';
+        if (phase3 && phase3.style.display !== 'none') phase3.style.display = 'none';
+      } else {
+        if (phase1 && phase1.style.display !== 'none') phase1.style.display = 'none';
+        if (phase2 && phase2.style.display !== 'none') phase2.style.display = 'none';
+        if (phase3 && phase3.style.display !== 'block') phase3.style.display = 'block';
       }
       if (this.guideTimer <= 500) {
         guideEl.style.opacity = Math.max(0, this.guideTimer / 500);
