@@ -144,7 +144,7 @@ export class Player {
       if (id === 'passive_empiricism_slow') this.slowBonus = lvl * 0.15 * tm;
       if (id === 'passive_empiricism_xp') this.xpMultiplier = 1 + lvl * 0.15 * tm;
       if (id === 'passive_max_hp') baseMaxHp += lvl * 25 * tm;
-      if (id === 'passive_armor') this.armorReduction = lvl * 0.15 * tm;
+      if (id === 'passive_armor') this.armorReduction = lvl * 0.20 * tm;
       if (id === 'passive_crit_dmg') this.critMultiplier = 1 + lvl * 0.25 * tm;
     }
     

@@ -883,10 +883,12 @@ export class Boss {
       const collisionDmg = 22 * (this.stageIndex === 5 ? 20 : 10);
       player.takeDamage(collisionDmg, game, this);
     }
-    this.attackTimer += dt;
-    if (this.attackTimer >= this.attackCd) {
-      this.attackTimer = 0;
-      this.fireAttack(player, game);
+    if (!this.isClone) {
+      this.attackTimer += dt;
+      if (this.attackTimer >= this.attackCd) {
+        this.attackTimer = 0;
+        this.fireAttack(player, game);
+      }
     }
   }
 
