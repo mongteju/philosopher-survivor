@@ -469,7 +469,11 @@ export class Boss {
     // Phase 2 transition
     if (this.hp < this.maxHp * 0.5 && !this.phase2) {
       this.phase2 = true;
-      this.attackCd = Math.max(this.stageIndex >= 2 ? 400 : 800, this.attackCd * 0.65);
+      if (this.stageIndex === 5) {
+        this.attackCd = 1800; // Halved attack speed (double the 900ms cooldown)
+      } else {
+        this.attackCd = Math.max(this.stageIndex >= 2 ? 400 : 800, this.attackCd * 0.65);
+      }
       game.addDamageText(this.x, this.y - 60, '⚠ 광분 돌입!', '#ff4757', 22);
     }
 
