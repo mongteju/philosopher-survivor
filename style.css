@@ -2786,3 +2786,33 @@ button.keyboard-selected,
     transform: scale(1.15);
   }
 }
+
+/* Card active finger indicator */
+.card-finger-indicator {
+  position: absolute;
+  left: -48px;
+  top: 50%;
+  transform: translateY(-50%) scale(0);
+  font-size: 32px;
+  opacity: 0;
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.25s ease;
+  pointer-events: none;
+  z-index: 999;
+}
+
+/* Show and bounce when choice card is hovered or selected */
+.choice-card-horizontal:hover .card-finger-indicator,
+.choice-card-horizontal.keyboard-selected .card-finger-indicator {
+  transform: translateY(-50%) scale(1);
+  opacity: 1;
+  animation: finger-bounce-horizontal 0.6s infinite alternate ease-in-out;
+}
+
+@keyframes finger-bounce-horizontal {
+  0% {
+    transform: translateY(-50%) scale(1) translateX(0);
+  }
+  100% {
+    transform: translateY(-50%) scale(1) translateX(-10px);
+  }
+}

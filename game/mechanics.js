@@ -624,6 +624,7 @@ export function triggerEpicEvolutionUpgrade() {
     const el = document.createElement('div');
     el.className = 'choice-card choice-card-horizontal keyboard-selected epic-card';
     el.innerHTML = `
+      <span class="card-finger-indicator">👉</span>
       <div class="card-left-section">
         <div class="card-icon-box epic">
           <div class="tier-ribbon epic">에픽</div>
@@ -670,6 +671,7 @@ export function triggerEpicEvolutionUpgrade() {
       const lvLabel = isAwakening ? '각성' : `Lv.${nextLvl}`;
       
       el.innerHTML = `
+        <span class="card-finger-indicator">👉</span>
         <div class="card-left-section">
           <div class="card-icon-box epic">
             <div class="tier-ribbon epic">에픽</div>
@@ -731,6 +733,7 @@ export function triggerLevelUp() {
     const el = document.createElement('div');
     el.className = 'choice-card choice-card-horizontal keyboard-selected heal-card';
     el.innerHTML = `
+      <span class="card-finger-indicator">👉</span>
       <div class="card-left-section">
         <div class="card-icon-box normal">
           <div class="tier-ribbon normal">기본</div>
@@ -784,6 +787,7 @@ export function triggerLevelUp() {
 
       const lvLabel = isAwakening ? '각성' : `Lv.${nextLvl}`;
       el.innerHTML = `
+        <span class="card-finger-indicator">👉</span>
         <div class="card-left-section">
           <div class="card-icon-box ${tier}">
             <div class="tier-ribbon ${tier}">${tierName}</div>
