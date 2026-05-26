@@ -288,13 +288,19 @@ export function gameEvents() {
     }
   });
 
-  // Helper to trigger Fullscreen mode on user gesture
+  // Helper to trigger Fullscreen mode on user gesture (Universal Compatibility Upgrade)
   const enterFullscreen = () => {
     try {
       const doc = document.documentElement;
-      if (doc.requestFullscreen) doc.requestFullscreen().catch(() => {});
-      else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen().catch(() => {});
-      else if (doc.msRequestFullscreen) doc.msRequestFullscreen().catch(() => {});
+      const requestFS = doc.requestFullscreen || 
+                        doc.webkitRequestFullscreen || 
+                        doc.mozRequestFullScreen || 
+                        doc.msRequestFullscreen;
+      if (requestFS) {
+        requestFS.call(doc).catch(err => {
+          console.warn("[Fullscreen API Blocked/Not Allowed]", err);
+        });
+      }
     } catch (err) {}
   };
 
@@ -308,8 +314,7 @@ export function gameEvents() {
   }
   const titleBtn = document.getElementById('title-start-btn');
   if (titleBtn) {
-    titleBtn.addEventListener('click', e => {
-      e.stopPropagation();
+    titleBtn.addEventListener('click', () => {
       enterFullscreen();
       this.showMenuScreen();
     });
