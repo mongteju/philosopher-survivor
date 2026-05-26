@@ -373,7 +373,7 @@ export class Boss {
     this.name = name; this.stageIndex = stageIndex;
     const baseHps = [1500, 5000, 40000, 120000, 360000, 1260000];
     this.maxHp = (baseHps[stageIndex] || 5000) * (1 + (playerLevel - 1) * 0.1);
-    this.hp = this.maxHp; this.size = 38; this.speed = 1.2;
+    this.hp = this.maxHp; this.size = 38; this.speed = (stageIndex === 3 || stageIndex === 4) ? 2.4 : 1.2;
     this.color = '#e84393'; this.xpVal = 50;
     this.attackTimer = 0; this.attackCd = stageIndex >= 2 ? 900 : 1800;
     this.phase2 = false; this.angle = 0; this.time = 0;
@@ -672,7 +672,7 @@ export class Boss {
       }
 
       if (this.isPatternActive) {
-        this.speed = 0.45; // Walk slowly like a clock hand
+        this.speed = (this.stageIndex === 4) ? 0.9 : 0.45; // Walk slowly like a clock hand
         this.kantTrafficTimer -= dt;
         game.gimmickTimer = Math.max(0, this.kantTrafficTimer);
         

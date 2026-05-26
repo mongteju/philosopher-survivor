@@ -173,7 +173,7 @@ export function gameUpdate(dt) {
           // Kant: Clear grid lines
           this.gridLines = [];
           this.kantDutyLine = null;
-          b.speed = 1.2;
+          b.speed = 2.4;
         } else if (this.stageIndex === 5) {
           // Nietzsche: Clear relics
           this.nietzcheRelics = [];

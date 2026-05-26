@@ -139,7 +139,7 @@ export class Player {
       if (id === 'passive_idealism_dmg') this.dmgMultiplier = 1 + lvl * 0.15 * tm;
       if (id === 'passive_idealism_area') this.areaMultiplier = 1 + lvl * 0.15 * tm;
       if (id === 'passive_speed') this.speed = 3.2 * (1 + lvl * 0.15 * tm);
-      if (id === 'passive_cooldown') this.cooldownReduction = lvl * 0.12 * tm;
+      if (id === 'passive_cooldown') this.cooldownReduction = lvl * 0.06 * tm;
       if (id === 'passive_regen') this.regenHp = lvl * tm;
       if (id === 'passive_empiricism_slow') this.slowBonus = lvl * 0.15 * tm;
       if (id === 'passive_empiricism_xp') this.xpMultiplier = 1 + lvl * 0.15 * tm;
