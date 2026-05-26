@@ -3,7 +3,7 @@ export const PHILOSOPHY_DB = {
   idealism: [
     { id:'fire_projectile', name:'이데아의 불꽃', type:'weapon', maxLevel:4, icon:'🔥',
       desc:'이데아의 빛을 화염 구체로 형상화해 주변 적에게 발사합니다.', quote:'현실은 이데아의 그림자일 뿐이다.',
-      stats:[{dmg:35,cd:1400,size:25},{dmg:75,cd:1100,size:37.5},{dmg:145,cd:850,size:50},{dmg:290,cd:550,size:75}] },
+      stats:[{dmg:35,cd:1400,size:25},{dmg:75,cd:1100,size:37.5},{dmg:435,cd:850,size:50},{dmg:870,cd:550,size:75}] },
     { id:'fire_aura', name:'이성의 오라', type:'weapon', maxLevel:4, icon:'☀️',
       desc:'뜨거운 이성의 오라로 주변 적들을 지속해서 불태웁니다.', quote:'이성에 따르라.',
       stats:[{dmg:16,radius:95,cd:500},{dmg:35,radius:130,cd:450},{dmg:75,radius:165,cd:380},{dmg:140,radius:210,cd:280}] },
