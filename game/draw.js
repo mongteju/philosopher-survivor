@@ -12,10 +12,8 @@ export function gameDraw() {
     this.screenShake *= 0.8; if (this.screenShake < 0.5) this.screenShake = 0;
   }
 
-  const isGrayscale = !!(this.stageIndex === 5 && this.currentBoss && !this.currentBoss.dragonActive && !this.uberMenschMode);
-  if (isGrayscale) {
-    ctx.filter = 'grayscale(100%) contrast(110%)';
-  }
+  // No high-cost CPU/GPU canvas filters are applied to prevent frame-rate drops (lag).
+  // Instead, Stage 6 uses performant dark desaturated colors by design to create the modern nihilistic atmosphere.
 
   // Full grayscale/contrast filter for Stage 6 and Prejudice Wave using GPU-accelerated CSS filters
   const canvasEl = this.canvas;
@@ -519,14 +517,8 @@ export function gameDraw() {
   // Projectiles
   this.projectiles.forEach(p => p.draw(ctx, this.camera));
 
-  // Boss bullets
-  if (isGrayscale) {
-    ctx.filter = 'none';
-  }
+  // Boss bullets (drawn in full glorious color)
   this.bossBullets.forEach(b => b.draw(ctx, this.camera));
-  if (isGrayscale) {
-    ctx.filter = 'grayscale(100%) contrast(110%)';
-  }
 
   // Particles
   this.particles.forEach(p => p.draw(ctx, this.camera));
@@ -633,6 +625,15 @@ export function drawStageBackground(camX, camY, W, H) {
     for (let y = 0; y < H + cg; y += cg) {
       const gy = ((y - s * 0.2) % (H + cg) + H + cg) % (H + cg);
       ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
+    }
+    
+    // Performant and beautiful dark desaturated nihilistic vignette overlay (0ms layout invalidation)
+    if (isNietzschePhase1) {
+      const grad = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.max(W, H) * 0.85);
+      grad.addColorStop(0, 'rgba(10, 10, 15, 0.2)');
+      grad.addColorStop(1, 'rgba(0, 0, 0, 0.72)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
     }
   }
   ctx.restore();
