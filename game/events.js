@@ -342,7 +342,6 @@ export function gameEvents() {
     });
   }
   document.getElementById('gameover-retry-btn').addEventListener('click', () => location.reload());
-  document.getElementById('restart-game-btn').addEventListener('click', () => location.reload());
   document.getElementById('pause-resume-btn').addEventListener('click', () => this.togglePause());
   document.getElementById('pause-restart-btn').addEventListener('click', () => location.reload());
   const endToMenu = document.getElementById('end-to-menu-btn');
