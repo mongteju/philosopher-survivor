@@ -985,7 +985,7 @@ export class Boss {
             const dist = Math.random() * 200;
             const wx = player.x + Math.cos(angle) * dist;
             const wy = player.y + Math.sin(angle) * dist;
-            game.warningZones.push(new WarningZone(wx, wy, 120, 800, 1000));
+            game.warningZones.push(new WarningZone(wx, wy, 120, 400, 1000));
           }
         } else {
           // Curved Wave Streams
