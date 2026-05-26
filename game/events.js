@@ -29,14 +29,7 @@ export function updateKeyboardCardSelection() {
   });
 }
 
-export function updateExamKeyboardSelection() {
-  const currentQ = document.getElementById(`q${this.currentQuestionIndex}`);
-  if (!currentQ) return;
-  const btns = currentQ.querySelectorAll('.quiz-option-btn');
-  btns.forEach((btn, i) => {
-    btn.classList.toggle('keyboard-selected', i === this.examSelectedIndex);
-  });
-}
+
 
 export function gameEvents() {
   window.addEventListener('keydown', e => {
@@ -100,39 +93,7 @@ export function gameEvents() {
       return;
     }
 
-    // Ending screen keyboard navigation
-    const endingScreen = document.getElementById('ending-screen');
-    if (endingScreen && endingScreen.classList.contains('active')) {
-      const currentQ = document.getElementById(`q${this.currentQuestionIndex}`);
-      const isFinished = document.getElementById('exam-result').style.display === 'block';
-      if (currentQ && !isFinished) {
-        const btns = currentQ.querySelectorAll('.quiz-option-btn');
-        const total = btns.length;
-        if (k === 'arrowup' || k === 'w') {
-          e.preventDefault();
-          this.examSelectedIndex = (this.examSelectedIndex - 1 + total) % total;
-          this.updateExamKeyboardSelection();
-          if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
-        } else if (k === 'arrowdown' || k === 's') {
-          e.preventDefault();
-          this.examSelectedIndex = (this.examSelectedIndex + 1) % total;
-          this.updateExamKeyboardSelection();
-          if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
-        } else if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          if (btns[this.examSelectedIndex]) {
-            btns[this.examSelectedIndex].click();
-          }
-        }
-      } else {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          const restartBtn = document.getElementById('restart-game-btn');
-          if (restartBtn) restartBtn.click();
-        }
-      }
-      return;
-    }
+
 
     // Nietzsche Checkpoint Quiz keyboard navigation
     if (this.nietzscheQuizActive) {
@@ -408,86 +369,7 @@ export function gameEvents() {
   });
 
 
-  // Final ending quiz option buttons
-  document.querySelectorAll('.quiz-option-btn').forEach(btn => {
-    btn.addEventListener('mouseenter', (e) => {
-      const qBox = e.currentTarget.closest('.quiz-question');
-      if (qBox) {
-        const btns = Array.from(qBox.querySelectorAll('.quiz-option-btn'));
-        const idx = btns.indexOf(e.currentTarget);
-        if (idx !== -1) {
-          this.examSelectedIndex = idx;
-          this.updateExamKeyboardSelection();
-        }
-      }
-    });
 
-    btn.addEventListener('click', (e) => {
-      const isCorrect = e.currentTarget.getAttribute('data-correct') === 'true';
-      if (isCorrect) {
-        this.examScore += 1;
-        if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
-      } else {
-        if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
-      }
-
-      const currentQ = document.getElementById(`q${this.currentQuestionIndex}`);
-      if (currentQ) {
-        currentQ.classList.remove('active');
-        const btns = currentQ.querySelectorAll('.quiz-option-btn');
-        btns.forEach(b => b.classList.remove('keyboard-selected'));
-      }
-
-      this.currentQuestionIndex++;
-      const nextQ = document.getElementById(`q${this.currentQuestionIndex}`);
-      if (nextQ) {
-        nextQ.classList.add('active');
-        this.examSelectedIndex = 0;
-        this.updateExamKeyboardSelection();
-      } else {
-        let finalScore = 0;
-        if (this.examScore === 3) finalScore = 100;
-        else if (this.examScore === 2) finalScore = 66;
-        else if (this.examScore === 1) finalScore = 33;
-
-        const scoreStamp = document.getElementById('score-stamp');
-        if (scoreStamp) {
-          scoreStamp.textContent = finalScore;
-          if (finalScore === 100) {
-            scoreStamp.style.color = '#ff4757';
-            scoreStamp.style.borderColor = '#ff4757';
-          } else if (finalScore >= 60) {
-            scoreStamp.style.color = '#ffa502';
-            scoreStamp.style.borderColor = '#ffa502';
-          } else {
-            scoreStamp.style.color = '#7f8c8d';
-            scoreStamp.style.borderColor = '#7f8c8d';
-          }
-        }
-
-        // Inject dynamic clear times with developer cheat flag check
-        const bossTimeVal = Math.floor(this.finalBossKillTime || this.lastBossKillTime || 0);
-        const bossTimeStr = `${bossTimeVal}초${this.usedDebugCheat ? ' (개발자)' : ''}`;
-        const bossTimeEl = document.getElementById('exam-boss-kill-time');
-        if (bossTimeEl) bossTimeEl.textContent = bossTimeStr;
-
-        const totalSecs = Math.floor(this.realSurvivalTimer || 0);
-        const totalMin = Math.floor(totalSecs / 60);
-        const totalSec = totalSecs % 60;
-        const totalTimeStr = `${totalMin}분 ${totalSec}초${this.usedDebugCheat ? ' (개발자)' : ''}`;
-        const totalTimeEl = document.getElementById('exam-total-clear-time');
-        if (totalTimeEl) totalTimeEl.textContent = totalTimeStr;
-
-        const examResult = document.getElementById('exam-result');
-        if (examResult) examResult.style.display = 'block';
-        if (typeof sfx !== 'undefined' && sfx.playExamBell) sfx.playExamBell();
-
-        // Highlight the restart button when the exam result displays
-        const restartBtn = document.getElementById('restart-game-btn');
-        if (restartBtn) restartBtn.classList.add('keyboard-selected');
-      }
-    });
-  });
   const pediaOpen = document.getElementById('pedia-open-btn');
   if (pediaOpen) pediaOpen.addEventListener('click', () => { this.isPlaying = false; document.getElementById('pedia-screen').classList.add('active'); });
   const pediaClose = document.getElementById('pedia-close-btn');

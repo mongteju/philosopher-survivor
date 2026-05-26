@@ -51,8 +51,7 @@ import {
   updatePauseKeyboardSelection,
   updateMenuKeyboardSelection,
   updateTutorialKeyboardSelection,
-  updateKeyboardCardSelection,
-  updateExamKeyboardSelection
+  updateKeyboardCardSelection
 } from './game/events.js';
 import {
   selectLineage,
@@ -122,9 +121,6 @@ class Game {
     this.levelChoices = []; this.cardSelectedIndex = 0;
     this.menuSelectedIndex = -1; this.tutorialSelectedIndex = 0;
     this.pauseSelectedIndex = 0;
-    this.examScore = 0;
-    this.currentQuestionIndex = 1;
-    this.examSelectedIndex = 0;
 
     this.activeIdols = new Map();
     this.medievalDarkness = false;
@@ -439,7 +435,6 @@ class Game {
   updateMenuKeyboardSelection() { updateMenuKeyboardSelection.call(this); }
   updateTutorialKeyboardSelection() { updateTutorialKeyboardSelection.call(this); }
   updateKeyboardCardSelection() { updateKeyboardCardSelection.call(this); }
-  updateExamKeyboardSelection() { updateExamKeyboardSelection.call(this); }
 
   selectLineage(lineage) { selectLineage.call(this, lineage); }
   showMenuScreen() { showMenuScreen.call(this); }
