@@ -52,7 +52,7 @@ export class BossBullet {
     
     const baseDmg = 18;
     if (stageIndex === 5) {
-      this.dmg = baseDmg * 20; // 360
+      this.dmg = 120; // Reduced to 1/3 (360 -> 120)
     } else if (stageIndex !== null && stageIndex !== undefined) {
       this.dmg = baseDmg * 10; // 180
     } else {
