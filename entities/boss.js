@@ -740,16 +740,16 @@ export class Boss {
           this.dragonBreathTimer -= dt;
           if (this.dragonBreathTimer <= 0) {
             this.dragonBreathState = 'warning';
-            this.dragonBreathDuration = 5000; // 5 seconds safe zone duration
+            this.dragonBreathDuration = 3000; // 3 seconds safe zone duration
             
             game.nietzscheSafeZone = null;
             game.nietzscheSafeColumn = Math.floor(Math.random() * 5); // 0 to 4
             
             game.gimmickActive = true;
-            game.gimmickTimer = 5000;
-            game.gimmickMaxTime = 5000;
-            game.gimmickInstruction = "공략법: 5초 내에 빛나는 거대 안전 구역(열)으로 진입하십시오!";
-            game.showBossTooltip("🐉 허무의 종말룡: 5초 뒤 전멸기가 발동됩니다! 🟢안전 구역에서 초인으로 각성하십시오!");
+            game.gimmickTimer = 3000;
+            game.gimmickMaxTime = 3000;
+            game.gimmickInstruction = "공략법: 3초 내에 빛나는 거대 안전 구역(열)으로 진입하십시오!";
+            game.showBossTooltip("🐉 허무의 종말룡: 3초 뒤 전멸기가 발동됩니다! 🟢안전 구역에서 초인으로 각성하십시오!");
             if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
           }
         } else if (this.dragonBreathState === 'warning') {

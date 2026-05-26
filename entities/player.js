@@ -324,8 +324,8 @@ export class Player {
            if (!this.ubermenschTriggered) {
              this.ubermenschTriggered = true;
              this.isInvincible = true;
-             this.dmgMultiplier *= 2; // 2x damage buff
-             window.gameInstance.addDamageText(this.x, this.y - 60, "👑 초인 각성! 무적 & 데미지 2배!", "#ffd200", 22);
+             this.dmgMultiplier *= 5; // 5x damage buff
+             window.gameInstance.addDamageText(this.x, this.y - 60, "👑 초인 각성! 무적 & 데미지 5배!", "#ffd200", 22);
              // Spawn buff particles around player
              if (window.gameInstance.spawnParticles) {
                  window.gameInstance.spawnParticles(this.x, this.y, '#ffd200', 15, 8, -5);
@@ -335,14 +335,14 @@ export class Player {
            if (this.ubermenschTriggered) {
              this.ubermenschTriggered = false;
              this.isInvincible = false;
-             this.dmgMultiplier /= 2; // remove buff
+             this.dmgMultiplier /= 5; // remove buff
            }
         }
       } else {
         if (this.ubermenschTriggered) {
            this.ubermenschTriggered = false;
            this.isInvincible = false;
-           this.dmgMultiplier /= 2;
+           this.dmgMultiplier /= 5;
         }
       }
     } else {
