@@ -340,6 +340,7 @@ export function gameEvents() {
       this._updateAuraChoiceSelection();
       this._applyAuraChange();
     });
+  }
   document.getElementById('gameover-retry-btn').addEventListener('click', () => this.retryCurrentStageOrBoss());
   const goRestart = document.getElementById('gameover-restart-btn');
   if (goRestart) {
