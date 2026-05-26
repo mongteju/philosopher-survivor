@@ -1007,6 +1007,10 @@ export function updatePauseStatusPanel() {
 }
 
 export function addDamageText(x, y, val, color, size, isCrit) {
+  // Cap the damage texts count to prevent rendering overhead when many hits occur
+  if (this.damageTexts.length > 40) {
+    this.damageTexts.shift(); // remove oldest
+  }
   if (typeof val === 'number') {
     val = Math.floor(val);
   } else if (typeof val === 'string') {
@@ -1016,6 +1020,13 @@ export function addDamageText(x, y, val, color, size, isCrit) {
 }
 
 export function spawnParticles(x, y, color, count, speed, vy) {
+  // Hard cap on active particles to avoid lag
+  if (this.particles.length > 180) {
+    count = Math.max(1, Math.floor(count * 0.3)); // reduce count to 30% if screen is crowded
+  }
+  if (this.particles.length > 250) {
+    return; // Completely ignore particle spawning if count is extremely high
+  }
   for (let i = 0; i < count; i++) {
     const a = Math.random() * Math.PI * 2;
     const s = speed * (0.5 + Math.random() * 0.5);

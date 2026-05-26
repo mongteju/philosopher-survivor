@@ -524,8 +524,13 @@ export function gameDraw() {
   // Player
   this.player.draw(ctx, this.camera);
 
-  // Damage texts
+  // Damage texts - Pre-setting base values to avoid canvas overhead
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.strokeStyle = 'rgba(0,0,0,0.8)';
+  ctx.lineWidth = 3;
   this.damageTexts.forEach(t => t.draw(ctx, this.camera));
+  ctx.restore();
 
   // Kant rule display
   if (this.kantRule) {
