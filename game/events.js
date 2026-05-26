@@ -340,8 +340,11 @@ export function gameEvents() {
       this._updateAuraChoiceSelection();
       this._applyAuraChange();
     });
+  document.getElementById('gameover-retry-btn').addEventListener('click', () => this.retryCurrentStageOrBoss());
+  const goRestart = document.getElementById('gameover-restart-btn');
+  if (goRestart) {
+    goRestart.addEventListener('click', () => location.reload());
   }
-  document.getElementById('gameover-retry-btn').addEventListener('click', () => location.reload());
   document.getElementById('pause-resume-btn').addEventListener('click', () => this.togglePause());
   document.getElementById('pause-restart-btn').addEventListener('click', () => location.reload());
   const endToMenu = document.getElementById('end-to-menu-btn');

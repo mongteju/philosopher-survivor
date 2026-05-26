@@ -1059,6 +1059,7 @@ export function spawnExistentialWords() {
 
 export function gameOver() {
   this.isPlaying = false;
+  this.diedInBossFight = (this.currentBoss !== null);
   const stages = EVOLUTION_STAGES[this.player.lineage];
   const ev = stages[Math.min(this.player.evolutionIndex, stages.length - 1)];
   const totalSecs = Math.floor(this.realSurvivalTimer);
@@ -1128,6 +1129,9 @@ export function triggerEnding() {
         i++;
       } else {
         clearInterval(typingInterval);
+        
+        // Append CLEAR text with color and larger font size
+        typingContainer.innerHTML += ' <span style="font-size: 34px; font-weight: 900; color: #ff4757; text-shadow: 0 0 15px rgba(255, 71, 87, 0.85); display: inline-block; margin-left: 10px; vertical-align: middle; animation: ending-clear-pulse 1.2s infinite alternate;">CLEAR</span>';
         
         // Stop typing loop when typing ends
         if (keyboardSound) {
@@ -1372,8 +1376,8 @@ export function endNietzscheQuiz() {
       try { this.bgm.play().catch(err => console.warn(err)); } catch (e) {}
     }
     
-    // FAILURE: Take 50% damage, restore boss HP to 55%, apply blind & slow debuff
-    const penaltyDmg = Math.floor(this.player.maxHp * 0.5);
+    // FAILURE: Take instant death damage, restore boss HP to 55%, apply blind & slow debuff
+    const penaltyDmg = 999999;
     this.player.takeDamage(penaltyDmg, this);
     
     boss.hp = boss.maxHp * 0.55;
@@ -1382,8 +1386,8 @@ export function endNietzscheQuiz() {
     this.player.blindedTimer = 3000;
     this.player.nietzscheVortexTimer = 3000;
     
-    this.addDamageText(this.player.x, this.player.y - 80, '❌ 시험 낙제! 50% 피해 & 심연의 저주!', '#ff4757', 24);
-    this.showBossTooltip("🦅 허무주의의 그림자: 그대의 깨달음이 부족하군. 잿빛의 심연 속에서 다시 한 번 진리를 갈구해라!");
+    this.addDamageText(this.player.x, this.player.y - 80, '❌ 시험 낙제! 즉사!', '#ff4757', 24);
+    this.showBossTooltip("🦅 허무주의의 그림자: 그대의 깨달음이 부족하군. 잿빛의 심연 속에서 즉사하였습니다.");
     sfx.playAlert();
   }
 }
@@ -1421,5 +1425,87 @@ export function applyUniqueHitAction(stageIndex) {
     this.player.nietzscheVortexTimer = 3000;
     this.player.blindedTimer = 3000;
     this.addDamageText(this.player.x, this.player.y - 110, "🦅 중력 속박 (Nietzschean Abyss)!", "#0a0a0c", 16);
+  }
+}
+
+export function retryCurrentStageOrBoss() {
+  if (!this.player) return;
+  
+  // Hide game over screen
+  document.getElementById('gameover-screen').classList.remove('active');
+  
+  // Reset player state
+  this.player.hp = this.player.maxHp;
+  this.player.isInvincible = false;
+  this.player.superInvincible = false;
+  this.player.confusedTimer = 0;
+  this.player.stunnedTimer = 0;
+  this.player.blindedTimer = 0;
+  this.player.knockbackTimer = 0;
+  this.player.nietzscheVortexTimer = 0;
+  this.player.kantStunnedTimer = 0;
+  this.player.x = 0;
+  this.player.y = 0;
+  
+  // Clear entities
+  this.enemies = [];
+  this.projectiles = [];
+  this.particles = [];
+  this.damageTexts = [];
+  this.xpFrags = [];
+  this.magnetItems = [];
+  this.bossBullets = [];
+  this.warningZones = [];
+  this.iceFloors = [];
+  this.iceRings = [];
+  this.candlesticks = [];
+  this.nietzcheRelics = [];
+  this.gridLines = [];
+  this.activeIdols.clear();
+  this.medievalDarkness = false;
+  this.kantRule = null;
+  this.kantDutyLine = null;
+  this.ataraxiaZone = null;
+  this.nietzscheArenaActive = false;
+  this.nietzscheArenaCenter = null;
+  this.nietzscheSafeZone = null;
+  this.uberMenschMode = false;
+  this.prejudiceWave = 0;
+  
+  const diedInBossFight = this.diedInBossFight;
+  
+  if (diedInBossFight) {
+    this.eraSurvivalTime = 60;
+    this.realSurvivalTimer = this.stageIndex * 60 + 60;
+    this.currentBoss = null;
+    this.spawnBossImmediate();
+    this.showBossTooltip(`👑 ${this.stage.bossName}전 재도전!`);
+  } else {
+    this.eraSurvivalTime = 0;
+    this.realSurvivalTimer = this.stageIndex * 60;
+    this.currentBoss = null;
+    this.spawnInitialEnemies();
+    this.showBossTooltip(null);
+  }
+  
+  this.scroll = 0;
+  this.restoreHUD();
+  
+  // Resume game loop
+  this.isPlaying = true;
+  this.lastTime = performance.now();
+  
+  // Reset BGM
+  if (this.bgm) {
+    try {
+      this.bgm.pause();
+    } catch(e) {}
+  }
+  this.bgm = new Audio('music1.mp3');
+  this.bgm.loop = true;
+  this.bgm.volume = this.bgmMuted ? 0 : 0.35;
+  this.bgm.muted = this.bgmMuted;
+  if (!this.bgmMuted) {
+    this.bgm.play().catch(() => {});
   }
 }

@@ -610,8 +610,11 @@ export function drawStageBackground(camX, camY, W, H) {
     ctx.globalAlpha = 1;
   } else {
     // 현대 - 사이버
-    ctx.fillStyle = '#000208'; ctx.fillRect(0, 0, W, H);
-    ctx.strokeStyle = 'rgba(0,200,255,0.06)'; ctx.lineWidth = 1;
+    const isNietzschePhase1 = !!(this.stageIndex === 5 && this.currentBoss && !this.currentBoss.dragonActive && !this.uberMenschMode);
+    ctx.fillStyle = isNietzschePhase1 ? '#0a0a0f' : '#000208';
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = isNietzschePhase1 ? 'rgba(255,255,255,0.04)' : 'rgba(0,200,255,0.06)';
+    ctx.lineWidth = 1;
     const cg = 60;
     for (let x = 0; x < W + cg; x += cg) {
       const gx = ((x - s * 0.3) % (W + cg) + W + cg) % (W + cg);

@@ -73,8 +73,16 @@ export class BossBullet {
     const distSq = dx * dx + dy * dy;
     const limit = this.size + player.size;
     if (!player.isInvincible && distSq < limit * limit) {
-      const dmg = this.dmg !== undefined ? this.dmg : 18;
-      player.takeDamage(dmg, window.gameInstance);
+      if (this.isNihilismPhase1) {
+        const dmg = Math.ceil(player.maxHp * 0.03);
+        player.takeDamage(dmg, window.gameInstance, true);
+      } else if (this.isNihilismPhase2) {
+        const dmg = Math.ceil(player.maxHp * 0.02);
+        player.takeDamage(dmg, window.gameInstance, true);
+      } else {
+        const dmg = this.dmg !== undefined ? this.dmg : 18;
+        player.takeDamage(dmg, window.gameInstance);
+      }
       this.life = 0;
     }
   }
@@ -181,7 +189,12 @@ export class WarningZone {
       const dx = p.x - this.x;
       const dy = p.y - this.y;
       if (!p.isInvincible && (dx * dx + dy * dy) < this.radius * this.radius) {
-        p.takeDamage(this.damage, game);
+        if (this.isNihilismPhase2) {
+          const dmg = Math.ceil(p.maxHp * 0.02);
+          p.takeDamage(dmg, game, true);
+        } else {
+          p.takeDamage(this.damage, game);
+        }
       }
       game.spawnParticles(this.x, this.y, '#ff4757', 6, 15, -3);
       this.life = 0;
@@ -371,11 +384,14 @@ export class Boss {
   constructor(x, y, playerLevel, name, stageIndex) {
     this.x = x; this.y = y; this.type = 'boss'; this.isIdol = false;
     this.name = name; this.stageIndex = stageIndex;
-    const baseHps = [1500, 5000, 40000, 120000, 360000, 1260000];
+    const baseHps = [1500, 5000, 40000, 120000, 360000, 630000];
     this.maxHp = (baseHps[stageIndex] || 5000) * (1 + (playerLevel - 1) * 0.1);
     this.hp = this.maxHp; this.size = 38; this.speed = (stageIndex === 3 || stageIndex === 4) ? 2.4 : 1.2;
     this.color = '#e84393'; this.xpVal = 50;
     this.attackTimer = 0; this.attackCd = stageIndex >= 2 ? 900 : 1800;
+    if (stageIndex === 5) {
+      this.attackCd = 1500; // Lowered attack speed to 60% of current Phase 1 (900 / 0.6 = 1500)
+    }
     this.phase2 = false; this.angle = 0; this.time = 0;
     this.clones = [];
     this.vx = 0; this.vy = 0;
@@ -470,7 +486,7 @@ export class Boss {
     if (this.hp < this.maxHp * 0.5 && !this.phase2) {
       this.phase2 = true;
       if (this.stageIndex === 5) {
-        this.attackCd = 1800; // Halved attack speed (double the 900ms cooldown)
+        this.attackCd = 3000; // Lowered attack speed to 60% of current Phase 2 (1800 / 0.6 = 3000)
       } else {
         this.attackCd = Math.max(this.stageIndex >= 2 ? 400 : 800, this.attackCd * 0.65);
       }
@@ -880,8 +896,13 @@ export class Boss {
     this.x += this.vx * dt * 0.06; this.y += this.vy * dt * 0.06;
     this.angle = Math.atan2(dy, dx);
     if (!player.isInvincible && distSq < (this.size + player.size) * (this.size + player.size)) {
-      const collisionDmg = 22 * (this.stageIndex === 5 ? 20 : 10);
-      player.takeDamage(collisionDmg, game, this);
+      if (this.stageIndex === 5 && !this.dragonActive) {
+        const collisionDmg = Math.ceil(player.maxHp * 0.03);
+        player.takeDamage(collisionDmg, game, true);
+      } else {
+        const collisionDmg = 22 * (this.stageIndex === 5 ? 20 : 10);
+        player.takeDamage(collisionDmg, game, this);
+      }
     }
     if (!this.isClone) {
       this.attackTimer += dt;
@@ -977,7 +998,9 @@ export class Boss {
           const cnt = 24;
           for (let i = 0; i < cnt; i++) {
             const a = (Math.PI * 2 / cnt) * i + this.time * 0.0035;
-            game.bossBullets.push(new BossBullet(this.x, this.y, a, 5.0, 'spiral', '#54a0ff', this.stageIndex));
+            const bullet = new BossBullet(this.x, this.y, a, 5.0, 'spiral', '#54a0ff', this.stageIndex);
+            bullet.isNihilismPhase2 = true;
+            game.bossBullets.push(bullet);
           }
           fired = true;
         } else if (this.dragonPatternIndex === 1) {
@@ -987,13 +1010,17 @@ export class Boss {
             const dist = Math.random() * 200;
             const wx = player.x + Math.cos(angle) * dist;
             const wy = player.y + Math.sin(angle) * dist;
-            game.warningZones.push(new WarningZone(wx, wy, 120, 400, 1000));
+            const wz = new WarningZone(wx, wy, 120, 400, 1000);
+            wz.isNihilismPhase2 = true;
+            game.warningZones.push(wz);
           }
         } else {
           // Curved Wave Streams
           for (let i = 0; i < 8; i++) {
             const a = Math.atan2(player.y - this.y, player.x - this.x) + (i - 3.5) * 0.25;
-            game.bossBullets.push(new BossBullet(this.x, this.y, a, 5.5, 'curve', '#54a0ff', this.stageIndex));
+            const bullet = new BossBullet(this.x, this.y, a, 5.5, 'curve', '#54a0ff', this.stageIndex);
+            bullet.isNihilismPhase2 = true;
+            game.bossBullets.push(bullet);
           }
           fired = true;
         }
@@ -1001,7 +1028,9 @@ export class Boss {
         const cnt = this.phase2 ? 20 : 12;
         for (let i = 0; i < cnt; i++) {
           const a = (Math.PI * 2 / cnt) * i + this.time * 0.002;
-          game.bossBullets.push(new BossBullet(this.x, this.y, a, 4.5, 'spiral', '#54a0ff', this.stageIndex));
+          const bullet = new BossBullet(this.x, this.y, a, 4.5, 'spiral', '#bf55ec', this.stageIndex);
+          bullet.isNihilismPhase1 = true;
+          game.bossBullets.push(bullet);
         }
         fired = true;
       }

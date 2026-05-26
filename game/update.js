@@ -140,11 +140,11 @@ export function gameUpdate(dt) {
         // Trigger Gimmick Failure!
         if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
         
-        // Take 50% max HP damage
-        const penaltyDmg = Math.ceil(this.player.maxHp * 0.5);
+        // Take instant death damage
+        const penaltyDmg = 999999;
         this.player.takeDamage(penaltyDmg, this, b);
-        this.addDamageText(this.player.x, this.player.y - 80, `💥 기믹 실패! -${penaltyDmg} HP`, '#ff4757', 24, true);
-        this.showBossTooltip("💥 기믹 실패: 제한 시간 내에 공략하지 못해 치명적인 대미지(최대 체력의 50%)를 입었습니다!");
+        this.addDamageText(this.player.x, this.player.y - 80, `💥 기믹 실패! 즉사!`, '#ff4757', 24, true);
+        this.showBossTooltip("💥 기믹 실패: 제한 시간 내에 공략하지 못해 즉사하였습니다!");
         
         // Apply Stage-specific Gimmick Failure Hit Action
         this.applyUniqueHitAction(this.stageIndex);
@@ -201,10 +201,10 @@ export function gameUpdate(dt) {
       
       if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
       
-      const penaltyDmg = Math.ceil(this.player.maxHp * 0.5);
+      const penaltyDmg = 999999;
       this.player.takeDamage(penaltyDmg, this, b);
-      this.addDamageText(this.player.x, this.player.y - 80, `💥 신호 위반! -${penaltyDmg} HP`, '#ff4757', 24, true);
-      this.showBossTooltip(`💥 신호 위반: 빨간불에 움직여 정언명령을 위배하고 시간 속에 속박됩니다!`);
+      this.addDamageText(this.player.x, this.player.y - 80, `💥 신호 위반! 즉사!`, '#ff4757', 24, true);
+      this.showBossTooltip(`💥 신호 위반: 빨간불에 움직여 정언명령을 위배하고 즉사하였습니다!`);
       
       // Apply unique hit action (5단계 칸트: 시간 속박)
       this.applyUniqueHitAction(4);

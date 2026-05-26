@@ -88,7 +88,8 @@ import {
   updateNietzscheQuizSelection,
   selectNietzscheQuizOption,
   endNietzscheQuiz,
-  applyUniqueHitAction
+  applyUniqueHitAction,
+  retryCurrentStageOrBoss
 } from './game/mechanics.js';
 
 // ─── GAME CLASS ──────────────────────────────────────────────────────
@@ -471,6 +472,7 @@ class Game {
   selectNietzscheQuizOption() { selectNietzscheQuizOption.call(this); }
   endNietzscheQuiz() { endNietzscheQuiz.call(this); }
   applyUniqueHitAction(stageIndex) { applyUniqueHitAction.call(this, stageIndex); }
+  retryCurrentStageOrBoss() { retryCurrentStageOrBoss.call(this); }
 }
 
 // ─── BOOT ────────────────────────────────────────────────────────────

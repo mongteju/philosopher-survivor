@@ -166,9 +166,9 @@ export class Player {
     if (this.nietzscheVortexTimer && this.nietzscheVortexTimer > 0) baseSpeed *= 0.4;
     return baseSpeed * (1 + this.auraSpeedBonus); 
   }
-  takeDamage(dmg, game) {
+  takeDamage(dmg, game, bypassArmor = false) {
     if (this.isInvincible) return;
-    const reduced = Math.max(1, Math.floor(dmg * (1 - this.armorReduction) * (1 - (this.auraDamageReduction || 0))));
+    const reduced = bypassArmor ? dmg : Math.max(1, Math.floor(dmg * (1 - this.armorReduction) * (1 - (this.auraDamageReduction || 0))));
     this.hp = Math.max(0, this.hp - reduced);
     game.addDamageText(this.x, this.y - 40, reduced, '#ff6b81', 16, false);
     this.isInvincible = true; this.invincibilityFlash = 800;
