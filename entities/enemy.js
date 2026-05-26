@@ -20,10 +20,10 @@ export class Enemy {
     let hpMultiplier = 1;
     let speedMultiplier = 1;
     if (mobType === 'beast') { hpMultiplier = 2; speedMultiplier = 1.3; }
-    else if (mobType === 'undead') { hpMultiplier = 3; speedMultiplier = 1.3; }
-    else if (mobType === 'golem') { hpMultiplier = 4; speedMultiplier = 1.3 * 2; }
-    else if (mobType === 'steam') { hpMultiplier = 5; speedMultiplier = 1.3; }
-    else if (mobType === 'machine') { hpMultiplier = 6; speedMultiplier = 1.3; }
+    else if (mobType === 'undead') { hpMultiplier = 6; speedMultiplier = 1.3; }
+    else if (mobType === 'golem') { hpMultiplier = 8; speedMultiplier = 1.3 * 2; }
+    else if (mobType === 'steam') { hpMultiplier = 10; speedMultiplier = 1.3; }
+    else if (mobType === 'machine') { hpMultiplier = 12; speedMultiplier = 1.3; }
     
     this.maxHp = Math.floor(d.hp * lvMul * hpMultiplier);
     this.hp = this.maxHp; this.speed = d.spd * speedMultiplier; this.size = d.sz;

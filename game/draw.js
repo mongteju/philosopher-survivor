@@ -586,7 +586,7 @@ export function drawStageBackground(camX, camY, W, H) {
       ctx.beginPath(); ctx.ellipse(dx, H * 0.65, 150, 40, 0, 0, Math.PI * 2); ctx.fill();
     }
   } else if (this.stageIndex === 3) {
-    // 근대 시작 - 하늘
+    // 근대 초기 - 하늘
     const grad = ctx.createLinearGradient(0, 0, 0, H);
     grad.addColorStop(0, '#101035'); grad.addColorStop(0.5, '#1a2060'); grad.addColorStop(1, '#0d1540');
     ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
@@ -598,7 +598,7 @@ export function drawStageBackground(camX, camY, W, H) {
       ctx.beginPath(); ctx.ellipse(cx + 80, H * 0.28, 90, 30, 0, 0, Math.PI * 2); ctx.fill();
     }
   } else if (this.stageIndex === 4) {
-    // 근대 성숙 - 우주
+    // 근대 후기 - 우주
     ctx.fillStyle = '#010208'; ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = '#fff';
     for (let i = 0; i < 80; i++) {

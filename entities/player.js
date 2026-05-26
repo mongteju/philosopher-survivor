@@ -241,7 +241,7 @@ export class Player {
         const quotes = PLAYER_QUOTES[philName];
         if (quotes && quotes.length > 0) {
           this.activeDialogue = quotes[Math.floor(Math.random() * quotes.length)];
-          this.dialogueDisplayTimer = 2500; // Show for 2.5s
+          this.dialogueDisplayTimer = 7500; // Show for 7.5s
         }
       }
       this.dialogueTimer = 8000 + Math.random() * 5000; // Trigger every 8-13s

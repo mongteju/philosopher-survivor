@@ -3,7 +3,7 @@ export const PHILOSOPHY_DB = {
   idealism: [
     { id:'fire_projectile', name:'이데아의 불꽃', type:'weapon', maxLevel:4, icon:'🔥',
       desc:'이데아의 빛을 화염 구체로 형상화해 주변 적에게 발사합니다.', quote:'현실은 이데아의 그림자일 뿐이다.',
-      stats:[{dmg:35,cd:1400,size:50},{dmg:75,cd:1100,size:75},{dmg:145,cd:850,size:100},{dmg:290,cd:550,size:150}] },
+      stats:[{dmg:35,cd:1400,size:25},{dmg:75,cd:1100,size:37.5},{dmg:145,cd:850,size:50},{dmg:290,cd:550,size:75}] },
     { id:'fire_aura', name:'이성의 오라', type:'weapon', maxLevel:4, icon:'☀️',
       desc:'뜨거운 이성의 오라로 주변 적들을 지속해서 불태웁니다.', quote:'이성에 따르라.',
       stats:[{dmg:16,radius:95,cd:500},{dmg:35,radius:130,cd:450},{dmg:75,radius:165,cd:380},{dmg:140,radius:210,cd:280}] },
@@ -12,7 +12,7 @@ export const PHILOSOPHY_DB = {
       stats:[{dmg:75,interval:2200,count:1},{dmg:150,interval:1700,count:2},{dmg:260,interval:1300,count:3},{dmg:440,interval:850,count:5}] },
     { id:'fire_sword', name:'코기토의 검', type:'weapon', maxLevel:4, icon:'⚔️',
       desc:'날카롭게 타오르는 사유의 검을 사방에 휘두릅니다.', quote:'나는 생각한다, 고로 존재한다.',
-      stats:[{dmg:55,count:3,speed:6,cd:2000},{dmg:110,count:4,speed:8,cd:1700},{dmg:190,count:6,speed:10,cd:1400},{dmg:310,count:8,speed:13,cd:1000}] },
+      stats:[{dmg:55,count:3,speed:6,cd:4000},{dmg:110,count:4,speed:8,cd:3400},{dmg:190,count:6,speed:10,cd:2800},{dmg:310,count:8,speed:13,cd:2000}] },
     { id:'passive_idealism_dmg', name:'이성의 광채', type:'passive', maxLevel:4, icon:'💥',
       desc:'선험적 인식의 광채로 모든 공격력을 증폭시킵니다.', quote:'순수 이성의 법칙은 확실하다.' },
     { id:'passive_idealism_area', name:'사유의 확장', type:'passive', maxLevel:4, icon:'🔮',
@@ -27,7 +27,7 @@ export const PHILOSOPHY_DB = {
   empiricism: [
     { id:'ice_projectile', name:'중용의 얼음 송곳', type:'weapon', maxLevel:4, icon:'❄️',
       desc:'중용의 얼음 쐐기를 발사하여 적을 관통하고 둔화시킵니다.', quote:'덕은 중용에 있다.',
-      stats:[{dmg:25,pierce:2,slow:0.35,speed:8,cd:1200},{dmg:55,pierce:3,slow:0.45,speed:10,cd:950},{dmg:105,pierce:5,slow:0.55,speed:12,cd:750},{dmg:220,pierce:99,slow:0.75,speed:15,cd:450}] },
+      stats:[{dmg:25,pierce:2,slow:0.35,speed:8,cd:1200},{dmg:55,pierce:3,slow:0.45,speed:10,cd:950},{dmg:525,pierce:5,slow:0.55,speed:12,cd:750},{dmg:1100,pierce:99,slow:0.75,speed:15,cd:450}] },
     { id:'ice_floor', name:'쾌락의 정원', type:'weapon', maxLevel:4, icon:'🌊',
       desc:'차가운 서리 지대를 형성하여 범위 내 적을 지속 공격합니다.', quote:'진정한 쾌락은 고통 없는 상태다.',
       stats:[{dmg:10,size:100,duration:3500,cd:1400},{dmg:22,size:145,duration:4200,cd:1100},{dmg:48,size:190,duration:5000,cd:850},{dmg:95,size:250,duration:6000,cd:600}] },
@@ -56,16 +56,16 @@ export const EVOLUTION_STAGES = {
     {title:'플라톤',era:'고대 그리스',color:'#ff4757'},
     {title:'에픽테토스',era:'헬레니즘',color:'#ff6b35'},
     {title:'아우구스티누스',era:'중세 시대',color:'#ffd200'},
-    {title:'데카르트',era:'근대 시작',color:'#ff9ff3'},
-    {title:'칸트',era:'근대 성숙',color:'#c56cf0'},
+    {title:'데카르트',era:'근대 초기',color:'#ff9ff3'},
+    {title:'칸트',era:'근대 후기',color:'#c56cf0'},
     {title:'사르트르',era:'현대 사회',color:'#ff4757'}
   ],
   empiricism: [
     {title:'아리스토텔레스',era:'고대 그리스',color:'#00d2d3'},
     {title:'에피쿠로스',era:'헬레니즘',color:'#54a0ff'},
     {title:'토마스 아퀴나스',era:'중세 시대',color:'#48dbfb'},
-    {title:'베이컨',era:'근대 시작',color:'#1dd1a1'},
-    {title:'밀',era:'근대 성숙',color:'#00d2d3'},
+    {title:'베이컨',era:'근대 초기',color:'#1dd1a1'},
+    {title:'밀',era:'근대 후기',color:'#00d2d3'},
     {title:'듀이',era:'현대 사회',color:'#54a0ff'}
   ]
 };
@@ -75,8 +75,8 @@ export const TIMELINE = [
   {name:'고대 그리스',mobType:'orc',bossName:'소피스트'},
   {name:'헬레니즘',mobType:'beast',bossName:'아파테이아 수호자'},
   {name:'중세 시대',mobType:'undead',bossName:'교조주의의 망령'},
-  {name:'근대 시작',mobType:'golem',bossName:'편견의 거인 (4대 우상)'},
-  {name:'근대 성숙',mobType:'steam',bossName:'도덕의 심판관 (정언명령)'},
+  {name:'근대 초기',mobType:'golem',bossName:'편견의 거인 (4대 우상)'},
+  {name:'근대 후기',mobType:'steam',bossName:'도덕의 심판관 (정언명령)'},
   {name:'현대 사회',mobType:'machine',bossName:'허무주의의 그림자'}
 ];
 
@@ -86,8 +86,8 @@ export const AURA_DB = {
     name: '브릴리언스 오라',
     icon: '💠',
     color: '#54a0ff',
-    desc: '쿨타임이 감소하여 스킬 시전 속도가 대폭 증가합니다.',
-    statsDesc: '스킬 시전 속도 증가'
+    desc: '쿨타임이 감소하여 스킬 시전 속도가 대폭 감소합니다.',
+    statsDesc: '스킬 시전 속도 감소'
   },
   devotion: {
     name: '디보션 오라',

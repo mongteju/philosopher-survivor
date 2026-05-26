@@ -43,11 +43,21 @@ const BOSS_QUOTES = {
 
 // ─── BOSS BULLET ────────────────────────────────────────────────────
 export class BossBullet {
-  constructor(x, y, angle, speed, type, color) {
+  constructor(x, y, angle, speed, type, color, stageIndex = null) {
     this.x = x; this.y = y; this.angle = angle; this.speed = speed;
     this.type = type; this.size = 10; this.life = 7000; this.time = 0;
     this.baseAngle = angle; this.spawnX = x; this.spawnY = y;
     this.color = color || (type === 'spiral' ? '#ff6b81' : type === 'curve' ? '#a29bfe' : '#ff4757');
+    this.stageIndex = stageIndex;
+    
+    const baseDmg = 18;
+    if (stageIndex === 5) {
+      this.dmg = baseDmg * 20; // 360
+    } else if (stageIndex !== null && stageIndex !== undefined) {
+      this.dmg = baseDmg * 10; // 180
+    } else {
+      this.dmg = baseDmg; // normal fallback
+    }
   }
   update(dt, player) {
     this.time += dt;
@@ -63,7 +73,7 @@ export class BossBullet {
     const distSq = dx * dx + dy * dy;
     const limit = this.size + player.size;
     if (!player.isInvincible && distSq < limit * limit) {
-      const dmg = 18;
+      const dmg = this.dmg !== undefined ? this.dmg : 18;
       player.takeDamage(dmg, window.gameInstance);
       this.life = 0;
     }
@@ -266,13 +276,13 @@ export class RhythmicGridLine {
       if (this.isVertical) {
         game.spawnParticles(this.coord, game.player.y, '#ff4757', 15, 12, -4);
         if (Math.abs(game.player.x - this.coord) < 25) {
-          game.player.takeDamage(20, game, null);
+          game.player.takeDamage(200, game, null);
           game.addDamageText(game.player.x, game.player.y - 60, '⚡ 정언명령 충격!', '#ff4757', 18);
         }
       } else {
         game.spawnParticles(game.player.x, this.coord, '#ff4757', 15, 12, -4);
         if (Math.abs(game.player.y - this.coord) < 25) {
-          game.player.takeDamage(20, game, null);
+          game.player.takeDamage(200, game, null);
           game.addDamageText(game.player.x, game.player.y - 60, '⚡ 정언명령 충격!', '#ff4757', 18);
         }
       }
@@ -385,7 +395,7 @@ export class Boss {
   }
 
   update(dt, player, game) {
-    if (this.frozenTime > 0) { this.frozenTime -= dt; return; }
+    this.frozenTime = 0; // Bosses are completely immune to freezing
 
     // Dialogue update
     if (this.dialogueDisplayTimer > 0) {
@@ -403,7 +413,7 @@ export class Boss {
         const quotes = BOSS_QUOTES[this.stageIndex];
         if (quotes && quotes.length > 0) {
           this.activeDialogue = quotes[Math.floor(Math.random() * quotes.length)];
-          this.dialogueDisplayTimer = 2500; // Display for 2.5s
+          this.dialogueDisplayTimer = 7500; // Display for 7.5s
         }
         this.dialogueTimer = 7000 + Math.random() * 4000; // Trigger every 7-11 seconds
       }
@@ -565,7 +575,7 @@ export class Boss {
             const targetCandle = unlit[Math.floor(Math.random() * unlit.length)];
             const wx = targetCandle.x + (Math.random() - 0.5) * 100;
             const wy = targetCandle.y + (Math.random() - 0.5) * 100;
-            game.warningZones.push(new WarningZone(wx, wy, 80, 25, 1200));
+            game.warningZones.push(new WarningZone(wx, wy, 80, 250, 1200));
             if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
           }
         }
@@ -866,7 +876,8 @@ export class Boss {
     this.x += this.vx * dt * 0.06; this.y += this.vy * dt * 0.06;
     this.angle = Math.atan2(dy, dx);
     if (!player.isInvincible && distSq < (this.size + player.size) * (this.size + player.size)) {
-      player.takeDamage(22, game, this);
+      const collisionDmg = 22 * (this.stageIndex === 5 ? 20 : 10);
+      player.takeDamage(collisionDmg, game, this);
     }
     this.attackTimer += dt;
     if (this.attackTimer >= this.attackCd) {
@@ -921,19 +932,19 @@ export class Boss {
     if (si === 0) { // 소피스트: spiral burst
       for (let i = 0; i < (this.phase2 ? 12 : 8); i++) {
         const a = (Math.PI * 2 / (this.phase2 ? 12 : 8)) * i + this.time * 0.001;
-        game.bossBullets.push(new BossBullet(this.x, this.y, a, 3.5, 'spiral'));
+        game.bossBullets.push(new BossBullet(this.x, this.y, a, 3.5, 'spiral', null, this.stageIndex));
       }
       fired = true;
     } else if (si === 1) { // 아파테이아: warning zones
       for (let i = 0; i < 3; i++) {
         const wx = player.x + (Math.random() - 0.5) * 300;
         const wy = player.y + (Math.random() - 0.5) * 300;
-        game.warningZones.push(new WarningZone(wx, wy, 100, 35, 1500));
+        game.warningZones.push(new WarningZone(wx, wy, 100, 350, 1500));
       }
     } else if (si === 2) { // 교조주의: curve shots
       for (let i = 0; i < (this.phase2 ? 6 : 4); i++) {
         const a = Math.atan2(player.y - this.y, player.x - this.x) + (i - 1.5) * 0.35;
-        game.bossBullets.push(new BossBullet(this.x, this.y, a, 4, 'curve'));
+        game.bossBullets.push(new BossBullet(this.x, this.y, a, 4, 'curve', null, this.stageIndex));
         if (!game.medievalDarkness) game.medievalDarkness = true;
       }
       fired = true;
@@ -942,12 +953,12 @@ export class Boss {
       for (let i = 0; i < cnt; i++) {
         const a = (Math.PI * 2 / cnt) * i;
         game.warningZones.push(new WarningZone(
-          this.x + Math.cos(a) * 180, this.y + Math.sin(a) * 180, 90, 30, 1200));
+          this.x + Math.cos(a) * 180, this.y + Math.sin(a) * 180, 90, 300, 1200));
       }
     } else if (si === 4) { // 칸트: moral rule
       for (let i = 0; i < (this.phase2 ? 12 : 7); i++) {
         const a = (Math.PI * 2 / (this.phase2 ? 12 : 7)) * i + this.time * 0.001;
-        game.bossBullets.push(new BossBullet(this.x, this.y, a, 3, 'straight'));
+        game.bossBullets.push(new BossBullet(this.x, this.y, a, 3, 'straight', null, this.stageIndex));
       }
       fired = true;
     } else { // 허무주의: heavy spiral
@@ -960,7 +971,7 @@ export class Boss {
           const cnt = 24;
           for (let i = 0; i < cnt; i++) {
             const a = (Math.PI * 2 / cnt) * i + this.time * 0.0035;
-            game.bossBullets.push(new BossBullet(this.x, this.y, a, 5.0, 'spiral', '#54a0ff'));
+            game.bossBullets.push(new BossBullet(this.x, this.y, a, 5.0, 'spiral', '#54a0ff', this.stageIndex));
           }
           fired = true;
         } else if (this.dragonPatternIndex === 1) {
@@ -970,13 +981,13 @@ export class Boss {
             const dist = Math.random() * 200;
             const wx = player.x + Math.cos(angle) * dist;
             const wy = player.y + Math.sin(angle) * dist;
-            game.warningZones.push(new WarningZone(wx, wy, 120, 40, 1000));
+            game.warningZones.push(new WarningZone(wx, wy, 120, 800, 1000));
           }
         } else {
           // Curved Wave Streams
           for (let i = 0; i < 8; i++) {
             const a = Math.atan2(player.y - this.y, player.x - this.x) + (i - 3.5) * 0.25;
-            game.bossBullets.push(new BossBullet(this.x, this.y, a, 5.5, 'curve', '#54a0ff'));
+            game.bossBullets.push(new BossBullet(this.x, this.y, a, 5.5, 'curve', '#54a0ff', this.stageIndex));
           }
           fired = true;
         }
@@ -984,7 +995,7 @@ export class Boss {
         const cnt = this.phase2 ? 20 : 12;
         for (let i = 0; i < cnt; i++) {
           const a = (Math.PI * 2 / cnt) * i + this.time * 0.002;
-          game.bossBullets.push(new BossBullet(this.x, this.y, a, 4.5, 'spiral', '#54a0ff'));
+          game.bossBullets.push(new BossBullet(this.x, this.y, a, 4.5, 'spiral', '#54a0ff', this.stageIndex));
         }
         fired = true;
       }
@@ -996,6 +1007,7 @@ export class Boss {
   }
 
   draw(ctx, camera) {
+    this.frozenTime = 0; // Bosses are immune to freeze visual effects
     const rx = this.x - camera.x + ctx.canvas.width / 2;
     const ry = this.y - camera.y + ctx.canvas.height / 2;
     const t = Date.now();
