@@ -1149,7 +1149,7 @@ export function triggerEnding() {
           }, 1000);
         }, 1500);
       }
-    }, 154); // Increased speed by 1.3x (200 / 1.3 ≈ 154ms)
+    }, 118); // Increased speed by 1.3x (154 / 1.3 ≈ 118ms)
   }
   
   if (typeof sfx !== 'undefined' && sfx.playLevelUp) sfx.playLevelUp();
