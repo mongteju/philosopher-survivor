@@ -1251,7 +1251,9 @@ export function updateNietzscheQuizSelection() {
 }
 
 export function selectNietzscheQuizOption() {
+  if (this.nietzscheQuizIndex >= 5) return;
   const qData = NIETZSCHE_QUIZ_DATA[this.nietzscheQuizIndex];
+  if (!qData) return;
   if (this.nietzscheQuizSelection === qData.correct) {
     this.nietzscheQuizScore++;
     sfx.playTick();
