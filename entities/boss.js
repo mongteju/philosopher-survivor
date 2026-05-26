@@ -375,7 +375,7 @@ export class Boss {
     this.maxHp = (baseHps[stageIndex] || 5000) * (1 + (playerLevel - 1) * 0.1);
     this.hp = this.maxHp; this.size = 38; this.speed = 1.2;
     this.color = '#e84393'; this.xpVal = 50;
-    this.attackTimer = 0; this.attackCd = 1800;
+    this.attackTimer = 0; this.attackCd = stageIndex >= 2 ? 900 : 1800;
     this.phase2 = false; this.angle = 0; this.time = 0;
     this.clones = [];
     this.vx = 0; this.vy = 0;
@@ -469,7 +469,7 @@ export class Boss {
     // Phase 2 transition
     if (this.hp < this.maxHp * 0.5 && !this.phase2) {
       this.phase2 = true;
-      this.attackCd = Math.max(800, this.attackCd * 0.65);
+      this.attackCd = Math.max(this.stageIndex >= 2 ? 400 : 800, this.attackCd * 0.65);
       game.addDamageText(this.x, this.y - 60, '⚠ 광분 돌입!', '#ff4757', 22);
     }
 
@@ -740,16 +740,16 @@ export class Boss {
           this.dragonBreathTimer -= dt;
           if (this.dragonBreathTimer <= 0) {
             this.dragonBreathState = 'warning';
-            this.dragonBreathDuration = 3000; // 3 seconds safe zone duration
+            this.dragonBreathDuration = 7000; // 7 seconds safe zone duration (3s + 4s)
             
             game.nietzscheSafeZone = null;
             game.nietzscheSafeColumn = Math.floor(Math.random() * 5); // 0 to 4
             
             game.gimmickActive = true;
-            game.gimmickTimer = 3000;
-            game.gimmickMaxTime = 3000;
-            game.gimmickInstruction = "공략법: 3초 내에 빛나는 거대 안전 구역(열)으로 진입하십시오!";
-            game.showBossTooltip("🐉 허무의 종말룡: 3초 뒤 전멸기가 발동됩니다! 🟢안전 구역에서 초인으로 각성하십시오!");
+            game.gimmickTimer = 7000;
+            game.gimmickMaxTime = 7000;
+            game.gimmickInstruction = "공략법: 7초 내에 빛나는 거대 안전 구역(열)으로 진입하십시오!";
+            game.showBossTooltip("🐉 허무의 종말룡: 7초 뒤 전멸기가 발동됩니다! 🟢안전 구역에서 초인으로 각성하십시오!");
             if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
           }
         } else if (this.dragonBreathState === 'warning') {
