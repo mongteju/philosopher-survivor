@@ -45,7 +45,7 @@ const BOSS_QUOTES = {
 export class BossBullet {
   constructor(x, y, angle, speed, type, color, stageIndex = null) {
     this.x = x; this.y = y; this.angle = angle; this.speed = speed;
-    this.type = type; this.size = 10; this.life = 7000; this.time = 0;
+    this.type = type; this.size = 10; this.life = stageIndex === 5 ? 21000 : 7000; this.time = 0;
     this.baseAngle = angle; this.spawnX = x; this.spawnY = y;
     this.color = color || (type === 'spiral' ? '#ff6b81' : type === 'curve' ? '#a29bfe' : '#ff4757');
     this.stageIndex = stageIndex;
