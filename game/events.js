@@ -465,6 +465,19 @@ export function gameEvents() {
           }
         }
 
+        // Inject dynamic clear times with developer cheat flag check
+        const bossTimeVal = Math.floor(this.finalBossKillTime || this.lastBossKillTime || 0);
+        const bossTimeStr = `${bossTimeVal}초${this.usedDebugCheat ? ' (개발자)' : ''}`;
+        const bossTimeEl = document.getElementById('exam-boss-kill-time');
+        if (bossTimeEl) bossTimeEl.textContent = bossTimeStr;
+
+        const totalSecs = Math.floor(this.realSurvivalTimer || 0);
+        const totalMin = Math.floor(totalSecs / 60);
+        const totalSec = totalSecs % 60;
+        const totalTimeStr = `${totalMin}분 ${totalSec}초${this.usedDebugCheat ? ' (개발자)' : ''}`;
+        const totalTimeEl = document.getElementById('exam-total-clear-time');
+        if (totalTimeEl) totalTimeEl.textContent = totalTimeStr;
+
         const examResult = document.getElementById('exam-result');
         if (examResult) examResult.style.display = 'block';
         if (typeof sfx !== 'undefined' && sfx.playExamBell) sfx.playExamBell();
@@ -491,6 +504,7 @@ export function gameEvents() {
   if (dbgInvinc) {
     dbgInvinc.addEventListener('click', () => {
       if (!this.player) return;
+      this.usedDebugCheat = true;
       this.player.isInvincible = !this.player.isInvincible;
       dbgInvinc.textContent = '무적: ' + (this.player.isInvincible ? 'ON' : 'OFF');
       if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
@@ -500,6 +514,7 @@ export function gameEvents() {
   const dbgSpeed = document.getElementById('dbg-speed');
   if (dbgSpeed) {
     dbgSpeed.addEventListener('click', () => {
+      this.usedDebugCheat = true;
       this.timeScale = this.timeScale === 1 ? 5 : this.timeScale === 5 ? 10 : 1;
       dbgSpeed.textContent = '배속: ' + this.timeScale + 'x';
       if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
@@ -510,6 +525,7 @@ export function gameEvents() {
   if (dbgLvlup) {
     dbgLvlup.addEventListener('click', () => {
       if (!this.player) return;
+      this.usedDebugCheat = true;
       this.player.gainXp(this.player.maxXp - this.player.xp, this);
       if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
     });
@@ -519,6 +535,7 @@ export function gameEvents() {
   if (dbgEvolve) {
     dbgEvolve.addEventListener('click', () => {
       if (!this.player) return;
+      this.usedDebugCheat = true;
       this.player.evolutionIndex = Math.min(this.player.evolutionIndex + 1, 5);
       this.addDamageText(this.player.x, this.player.y - 80, '즉시 전직!', '#ffd200', 20);
       if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
@@ -529,6 +546,7 @@ export function gameEvents() {
   if (dbgBoss) {
     dbgBoss.addEventListener('click', () => {
       if (!this.player) return;
+      this.usedDebugCheat = true;
       if (window.gameDebug && typeof window.gameDebug.spawnBoss === 'function') {
         window.gameDebug.spawnBoss();
       } else {
@@ -541,6 +559,7 @@ export function gameEvents() {
   const dbgClear = document.getElementById('dbg-clear');
   if (dbgClear) {
     dbgClear.addEventListener('click', () => {
+      this.usedDebugCheat = true;
       if (this.currentBoss) {
         if (this.stageIndex === 5 && !this.currentBoss.dragonActive) {
           this.currentBoss.hp = this.currentBoss.maxHp * 0.5;

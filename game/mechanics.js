@@ -1078,7 +1078,7 @@ export function triggerEnding() {
   const totalSecs = Math.floor(this.realSurvivalTimer);
   const m = Math.floor(totalSecs / 60);
   const s = totalSecs % 60;
-  const playtimeStr = `${m}분 ${s}초`;
+  const playtimeStr = `${m}분 ${s}초${this.usedDebugCheat ? ' (개발자)' : ''}`;
   const playtimeEl = document.getElementById('true-ending-playtime');
   if (playtimeEl) playtimeEl.textContent = `플레이타임: ${playtimeStr}`;
   

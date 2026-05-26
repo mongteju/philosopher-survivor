@@ -160,6 +160,7 @@ class Game {
     this._gachaAuraIcons = []; this._gachaStatusText = '';
 
     this.scroll = 0;
+    this.usedDebugCheat = false;
     window.gameInstance = this;
 
     // ─── POWERFUL DEBUGGER SYSTEM ──────────────────────────────────────
@@ -193,10 +194,12 @@ class Game {
       },
       skipStage: () => {
         console.log("[Debug] Skipping current stage...");
+        this.usedDebugCheat = true;
         if (this.currentBoss) this.currentBoss.hp = 0;
         else this.eraSurvivalTime = 60;
       },
       killBoss: () => {
+        this.usedDebugCheat = true;
         if (this.currentBoss) {
           if (this.stageIndex === 5 && !this.currentBoss.dragonActive) {
             this.currentBoss.hp = this.currentBoss.maxHp * 0.5;
@@ -210,12 +213,14 @@ class Game {
         }
       },
       heal: () => {
+        this.usedDebugCheat = true;
         if (this.player) {
           this.player.hp = this.player.maxHp;
           console.log("[Debug] Player healed to full.");
         }
       },
       spawnBoss: () => {
+        this.usedDebugCheat = true;
         const input = prompt("몇 번째 보스를 소환하시겠습니까? (1~6)\n1: 소피스트\n2: 아파테이아 수호자\n3: 교조주의의 망령\n4: 편견의 거인\n5: 도덕의 심판관(정언명령)\n6: 허무주의의 그림자");
         const idx = parseInt(input);
         if (!isNaN(idx) && idx >= 1 && idx <= 6) {
