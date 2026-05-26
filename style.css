@@ -2119,6 +2119,9 @@ button.keyboard-selected,
   justify-content: flex-end;
   align-items: center;
   padding-bottom: 12%; /* bottom vertical float */
+}
+
+#title-screen.active {
   z-index: 10000 !important;
   pointer-events: auto !important;
 }

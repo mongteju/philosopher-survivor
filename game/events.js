@@ -42,6 +42,18 @@ export function gameEvents() {
   window.addEventListener('keydown', e => {
     let keyStr = (e.key || '').toLowerCase();
     let codeStr = (e.code || '').toLowerCase();
+
+    // Secret backdoor to toggle debug panel: Backtick (`) key
+    if (e.key === '`' || e.key === '₩' || codeStr === 'backquote') {
+      e.preventDefault();
+      const dbg = document.getElementById('debug-panel');
+      if (dbg) {
+        const isHidden = dbg.style.display === 'none';
+        dbg.style.display = isHidden ? 'block' : 'none';
+        if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
+      }
+      return;
+    }
     
     // Normalize legacy arrow keys
     if (keyStr === 'right' || codeStr === 'arrowright') keyStr = 'arrowright';
