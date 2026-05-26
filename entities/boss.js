@@ -74,10 +74,10 @@ export class BossBullet {
     const limit = this.size + player.size;
     if (!player.isInvincible && distSq < limit * limit) {
       if (this.isNihilismPhase1) {
-        const dmg = Math.ceil(player.maxHp * 0.03);
+        const dmg = Math.ceil(player.maxHp * 0.10);
         player.takeDamage(dmg, window.gameInstance, true);
       } else if (this.isNihilismPhase2) {
-        const dmg = Math.ceil(player.maxHp * 0.02);
+        const dmg = Math.ceil(player.maxHp * 0.10);
         player.takeDamage(dmg, window.gameInstance, true);
       } else {
         const dmg = this.dmg !== undefined ? this.dmg : 18;
@@ -189,12 +189,8 @@ export class WarningZone {
       const dx = p.x - this.x;
       const dy = p.y - this.y;
       if (!p.isInvincible && (dx * dx + dy * dy) < this.radius * this.radius) {
-        if (this.isNihilismPhase2) {
-          const dmg = Math.ceil(p.maxHp * 0.02);
-          p.takeDamage(dmg, game, true);
-        } else {
-          p.takeDamage(this.damage, game);
-        }
+        p.takeDamage(999999, game, true);
+        game.addDamageText(p.x, p.y - 60, "💥 발판 즉사!", "#ff4757", 30, true);
       }
       game.spawnParticles(this.x, this.y, '#ff4757', 6, 15, -3);
       this.life = 0;
@@ -897,7 +893,7 @@ export class Boss {
     this.angle = Math.atan2(dy, dx);
     if (!player.isInvincible && distSq < (this.size + player.size) * (this.size + player.size)) {
       if (this.stageIndex === 5 && !this.dragonActive) {
-        const collisionDmg = Math.ceil(player.maxHp * 0.03);
+        const collisionDmg = Math.ceil(player.maxHp * 0.10);
         player.takeDamage(collisionDmg, game, true);
       } else {
         const collisionDmg = 22 * (this.stageIndex === 5 ? 20 : 10);

@@ -773,6 +773,11 @@ export function dealDamageToEnemy(e, dmg, proj) {
     return;
   }
 
+  if (e.isIdol && Math.random() < 0.90) {
+    this.addDamageText(e.x, e.y - e.size - 10, "Miss (편견)", "#7f8c8d", 14, false);
+    return;
+  }
+
   if (e.type === 'boss' && e.isPatternActive && e.stageIndex !== 4) {
     this.addDamageText(e.x, e.y - e.size - 10, "🛡️ 무적 (기믹 진행 중)", "#a4b0be", 14, false);
     this.spawnParticles(e.x, e.y, '#ffffff', 3, 5, -2);

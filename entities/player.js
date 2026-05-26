@@ -136,16 +136,16 @@ export class Player {
       const tier = this.skillTiers[id] || 'normal';
       const tm = tierMuls[tier] || 1.0;
       
-      if (id === 'passive_idealism_dmg') this.dmgMultiplier = 1 + lvl * 0.15 * tm;
-      if (id === 'passive_idealism_area') this.areaMultiplier = 1 + lvl * 0.15 * tm;
-      if (id === 'passive_speed') this.speed = 3.2 * (1 + lvl * 0.15 * tm);
-      if (id === 'passive_cooldown') this.cooldownReduction = lvl * 0.06 * tm;
-      if (id === 'passive_regen') this.regenHp = lvl * tm;
-      if (id === 'passive_empiricism_slow') this.slowBonus = lvl * 0.15 * tm;
-      if (id === 'passive_empiricism_xp') this.xpMultiplier = 1 + lvl * 0.15 * tm;
-      if (id === 'passive_max_hp') baseMaxHp += lvl * 25 * tm;
-      if (id === 'passive_armor') this.armorReduction = lvl * 0.20 * tm;
-      if (id === 'passive_crit_dmg') this.critMultiplier = 1 + lvl * 0.25 * tm;
+      if (id === 'passive_idealism_dmg') this.dmgMultiplier = 1 + lvl * 0.12 * tm;
+      if (id === 'passive_idealism_area') this.areaMultiplier = 1 + lvl * 0.12 * tm;
+      if (id === 'passive_speed') this.speed = 3.2 * (1 + lvl * 0.12 * tm);
+      if (id === 'passive_cooldown') this.cooldownReduction = lvl * 0.048 * tm;
+      if (id === 'passive_regen') this.regenHp = lvl * 0.8 * tm;
+      if (id === 'passive_empiricism_slow') this.slowBonus = lvl * 0.12 * tm;
+      if (id === 'passive_empiricism_xp') this.xpMultiplier = 1 + lvl * 0.12 * tm;
+      if (id === 'passive_max_hp') baseMaxHp += lvl * 20 * tm;
+      if (id === 'passive_armor') this.armorReduction = lvl * 0.16 * tm;
+      if (id === 'passive_crit_dmg') this.critMultiplier = 1 + lvl * 0.20 * tm;
     }
     
     const hpDiff = baseMaxHp - this.maxHp;

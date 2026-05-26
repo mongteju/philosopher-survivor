@@ -609,7 +609,7 @@ export function triggerEpicEvolutionUpgrade() {
 
   const available = linCards.filter(c => {
     const curLvl = this.player.activeSkills[c.id] || 0;
-    const effectiveMaxLvl = (c.type === 'weapon' && hasAwakenedWeapon) ? Math.min(c.maxLevel, 3) : c.maxLevel;
+    const effectiveMaxLvl = (c.type === 'weapon' && hasAwakenedWeapon) ? Math.min(c.maxLevel, 4) : c.maxLevel;
     return curLvl < effectiveMaxLvl;
   });
 
@@ -717,7 +717,7 @@ export function triggerLevelUp() {
 
   const available = linCards.filter(c => {
     const curLvl = this.player.activeSkills[c.id] || 0;
-    const effectiveMaxLvl = (c.type === 'weapon' && hasAwakenedWeapon) ? Math.min(c.maxLevel, 3) : c.maxLevel;
+    const effectiveMaxLvl = (c.type === 'weapon' && hasAwakenedWeapon) ? Math.min(c.maxLevel, 4) : c.maxLevel;
     return curLvl < effectiveMaxLvl;
   });
 
@@ -1131,7 +1131,7 @@ export function triggerEnding() {
         clearInterval(typingInterval);
         
         // Append CLEAR text with color and larger font size
-        typingContainer.innerHTML += ' <span style="font-size: 34px; font-weight: 900; color: #ff4757; text-shadow: 0 0 15px rgba(255, 71, 87, 0.85); display: inline-block; margin-left: 10px; vertical-align: middle; animation: ending-clear-pulse 1.2s infinite alternate;">CLEAR</span>';
+        typingContainer.innerHTML += '<br><br><span id="ending-clear-btn" style="font-size: 56px; font-weight: 900; color: #ff4757; text-shadow: 0 0 25px rgba(255, 71, 87, 0.95); display: inline-block; animation: ending-clear-pulse 1.2s infinite alternate; border: 3px solid #ff4757; padding: 8px 36px; border-radius: 12px; background: rgba(255, 71, 87, 0.15); box-shadow: 0 0 20px rgba(255, 71, 87, 0.3); margin-top: 20px; font-family: var(--font-title);">CLEAR</span>';
         
         // Stop typing loop when typing ends
         if (keyboardSound) {
@@ -1378,7 +1378,8 @@ export function endNietzscheQuiz() {
     
     // FAILURE: Take instant death damage, restore boss HP to 55%, apply blind & slow debuff
     const penaltyDmg = 999999;
-    this.player.takeDamage(penaltyDmg, this);
+    this.player.isInvincible = false;
+    this.player.takeDamage(penaltyDmg, this, true);
     
     boss.hp = boss.maxHp * 0.55;
     boss.nietzscheQuizTriggered = false; // retry

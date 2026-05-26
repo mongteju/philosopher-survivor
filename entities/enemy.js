@@ -64,7 +64,11 @@ export class Enemy {
     this.x += this.vx * dt * 0.06; this.y += this.vy * dt * 0.06;
     this.angle = Math.atan2(dy, dx);
     if (!player.isInvincible && distSq < (this.size + player.size) * (this.size + player.size)) {
-      player.takeDamage(12, window.gameInstance);
+      let dmg = 12;
+      if (this.mobType === 'golem' || this.mobType === 'steam' || this.mobType === 'machine') {
+        dmg = 36;
+      }
+      player.takeDamage(dmg, window.gameInstance);
     }
 
     // 5단계부터 일반 몹 원거리 공격 추가
@@ -79,7 +83,7 @@ export class Enemy {
         if (game && game.bossBullets) {
           const ang = Math.atan2(player.y - this.y, player.x - this.x);
           const bullet = new BossBullet(this.x, this.y, ang, 3.2, 'straight', '#ff7675');
-          bullet.dmg = 8;
+          bullet.dmg = 24;
           bullet.size = 7;
           bullet.update = function(dt, player) {
             this.time += dt;
