@@ -99,6 +99,11 @@ class Game {
     this.ctx = this.canvas.getContext('2d');
     this.resize();
     window.addEventListener('resize', () => this.resize());
+    // Also listen to visualViewport resize (mobile browser address bar hide/show)
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', () => this.resize());
+    }
+
 
     this.player = null;
     this.enemies = []; this.projectiles = []; this.particles = [];
@@ -378,9 +383,17 @@ class Game {
   }
 
   resize() {
-    this.canvas.width = window.innerWidth;
-    this.canvas.height = window.innerHeight;
+    // Use visualViewport when available (accounts for mobile browser chrome: address bar, nav bar)
+    const vv = window.visualViewport;
+    const W = vv ? vv.width : window.innerWidth;
+    const H = vv ? vv.height : window.innerHeight;
+    this.canvas.width = W;
+    this.canvas.height = H;
+    // Store camera zoom: zoom out more on narrow screens for wider view
+    const isMobile = W < 768;
+    this.cameraZoom = isMobile ? 0.72 : 1.0;
   }
+
 
   resetFocus() {
     this.keys = {};

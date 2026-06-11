@@ -46,7 +46,14 @@ body {
   font-family: var(--font-body);
   overflow: hidden;
   width: 100vw;
+  /* Use dvh (dynamic viewport height) to account for mobile browser chrome */
+  height: 100dvh;
+  /* Fallback for browsers that don't support dvh */
   height: 100vh;
+  /* The dvh overrides vh on supporting browsers */
+  @supports (height: 100dvh) {
+    height: 100dvh;
+  }
 }
 
 /* Container for the entire game */
@@ -181,10 +188,10 @@ body {
   pointer-events: none;
   background: rgba(10, 11, 16, 0.95);
   border: 1px solid var(--border-glow);
-  padding: 6px 12px;
+  padding: 4px 10px;
   border-radius: 6px;
   white-space: nowrap;
-  font-size: 11px;
+  font-size: 10px;
   color: #fff;
   transition: all 0.2s ease;
   z-index: 100;
@@ -194,6 +201,13 @@ body {
 .tracker-node:hover::after {
   opacity: 1;
   transform: translateX(-50%) scale(1);
+}
+
+/* Disable tooltips on touch devices */
+@media (pointer: coarse) {
+  .tracker-node::after {
+    display: none !important;
+  }
 }
 
 /* Experience Bar */
@@ -3233,5 +3247,126 @@ button.keyboard-selected,
   .lineage-desc {
     font-size: 13px;
     line-height: 1.4;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   MOBILE GAMEPLAY UI COMPACTION
+   ═══════════════════════════════════════════ */
+
+/* Compact levelup skill picker on mobile */
+@media (pointer: coarse), (max-width: 600px) {
+  /* Hide side panels during gameplay on small screens */
+  .side-panels-container {
+    display: none !important;
+  }
+
+  /* Compact levelup container */
+  .levelup-container {
+    padding: 16px 12px 20px;
+    border-radius: 18px;
+    max-width: 96vw;
+    width: 96vw;
+    max-height: 85dvh;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+
+  .levelup-ribbon-title {
+    font-size: 20px;
+    padding: 6px 22px;
+    margin-top: 8px;
+    margin-bottom: 4px;
+  }
+
+  .levelup-instructions {
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+
+  .card-choices-stack {
+    gap: 10px;
+    padding-top: 6px;
+    margin-bottom: 6px;
+  }
+
+  /* Compact choice cards */
+  .choice-card-horizontal {
+    padding: 10px 12px;
+    gap: 10px;
+    border-radius: 12px;
+  }
+
+  .card-skill-icon {
+    font-size: 28px !important;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+  }
+
+  .card-skill-name {
+    font-size: 14px !important;
+  }
+
+  .card-skill-desc {
+    font-size: 12px !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  .stat-compare {
+    display: none !important;
+  }
+
+  .rarity-bonus-pill {
+    font-size: 10px !important;
+    padding: 2px 6px !important;
+  }
+
+  /* Boss HP bar closer to top */
+  #boss-hp-container {
+    top: 70px !important;
+    width: 85vw !important;
+  }
+
+  /* Compact HUD on mobile */
+  .hud-top-row {
+    padding: 4px 8px !important;
+    gap: 4px !important;
+  }
+
+  #hud-stage {
+    font-size: 12px !important;
+  }
+
+  #hud-timer {
+    font-size: 18px !important;
+  }
+
+  .level-badge {
+    font-size: 11px !important;
+    padding: 3px 8px !important;
+  }
+
+  /* Learned skills popup on mobile */
+  .learned-skills-btn {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+}
+
+/* Very small phones (under 380px) */
+@media (max-width: 380px) {
+  .levelup-container {
+    padding: 12px 8px 16px;
+    max-height: 88dvh;
+    max-height: 88vh;
+  }
+
+  .card-skill-name {
+    font-size: 13px !important;
+  }
+
+  .choice-card-horizontal {
+    padding: 8px 10px;
   }
 }

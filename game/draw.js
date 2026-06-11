@@ -6,11 +6,21 @@ export function gameDraw() {
   const camX = this.camera.x, camY = this.camera.y;
   const W = this.canvas.width, H = this.canvas.height;
 
+  // Apply camera zoom (zoom out on mobile for wider view)
+  const zoom = this.cameraZoom || 1.0;
+
   ctx.save();
+  if (zoom !== 1.0) {
+    // Scale from center so the player stays centered
+    ctx.translate(W / 2, H / 2);
+    ctx.scale(zoom, zoom);
+    ctx.translate(-W / 2, -H / 2);
+  }
   if (this.screenShake > 0) {
     ctx.translate((Math.random() - 0.5) * this.screenShake, (Math.random() - 0.5) * this.screenShake);
     this.screenShake *= 0.8; if (this.screenShake < 0.5) this.screenShake = 0;
   }
+
 
   // No high-cost CPU/GPU canvas filters are applied to prevent frame-rate drops (lag).
   // Instead, Stage 6 uses performant dark desaturated colors by design to create the modern nihilistic atmosphere.

@@ -676,13 +676,9 @@ export function gameEvents() {
   const container = document.getElementById('game-container');
   container.addEventListener('touchstart', e => {
     if (!this.isPlaying) return;
+    // Ignore taps on UI overlay buttons (pause btn etc.)
+    if (e.target && (e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.closest('.overlay-screen.active'))) return;
     const touch = e.touches[0];
-    
-    // 모바일 조이스틱은 화면의 왼쪽 영역(55% 이하) 터치 시에만 발동되도록 제한
-    // 이를 통해 우측 영역의 UI 버튼이나 카드 등을 자유롭게 터치 선택할 수 있도록 함
-    if (touch.clientX > window.innerWidth * 0.55) {
-      return;
-    }
     
     this.joystick.active = true; this.joystick.startX = touch.clientX; this.joystick.startY = touch.clientY;
     const jz = document.getElementById('joystick-zone');
