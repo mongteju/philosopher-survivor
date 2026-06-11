@@ -296,6 +296,27 @@ export function gameUpdate(dt) {
   // Update enemies (boss first)
   this.enemies.forEach(e => {
     if (e.iceRingDmgTimer > 0) e.iceRingDmgTimer -= dt;
+    if (e.iceRingDmgTimers) {
+      for (const key in e.iceRingDmgTimers) {
+        if (e.iceRingDmgTimers[key] > 0) {
+          e.iceRingDmgTimers[key] -= dt;
+        }
+      }
+    }
+    if (e.earthBarrierDmgTimers) {
+      for (const key in e.earthBarrierDmgTimers) {
+        if (e.earthBarrierDmgTimers[key] > 0) {
+          e.earthBarrierDmgTimers[key] -= dt;
+        }
+      }
+    }
+    if (e.metalBeadsDmgTimers) {
+      for (const key in e.metalBeadsDmgTimers) {
+        if (e.metalBeadsDmgTimers[key] > 0) {
+          e.metalBeadsDmgTimers[key] -= dt;
+        }
+      }
+    }
     if (e.type === 'boss' && e.iceFloorDmgTimer > 0) e.iceFloorDmgTimer -= dt;
     
     if (e.type === 'boss') e.update(dt, this.player, this);
@@ -312,6 +333,12 @@ export function gameUpdate(dt) {
   // Projectiles
   this.projectiles.forEach(p => p.update(dt, this));
   this.projectiles = this.projectiles.filter(p => p.life > 0);
+
+  // Lightning strikes ticking
+  if (this.lightningStrikes) {
+    this.lightningStrikes.forEach(s => s.life -= dt);
+    this.lightningStrikes = this.lightningStrikes.filter(s => s.life > 0);
+  }
 
   // Particles / damage texts
   this.particles.forEach(p => p.update(dt));
@@ -464,27 +491,149 @@ export function gameUpdate(dt) {
       const dmg = (stats.dmg || 30) * dmgM;
 
       this.enemies.forEach(e => {
-        if (e.hp > 0 && (!e.iceRingDmgTimer || e.iceRingDmgTimer <= 0)) {
-          let hit = false;
+        if (e.hp > 0) {
+          if (!e.iceRingDmgTimers) {
+            e.iceRingDmgTimers = {};
+          }
           const checkLimit = 20 + e.size;
           const checkLimitSq = checkLimit * checkLimit;
           for (let i = 0; i < count; i++) {
+            // Check cooldown for this specific rotating crystal
+            if (e.iceRingDmgTimers[i] > 0) continue;
+
             const angle = this.orbitAngle + (Math.PI * 2 / count) * i;
             const ox = px + Math.cos(angle) * radius;
             const oy = py + Math.sin(angle) * radius;
             const dx = e.x - ox, dy = e.y - oy;
             if (dx * dx + dy * dy < checkLimitSq) {
-              hit = true;
-              break;
+              this.dealDamageToEnemy(e, dmg);
+              e.iceRingDmgTimers[i] = 300; // 0.3초당 1회 타격 per crystal
             }
-          }
-          if (hit) {
-            this.dealDamageToEnemy(e, dmg);
-            e.iceRingDmgTimer = 300; // 0.3초당 1회 타격
           }
         }
       });
     }
+  }
+
+  // 해탈의 금강막 (Earth Barrier) - 매 프레임 충돌 검사 및 개별 쿨다운/넉백 적용
+  const earthBarrierData = PHILOSOPHY_DB[this.player.lineage].find(c => c.id === 'earth_barrier');
+  if (earthBarrierData) {
+    const lvl = this.player.activeSkills['earth_barrier'] || 0;
+    if (lvl > 0) {
+      const stats = earthBarrierData.stats[lvl - 1];
+      const count = stats.count || 2;
+      
+      const skillTier = this.player.skillTiers['earth_barrier'] || 'normal';
+      const tierMuls = { normal: 1.0, rare: 1.25, unique: 1.55, epic: 1.9 };
+      const tierMul = tierMuls[skillTier] || 1.0;
+      const sizeM = this.player.areaMultiplier * (1 + (tierMul - 1) * 0.5);
+      const dmgM = this.player.dmgMultiplier * tierMul * (1 + (this.player.auraDamageBonus || 0));
+
+      const radius = (stats.radius || 70) * sizeM;
+      const dmg = (stats.dmg || 30) * dmgM;
+      const rockOrbitAngle = -this.orbitAngle * 0.7;
+
+      this.enemies.forEach(e => {
+        if (e.hp > 0) {
+          if (!e.earthBarrierDmgTimers) {
+            e.earthBarrierDmgTimers = {};
+          }
+          const checkLimit = 20 + e.size;
+          const checkLimitSq = checkLimit * checkLimit;
+          for (let i = 0; i < count; i++) {
+            // Check cooldown for this specific rock
+            if (e.earthBarrierDmgTimers[i] > 0) continue;
+
+            const angle = rockOrbitAngle + (Math.PI * 2 / count) * i;
+            const ox = px + Math.cos(angle) * radius;
+            const oy = py + Math.sin(angle) * radius;
+            const dx = e.x - ox, dy = e.y - oy;
+            if (dx * dx + dy * dy < checkLimitSq) {
+              this.dealDamageToEnemy(e, dmg);
+              e.earthBarrierDmgTimers[i] = 400; // 0.4s cooldown per rock
+              
+              // Knockback
+              if (e.type !== 'boss') {
+                const kbAngle = Math.atan2(e.y - py, e.x - px);
+                const kbDist = 12;
+                e.x += Math.cos(kbAngle) * kbDist;
+                e.y += Math.sin(kbAngle) * kbDist;
+              }
+            }
+          }
+        }
+      });
+    }
+  }
+
+  // 번뇌의 염주 (Metal Beads) - 매 프레임 충돌 검사 및 폭발 타격
+  const metalBeadsData = PHILOSOPHY_DB[this.player.lineage]?.find(c => c.id === 'metal_beads');
+  if (metalBeadsData) {
+    const lvl = this.player.activeSkills['metal_beads'] || 0;
+    if (lvl > 0) {
+      const stats = metalBeadsData.stats[lvl - 1];
+      const count = stats.count || 4;
+      
+      const skillTier = this.player.skillTiers['metal_beads'] || 'normal';
+      const tierMuls = { normal: 1.0, rare: 1.25, unique: 1.55, epic: 1.9 };
+      const tierMul = tierMuls[skillTier] || 1.0;
+      const sizeM = this.player.areaMultiplier * (1 + (tierMul - 1) * 0.5);
+      const dmgM = this.player.dmgMultiplier * tierMul * (1 + (this.player.auraDamageBonus || 0));
+
+      const radius = (100 + lvl * 10) * sizeM;
+      const dmg = (stats.dmg || 30) * dmgM;
+      const beadOrbitAngle = this.orbitAngle * 1.2;
+
+      this.enemies.forEach(e => {
+        if (e.hp > 0) {
+          if (!e.metalBeadsDmgTimers) {
+            e.metalBeadsDmgTimers = {};
+          }
+          const checkLimit = 24 + e.size;
+          const checkLimitSq = checkLimit * checkLimit;
+          for (let i = 0; i < count; i++) {
+            if (e.metalBeadsDmgTimers[i] > 0) continue;
+
+            const angle = beadOrbitAngle + (Math.PI * 2 / count) * i;
+            const ox = px + Math.cos(angle) * radius;
+            const oy = py + Math.sin(angle) * radius;
+            const dx = e.x - ox, dy = e.y - oy;
+            if (dx * dx + dy * dy < checkLimitSq) {
+              this.dealDamageToEnemy(e, dmg);
+              this.spawnParticles(ox, oy, '#e67e22', 4, 6, -3); // 염주 알 마찰 불꽃
+              e.metalBeadsDmgTimers[i] = 300; // 0.3s cooldown per bead
+            }
+          }
+        }
+      });
+    }
+  }
+
+  // 상선약수의 흐름 (Wind Shield) 매 프레임 업데이트
+  if (this.windShieldActiveTimer && this.windShieldActiveTimer > 0) {
+    this.windShieldActiveTimer -= dt;
+    const sizeM = this.player.areaMultiplier;
+    const dmgM = this.player.dmgMultiplier * (1 + (this.player.auraDamageBonus || 0));
+    const radius = (this.windShieldRadius || 80) * sizeM;
+    const radiusSq = radius * radius;
+    const dmg = (this.windShieldDmg || 15) * dmgM * (dt / 1000);
+    
+    this.enemies.forEach(e => {
+      if (e.hp > 0) {
+        const dx = e.x - px, dy = e.y - py;
+        const distSq = dx * dx + dy * dy;
+        if (distSq < radiusSq) {
+          this.dealDamageToEnemy(e, Math.max(1, Math.floor(dmg)));
+          
+          // 넉백 (보스 제외)
+          if (e.type !== 'boss') {
+            const kbAngle = Math.atan2(e.y - py, e.x - px);
+            e.x += Math.cos(kbAngle) * 2.5 * (dt / 16.666);
+            e.y += Math.sin(kbAngle) * 2.5 * (dt / 16.666);
+          }
+        }
+      }
+    });
   }
 
   // Weapon triggers
@@ -709,6 +858,219 @@ export function fireWeapon(id, lvl, stats, awakening) {
   if (id === 'ice_ring') {
     // Handled dynamically every frame in gameUpdate
   }
+
+  if (id === 'lightning_strike') {
+    const count = (stats.count || 1) * (awakening ? 2 : 1);
+    const dmg = (stats.dmg || 45) * dmgM;
+    const targets = this.enemies.filter(e => e.hp > 0).sort(() => Math.random() - 0.5).slice(0, count);
+    if (!this.lightningStrikes) this.lightningStrikes = [];
+    targets.forEach((target, i) => {
+      setTimeout(() => {
+        if (target.hp <= 0) return;
+        this.dealDamageToEnemy(target, dmg);
+        this.spawnParticles(target.x, target.y, '#ffd200', 8, 8, -4);
+        this.spawnParticles(target.x, target.y, '#54a0ff', 4, 6, -3);
+        this.lightningStrikes.push({
+          x: target.x,
+          y: target.y,
+          life: 200,
+          maxLife: 200
+        });
+      }, i * 120);
+    });
+    sfx.playExplosion();
+  }
+
+  if (id === 'lightning_sword') {
+    const target = this.getNearestEnemy();
+    const tx = target ? target.x : this.player.x + Math.cos(this.player.faceAngle) * 300;
+    const ty = target ? target.y : this.player.y + Math.sin(this.player.faceAngle) * 300;
+    const sz = (stats.size || 45) * sizeM * 0.5;
+    const dmg = (stats.dmg || 35) * dmgM;
+    const p = new Projectile(this.player.x, this.player.y, tx, ty, (stats.speed || 9) * (1 + (this.player.auraProjSpeedBonus || 0)), sz, dmg, '#ffd200', 'lightning_sword');
+    p.pierceLeft = awakening ? 999 : 5;
+    this.projectiles.push(p);
+    if (typeof sfx !== 'undefined' && sfx.playLightningAlert) sfx.playLightningAlert();
+  }
+
+  if (id === 'lightning_beam') {
+    const count = (stats.count || 4) * (awakening ? 1.5 : 1);
+    const dmg = (stats.dmg || 25) * dmgM;
+    const px = this.player.x, py = this.player.y;
+    if (!this.lightningBeams) this.lightningBeams = [];
+    const beamLength = 400 * sizeM;
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 / count) * i + (Math.random() - 0.5) * 0.15;
+      const beamX = px + Math.cos(angle) * beamLength;
+      const beamY = py + Math.sin(angle) * beamLength;
+      this.lightningBeams.push({
+        sx: px, sy: py, ex: beamX, ey: beamY,
+        life: 250, maxLife: 250, color: '#ffd200'
+      });
+      this.enemies.forEach(e => {
+        if (e.hp > 0) {
+          const x0 = e.x, y0 = e.y;
+          const A = x0 - px, B = y0 - py;
+          const C = beamX - px, D = beamY - py;
+          const dot = A * C + B * D;
+          const lenSq = C * C + D * D;
+          let param = -1;
+          if (lenSq !== 0) param = dot / lenSq;
+          let xx, yy;
+          if (param < 0) { xx = px; yy = py; }
+          else if (param > 1) { xx = beamX; yy = beamY; }
+          else { xx = px + param * C; yy = py + param * D; }
+          const dx = x0 - xx, dy = y0 - yy;
+          if (dx * dx + dy * dy < (e.size + 15) * (e.size + 15)) {
+            this.dealDamageToEnemy(e, dmg);
+            this.spawnParticles(e.x, e.y, '#ffd200', 3, 5, -2);
+          }
+        }
+      });
+    }
+    if (typeof sfx !== 'undefined' && sfx.playLightningAlert) sfx.playLightningAlert();
+  }
+
+  if (id === 'lightning_orb') {
+    const sz = (stats.size || 30) * sizeM * 0.5;
+    const dmg = (stats.dmg || 50) * dmgM;
+    const target = this.getNearestEnemy();
+    const tx = target ? target.x : this.player.x + (Math.random() - 0.5) * 200;
+    const ty = target ? target.y : this.player.y + (Math.random() - 0.5) * 200;
+    const p = new Projectile(this.player.x, this.player.y, tx, ty, 4.5 * (1 + (this.player.auraProjSpeedBonus || 0)), sz, dmg, '#c56cf0', 'lightning_orb');
+    p.life = 4000;
+    p.homing = true;
+    this.projectiles.push(p);
+    if (typeof sfx !== 'undefined' && sfx.playLightningAlert) sfx.playLightningAlert();
+  }
+
+  if (id === 'wind_vortex') {
+    const target = this.getNearestEnemy();
+    const tx = target ? target.x : this.player.x + Math.cos(this.player.faceAngle) * 300;
+    const ty = target ? target.y : this.player.y + Math.sin(this.player.faceAngle) * 300;
+    const sz = (stats.size || 50) * sizeM;
+    const dmg = (stats.dmg || 20) * dmgM;
+    const p = new Projectile(this.player.x, this.player.y, tx, ty, (stats.speed || 7) * (1 + (this.player.auraProjSpeedBonus || 0)), sz, dmg, '#54a0ff', 'wind_vortex');
+    p.pierceLeft = 999;
+    this.projectiles.push(p);
+    sfx.playFreeze();
+  }
+
+  if (id === 'wind_blade') {
+    const count = (stats.count || 2) * (awakening ? 2 : 1);
+    const dmg = (stats.dmg || 30) * dmgM;
+    const spd = (stats.speed || 10) * (1 + (this.player.auraProjSpeedBonus || 0));
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 / count) * i + (Math.random() - 0.5) * 0.2;
+      const tx = this.player.x + Math.cos(angle) * 300;
+      const ty = this.player.y + Math.sin(angle) * 300;
+      const p = new Projectile(this.player.x, this.player.y, tx, ty, spd, (25 + lvl * 4) * sizeM * 0.5, dmg, '#55efc4', 'wind_blade');
+      p.pierceLeft = 3;
+      this.projectiles.push(p);
+    }
+    sfx.playFreeze();
+  }
+
+  if (id === 'wind_shield') {
+    this.windShieldActiveTimer = stats.duration || 2500;
+    this.windShieldRadius = stats.radius || 80;
+    this.windShieldDmg = stats.dmg || 15;
+    this.spawnParticles(this.player.x, this.player.y, '#2ed573', 12, 8, -2);
+    sfx.playFreeze();
+  }
+
+  if (id === 'taeguk_aura') {
+    const radius = (stats.radius || 110) * sizeM;
+    const radiusSq = radius * radius;
+    const dmg = (stats.dmg || 25) * dmgM;
+    const px = this.player.x, py = this.player.y;
+    if (!this.taegukElementIndex) this.taegukElementIndex = 0;
+    this.taegukElementIndex = (this.taegukElementIndex + 1) % 3;
+    const elements = ['lightning', 'wind', 'earth'];
+    const curElem = elements[this.taegukElementIndex];
+    this.enemies.forEach(e => {
+      if (e.hp > 0) {
+        const dx = e.x - px, dy = e.y - py;
+        if (dx * dx + dy * dy < radiusSq) {
+          this.dealDamageToEnemy(e, dmg);
+          if (curElem === 'lightning') {
+            this.spawnParticles(e.x, e.y, '#ffd200', 3, 5, -2);
+            e.slowMul = 0.3; e.slowTimer = 800;
+          } else if (curElem === 'wind') {
+            this.spawnParticles(e.x, e.y, '#54a0ff', 3, 5, -2);
+            if (e.type !== 'boss') {
+              const ang = Math.atan2(e.y - py, e.x - px);
+              e.x += Math.cos(ang) * 15;
+              e.y += Math.sin(ang) * 15;
+            }
+          } else {
+            this.spawnParticles(e.x, e.y, '#7f8c8d', 3, 5, -2);
+            e.slowMul = 0.5; e.slowTimer = 2000;
+          }
+        }
+      }
+    });
+  }
+
+  if (id === 'earth_quake') {
+    const radius = (stats.radius || 90) * sizeM;
+    const radiusSq = radius * radius;
+    const dmg = (stats.dmg || 40) * dmgM;
+    const slow = stats.slow || 0.4;
+    const targets = this.enemies.filter(e => e.hp > 0).sort(() => Math.random() - 0.5).slice(0, 3);
+    if (!this.earthQuakes) this.earthQuakes = [];
+    targets.forEach((target, idx) => {
+      setTimeout(() => {
+        if (target.hp <= 0) return;
+        this.enemies.forEach(e => {
+          if (e.hp > 0) {
+            const dx = e.x - target.x, dy = e.y - target.y;
+            if (dx * dx + dy * dy < radiusSq) {
+              this.dealDamageToEnemy(e, dmg);
+              e.slowMul = 1 - slow;
+              e.slowTimer = 2500;
+              this.spawnParticles(e.x, e.y, '#7f8c8d', 4, 6, -3);
+            }
+          }
+        });
+        this.earthQuakes.push({
+          x: target.x, y: target.y, radius: radius,
+          life: 400, maxLife: 400
+        });
+      }, idx * 150);
+    });
+    sfx.playExplosion();
+  }
+
+  if (id === 'buddha_hand') {
+    const target = this.getNearestEnemy();
+    const tx = target ? target.x : this.player.x + Math.cos(this.player.faceAngle) * 200;
+    const ty = target ? target.y : this.player.y + Math.sin(this.player.faceAngle) * 200;
+    const sz = (stats.size || 100) * sizeM;
+    const szSq = sz * sz;
+    const dmg = (stats.dmg || 100) * dmgM;
+    if (!this.buddhaHands) this.buddhaHands = [];
+    this.buddhaHands.push({ x: tx, y: ty, size: sz, life: 600, maxLife: 600 });
+    setTimeout(() => {
+      this.enemies.forEach(e => {
+        if (e.hp > 0) {
+          const dx = e.x - tx, dy = e.y - ty;
+          if (dx * dx + dy * dy < szSq) {
+            this.dealDamageToEnemy(e, dmg);
+            if (e.type !== 'boss') {
+              const kbAngle = Math.atan2(e.y - ty, e.x - tx);
+              e.x += Math.cos(kbAngle) * 35;
+              e.y += Math.sin(kbAngle) * 35;
+              e.slowMul = 0.2; e.slowTimer = 1500;
+            }
+          }
+        }
+      });
+      this.spawnParticles(tx, ty, '#ffd200', 16, 12, -5);
+      this.spawnParticles(tx, ty, '#ff9f43', 10, 10, -4);
+    }, 450);
+    if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
+  }
 }
 
 export function handleCombatCollisions() {
@@ -755,6 +1117,13 @@ export function handleCombatCollisions() {
           }
           this.spawnParticles(px, py, '#ff4757', 10, 10, -3);
           proj.life = 0;
+        } else if (proj.type === 'wind_vortex') {
+          // pull enemies slightly towards wind center
+          if (e.type !== 'boss') {
+            const pullAngle = Math.atan2(py - e.y, px - e.x);
+            e.x += Math.cos(pullAngle) * 1.6;
+            e.y += Math.sin(pullAngle) * 1.6;
+          }
         } else if (proj.type !== 'fire_sword' && proj.type !== 'ice_pierce') {
           proj.life = 0;
         } else {

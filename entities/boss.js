@@ -91,9 +91,14 @@ export class BossBullet {
     const ry = this.y - camera.y + ctx.canvas.height / 2;
     ctx.save();
     
-    // Apply a harsh shadow/glow specific to boss projectiles
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = this.color;
+    // Apply a harsh shadow/glow specific to boss projectiles (Disable for Stage 1 Sophist to prevent rendering lag)
+    if (this.stageIndex === 0) {
+      ctx.shadowBlur = 0;
+      ctx.shadowColor = 'transparent';
+    } else {
+      ctx.shadowBlur = 15;
+      ctx.shadowColor = this.color;
+    }
 
     if (this.type === 'spiral') {
       // Distinct Boss Spiral: A dark, pulsating saw-blade instead of flower petals
@@ -380,7 +385,7 @@ export class Boss {
   constructor(x, y, playerLevel, name, stageIndex) {
     this.x = x; this.y = y; this.type = 'boss'; this.isIdol = false;
     this.name = name; this.stageIndex = stageIndex;
-    const baseHps = [1500, 5000, 40000, 120000, 360000, 630000];
+    const baseHps = [1500, 10000, 40000, 120000, 360000, 630000];
     this.maxHp = (baseHps[stageIndex] || 5000) * (1 + (playerLevel - 1) * 0.1);
     this.hp = this.maxHp; this.size = 38; this.speed = (stageIndex === 3 || stageIndex === 4) ? 2.4 : 1.2;
     this.color = '#e84393'; this.xpVal = 50;

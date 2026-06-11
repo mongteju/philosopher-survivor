@@ -511,6 +511,225 @@ export function gameDraw() {
     }
   }
 
+  // 해탈의 금강막 (Earth Barrier)
+  const earthBarrierData = PHILOSOPHY_DB[this.player.lineage].find(c => c.id === 'earth_barrier');
+  if (earthBarrierData) {
+    const lvl = this.player.activeSkills['earth_barrier'] || 0;
+    if (lvl > 0) {
+      const stats = earthBarrierData.stats[lvl - 1];
+      const count = stats.count || 2;
+      const skillTier = this.player.skillTiers['earth_barrier'] || 'normal';
+      const tierMuls = { normal: 1.0, rare: 1.25, unique: 1.55, epic: 1.9 };
+      const tierMul = tierMuls[skillTier] || 1.0;
+      const sizeM = this.player.areaMultiplier * (1 + (tierMul - 1) * 0.5);
+      const radius = (stats.radius || 70) * sizeM;
+      const rockOrbitAngle = -this.orbitAngle * 0.7;
+      const prx = W / 2, pry = H / 2;
+
+      for (let i = 0; i < count; i++) {
+        const angle = rockOrbitAngle + (Math.PI * 2 / count) * i;
+        const ox = prx + Math.cos(angle) * radius;
+        const oy = pry + Math.sin(angle) * radius;
+
+        ctx.save();
+        ctx.translate(ox, oy);
+        ctx.rotate(angle + Date.now() * 0.003); // spin individual rocks
+
+        // Draw rock shape: jagged polygon or a shield-like stone structure
+        ctx.fillStyle = '#7f8c8d'; // grey rock
+        ctx.strokeStyle = '#ffd700'; // gold accent/runes
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+        // Draw a jagged stone/shield polygon
+        ctx.moveTo(-10, -14);
+        ctx.lineTo(10, -14);
+        ctx.lineTo(14, 0);
+        ctx.lineTo(10, 14);
+        ctx.lineTo(-10, 14);
+        ctx.lineTo(-14, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Draw a glowing gold center or rune symbol
+        ctx.fillStyle = '#ffd700';
+        ctx.beginPath();
+        ctx.arc(0, 0, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+      }
+    }
+  }
+
+  // 번뇌의 염주 (Metal Beads) 공전 그리기
+  const metalBeadsData = PHILOSOPHY_DB[this.player.lineage]?.find(c => c.id === 'metal_beads');
+  if (metalBeadsData) {
+    const lvl = this.player.activeSkills['metal_beads'] || 0;
+    if (lvl > 0) {
+      const stats = metalBeadsData.stats[lvl - 1];
+      const count = stats.count || 4;
+      const radius = (100 + lvl * 10) * this.player.areaMultiplier;
+      const beadOrbitAngle = this.orbitAngle * 1.2;
+      const prx = W / 2, pry = H / 2;
+
+      for (let i = 0; i < count; i++) {
+        const angle = beadOrbitAngle + (Math.PI * 2 / count) * i;
+        const ox = prx + Math.cos(angle) * radius;
+        const oy = pry + Math.sin(angle) * radius;
+
+        ctx.save();
+        ctx.translate(ox, oy);
+        ctx.rotate(angle + Date.now() * 0.002);
+        
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#e67e22';
+
+        const grad = ctx.createRadialGradient(-3, -3, 0, 0, 0, 9);
+        grad.addColorStop(0, '#ffd200');
+        grad.addColorStop(0.5, '#e67e22');
+        grad.addColorStop(1, '#5d4037');
+        
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(0, 0, 9, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 9px Share Tech Mono, monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('卍', 0, 0.5);
+
+        ctx.restore();
+      }
+    }
+  }
+
+  // 상선약수의 흐름 (Wind Shield) 그리기
+  if (this.windShieldActiveTimer && this.windShieldActiveTimer > 0) {
+    const prx = W / 2, pry = H / 2;
+    const radius = (this.windShieldRadius || 80) * this.player.areaMultiplier;
+    
+    ctx.save();
+    ctx.strokeStyle = 'rgba(85, 239, 196, 0.45)';
+    ctx.lineWidth = 6;
+    ctx.shadowColor = '#2ed573';
+    ctx.shadowBlur = 10;
+    
+    const time = performance.now();
+    ctx.beginPath();
+    ctx.arc(prx, pry, radius, time * 0.003, time * 0.003 + Math.PI * 1.5);
+    ctx.stroke();
+    
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(prx, pry, radius - 4, -time * 0.005, -time * 0.005 + Math.PI);
+    ctx.stroke();
+    
+    ctx.restore();
+  }
+
+  // 예의 광조 레이저 빔 그리기
+  if (this.lightningBeams && this.lightningBeams.length > 0) {
+    this.lightningBeams.forEach(b => {
+      const rsx = b.sx - camX + W / 2;
+      const rsy = b.sy - camY + H / 2;
+      const rex = b.ex - camX + W / 2;
+      const rey = b.ey - camY + H / 2;
+      const pct = b.life / b.maxLife;
+      
+      ctx.save();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 6 * pct;
+      ctx.shadowColor = '#ffd200';
+      ctx.shadowBlur = 15;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(rsx, rsy);
+      ctx.lineTo(rex, rey);
+      ctx.stroke();
+      
+      ctx.strokeStyle = '#ffd200';
+      ctx.lineWidth = 2 * pct;
+      ctx.stroke();
+      ctx.restore();
+    });
+    this.lightningBeams.forEach(b => b.life -= 16.66);
+    this.lightningBeams = this.lightningBeams.filter(b => b.life > 0);
+  }
+
+  // 자비의 지진 땅 균열 그리기
+  if (this.earthQuakes && this.earthQuakes.length > 0) {
+    this.earthQuakes.forEach(eq => {
+      const rx = eq.x - camX + W / 2;
+      const ry = eq.y - camY + H / 2;
+      const pct = eq.life / eq.maxLife;
+      
+      ctx.save();
+      ctx.strokeStyle = 'rgba(127, 140, 141, ' + pct + ')';
+      ctx.lineWidth = 3;
+      ctx.shadowColor = '#7f8c8d';
+      ctx.shadowBlur = 8;
+      
+      ctx.beginPath();
+      for (let i = 0; i < 8; i++) {
+        const a = (Math.PI * 2 / 8) * i + Math.sin(i * 99) * 0.2;
+        const rad = eq.radius * (0.4 + Math.random() * 0.6) * (1 - pct);
+        ctx.moveTo(rx, ry);
+        ctx.lineTo(rx + Math.cos(a) * rad, ry + Math.sin(a) * rad);
+      }
+      ctx.stroke();
+      ctx.restore();
+    });
+    this.earthQuakes.forEach(eq => eq.life -= 16.66);
+    this.earthQuakes = this.earthQuakes.filter(eq => eq.life > 0);
+  }
+
+  // 무량광의 장막 황금 부처 손바닥 그리기
+  if (this.buddhaHands && this.buddhaHands.length > 0) {
+    this.buddhaHands.forEach(bh => {
+      const rx = bh.x - camX + W / 2;
+      const ry = bh.y - camY + H / 2;
+      const pct = bh.life / bh.maxLife;
+      const scale = 1.0 + pct * 2.0;
+      const alpha = 1.0 - pct;
+      
+      ctx.save();
+      ctx.translate(rx, ry);
+      ctx.scale(scale, scale);
+      ctx.globalAlpha = alpha;
+      ctx.shadowColor = '#ffd200';
+      ctx.shadowBlur = 25;
+      
+      ctx.fillStyle = 'rgba(255, 210, 0, 0.4)';
+      ctx.strokeStyle = '#ffd200';
+      ctx.lineWidth = 2.5;
+      
+      ctx.beginPath();
+      ctx.roundRect(-20, -10, 40, 36, 12);
+      ctx.roundRect(-30, 4, 8, 16, 4);
+      ctx.roundRect(-18, -26, 7, 24, 3.5);
+      ctx.roundRect(-6, -32, 7.5, 28, 3.5);
+      ctx.roundRect(5, -28, 7, 25, 3.5);
+      ctx.roundRect(16, -18, 6.5, 18, 3.5);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 16px Noto Sans KR';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('卍', 0, 8);
+      ctx.restore();
+    });
+    this.buddhaHands.forEach(bh => bh.life -= 16.66);
+    this.buddhaHands = this.buddhaHands.filter(bh => bh.life > 0);
+  }
+
   // Enemies
   this.enemies.forEach(e => e.draw(ctx, this.camera));
 
@@ -522,6 +741,56 @@ export function gameDraw() {
 
   // Particles
   this.particles.forEach(p => p.draw(ctx, this.camera));
+
+  // Draw lightning strikes
+  if (this.lightningStrikes && this.lightningStrikes.length > 0) {
+    this.lightningStrikes.forEach(s => {
+      const rx = s.x - camX + W / 2;
+      const ry = s.y - camY + H / 2;
+      
+      // Draw jagged dual-core lightning from above to the target
+      drawLightning(ctx, rx + (Math.sin(s.life) * 40), ry - 600, rx, ry, 10, 20);
+      
+      // Draw discharge aura at impact point
+      ctx.save();
+      ctx.fillStyle = 'rgba(255, 210, 0, 0.35)';
+      ctx.shadowColor = '#ffd200';
+      ctx.shadowBlur = 15;
+      ctx.beginPath();
+      ctx.arc(rx, ry, 30 * (s.life / s.maxLife), 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    });
+  }
+
+  // 태극의 조화 (Taeguk Aura) under the player's feet
+  const taegukData = PHILOSOPHY_DB[this.player.lineage]?.find(c => c.id === 'taeguk_aura');
+  if (taegukData) {
+    const lvl = this.player.activeSkills['taeguk_aura'] || 0;
+    if (lvl > 0) {
+      const stats = taegukData.stats[lvl - 1];
+      const skillTier = this.player.skillTiers['taeguk_aura'] || 'normal';
+      const tierMuls = { normal: 1.0, rare: 1.25, unique: 1.55, epic: 1.9 };
+      const tierMul = tierMuls[skillTier] || 1.0;
+      const sizeM = (lvl >= taegukData.maxLevel ? 1.1 : 1.0) * this.player.areaMultiplier * (1 + (tierMul - 1) * 0.5);
+      const radius = (stats.radius || 110) * sizeM;
+      
+      const prx = W / 2, pry = H / 2;
+      const pulse = 1 + Math.sin(Date.now() * 0.005) * 0.05; // gentle pulse
+      const angle = (Date.now() * 0.0008) % (Math.PI * 2); // slow rotation
+      
+      ctx.save();
+      // Draw a larger faint background aura pulse
+      ctx.fillStyle = 'rgba(255, 210, 0, 0.03)';
+      ctx.beginPath();
+      ctx.arc(prx, pry, radius * pulse, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Draw standard Taeguk
+      drawTaeguk(ctx, prx, pry, radius * 0.7 * pulse, angle);
+      ctx.restore();
+    }
+  }
 
   // Player
   this.player.draw(ctx, this.camera);
@@ -638,3 +907,137 @@ export function drawStageBackground(camX, camY, W, H) {
   }
   ctx.restore();
 }
+
+function drawTaeguk(ctx, x, y, r, angle) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+
+  // Draw outer circle with gold glow
+  ctx.strokeStyle = 'rgba(255, 210, 0, 0.8)';
+  ctx.lineWidth = 3;
+  ctx.shadowColor = '#ffd200';
+  ctx.shadowBlur = 10;
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.shadowBlur = 0; // reset shadow
+
+  // Fill red (yang - top/right) and blue (yin - bottom/left)
+  ctx.fillStyle = 'rgba(235, 77, 75, 0.25)'; // semi-transparent red
+  ctx.beginPath();
+  ctx.arc(0, 0, r, -Math.PI / 2, Math.PI / 2);
+  ctx.fill();
+
+  ctx.fillStyle = 'rgba(72, 144, 226, 0.25)'; // semi-transparent blue
+  ctx.beginPath();
+  ctx.arc(0, 0, r, Math.PI / 2, -Math.PI / 2);
+  ctx.fill();
+
+  // Draw the two smaller interlocking half circles
+  ctx.fillStyle = 'rgba(235, 77, 75, 0.25)';
+  ctx.beginPath();
+  ctx.arc(0, -r / 2, r / 2, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = 'rgba(72, 144, 226, 0.25)';
+  ctx.beginPath();
+  ctx.arc(0, r / 2, r / 2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Draw the two small dots
+  ctx.fillStyle = '#4890e2'; // blue dot on red side
+  ctx.beginPath();
+  ctx.arc(0, -r / 2, r / 6, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#eb4d4b'; // red dot on blue side
+  ctx.beginPath();
+  ctx.arc(0, r / 2, r / 6, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Draw Trigrams (Geon, Gon, Gam, Ri) around the circle
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+  ctx.lineWidth = 2.5;
+  const trigramRadius = r * 1.25;
+
+  const trigrams = [
+    { name: 'geon', angle: -Math.PI / 4 * 3, lines: [true, true, true] },      // top-left
+    { name: 'ri', angle: -Math.PI / 4, lines: [true, false, true] },         // top-right
+    { name: 'gam', angle: Math.PI / 4, lines: [false, true, false] },         // bottom-right
+    { name: 'gon', angle: Math.PI / 4 * 3, lines: [false, false, false] }     // bottom-left
+  ];
+
+  trigrams.forEach(t => {
+    ctx.save();
+    ctx.rotate(t.angle);
+    ctx.translate(0, -trigramRadius);
+
+    // Draw 3 lines
+    for (let lineIdx = 0; lineIdx < 3; lineIdx++) {
+      const isSolid = t.lines[lineIdx];
+      const yOffset = lineIdx * 5 - 5;
+      const lineLength = r * 0.35;
+      const gap = r * 0.08;
+
+      if (isSolid) {
+        ctx.beginPath();
+        ctx.moveTo(-lineLength / 2, yOffset);
+        ctx.lineTo(lineLength / 2, yOffset);
+        ctx.stroke();
+      } else {
+        // broken line (two halves)
+        ctx.beginPath();
+        ctx.moveTo(-lineLength / 2, yOffset);
+        ctx.lineTo(-gap / 2, yOffset);
+        ctx.moveTo(gap / 2, yOffset);
+        ctx.lineTo(lineLength / 2, yOffset);
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+  });
+
+  ctx.restore();
+}
+
+function drawLightning(ctx, sx, sy, tx, ty, segmentsCount = 8, offsetAmount = 15) {
+  ctx.save();
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 4;
+  ctx.shadowColor = '#54a0ff';
+  ctx.shadowBlur = 15;
+
+  ctx.beginPath();
+  ctx.moveTo(sx, sy);
+  
+  for (let i = 1; i <= segmentsCount; i++) {
+    const t = i / segmentsCount;
+    let nextX = sx + (tx - sx) * t;
+    let nextY = sy + (ty - sy) * t;
+    
+    if (i < segmentsCount) {
+      const dx = tx - sx;
+      const dy = ty - sy;
+      const len = Math.hypot(dx, dy) || 1;
+      const px = -dy / len;
+      const py = dx / len;
+      
+      const offset = (Math.random() - 0.5) * offsetAmount;
+      nextX += px * offset;
+      nextY += py * offset;
+    }
+    
+    ctx.lineTo(nextX, nextY);
+  }
+  ctx.stroke();
+
+  // Draw inner thin core for "dual-core" effect
+  ctx.strokeStyle = '#ffd200';
+  ctx.lineWidth = 1.5;
+  ctx.shadowBlur = 5;
+  ctx.stroke();
+
+  ctx.restore();
+}
+

@@ -11,14 +11,28 @@ import {
 } from '../entities.js';
 
 export function selectLineage(lineage) {
-  if (!this.player) this.player = new Player(lineage); // Wait, Player needs to be imported or referenced. But wait, Player is in entities.js. Let's make sure Player is imported or we can use: new window.gameInstance.player's class, or just import Player from '../entities.js'.
+  if (!this.player) this.player = new Player(lineage);
   else this.player.lineage = lineage;
-  document.getElementById('start-game-btn').disabled = false;
-  document.getElementById('start-game-btn').textContent = '게임 시작!';
-  const cards = document.querySelectorAll('.lineage-card');
-  cards.forEach(c => c.classList.remove('keyboard-selected'));
-  const sel = document.getElementById(lineage === 'idealism' ? 'card-idealism' : 'card-empiricism');
-  if (sel) sel.classList.add('keyboard-selected');
+  
+  const startBtn = document.getElementById('start-game-btn');
+  if (startBtn) {
+    startBtn.disabled = false;
+    startBtn.textContent = '게임 시작!';
+    startBtn.style.display = 'inline-block';
+  }
+  
+  const cards = document.querySelectorAll('.lineage-card-row');
+  cards.forEach(c => {
+    c.classList.remove('selected');
+    c.classList.remove('keyboard-selected');
+  });
+  
+  const selId = `card-${lineage}`;
+  const sel = document.getElementById(selId);
+  if (sel) {
+    sel.classList.add('selected');
+    sel.classList.add('keyboard-selected');
+  }
 }
 
 export function showMenuScreen() {
@@ -36,7 +50,12 @@ export function showMenuScreen() {
 
 export function startGame() {
   if (!this.player || !this.player.lineage) return;
-  const firstSkillId = this.player.lineage === 'idealism' ? 'fire_projectile' : 'ice_projectile';
+  let firstSkillId = 'fire_projectile';
+  if (this.player.lineage === 'empiricism') firstSkillId = 'ice_projectile';
+  else if (this.player.lineage === 'confucianism') firstSkillId = 'lightning_strike';
+  else if (this.player.lineage === 'taoism') firstSkillId = 'wind_vortex';
+  else if (this.player.lineage === 'buddhism') firstSkillId = 'earth_barrier';
+  
   this.player.activeSkills[firstSkillId] = 1;
   document.getElementById('menu-screen').classList.remove('active');
   document.getElementById('tutorial-screen').classList.add('active');
@@ -1135,7 +1154,7 @@ export function triggerEnding() {
         clearInterval(typingInterval);
         
         // Append CLEAR text with color and larger font size
-        typingContainer.innerHTML += '<br><br><span id="ending-clear-btn" style="font-size: 56px; font-weight: 900; color: #ff4757; text-shadow: 0 0 25px rgba(255, 71, 87, 0.95); display: inline-block; animation: ending-clear-pulse 1.2s infinite alternate; border: 3px solid #ff4757; padding: 8px 36px; border-radius: 12px; background: rgba(255, 71, 87, 0.15); box-shadow: 0 0 20px rgba(255, 71, 87, 0.3); margin-top: 20px; font-family: var(--font-title);">CLEAR</span>';
+        typingContainer.innerHTML += '<br><br><span id="ending-clear-btn" style="font-size: 56px; font-weight: 900; color: #ff4757; text-shadow: 0 0 25px rgba(255, 71, 87, 0.95); display: inline-block; border: 3px solid #ff4757; padding: 8px 36px; border-radius: 12px; background: rgba(255, 71, 87, 0.15); box-shadow: 0 0 20px rgba(255, 71, 87, 0.3); margin-top: 20px; font-family: var(--font-title);">CLEAR</span>';
         
         // Stop typing loop when typing ends
         if (keyboardSound) {

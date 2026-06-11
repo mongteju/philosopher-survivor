@@ -10,9 +10,19 @@ export function updatePauseKeyboardSelection(btns) {
 export function updateMenuKeyboardSelection() {
   document.getElementById('card-idealism').classList.toggle('keyboard-selected', this.menuSelectedIndex === 0);
   document.getElementById('card-empiricism').classList.toggle('keyboard-selected', this.menuSelectedIndex === 1);
+  
+  const cardConfucianism = document.getElementById('card-confucianism');
+  if (cardConfucianism) cardConfucianism.classList.toggle('keyboard-selected', this.menuSelectedIndex === 2);
+  
+  const cardTaoism = document.getElementById('card-taoism');
+  if (cardTaoism) cardTaoism.classList.toggle('keyboard-selected', this.menuSelectedIndex === 3);
+  
+  const cardBuddhism = document.getElementById('card-buddhism');
+  if (cardBuddhism) cardBuddhism.classList.toggle('keyboard-selected', this.menuSelectedIndex === 4);
+  
   const startBtn = document.getElementById('start-game-btn');
   if (startBtn) {
-    startBtn.classList.toggle('keyboard-selected', this.menuSelectedIndex === 2);
+    startBtn.classList.toggle('keyboard-selected', this.menuSelectedIndex === 5);
   }
 }
 
@@ -130,27 +140,47 @@ export function gameEvents() {
       return;
     }
 
-    // Menu screen
+    // Menu screen (Flattened single-column list navigation)
     const menuScreen = document.getElementById('menu-screen');
     if (menuScreen.classList.contains('active')) {
-      if (k === 'arrowleft' || k === 'a') {
+      const lineages = ['idealism', 'empiricism', 'confucianism', 'taoism', 'buddhism'];
+      
+      // Up / Left: Move Up in the list
+      if (k === 'arrowup' || k === 'w' || k === 'arrowleft' || k === 'a') {
         e.preventDefault();
-        this.menuSelectedIndex = 0;
-        this.selectLineage('idealism');
-        this.updateMenuKeyboardSelection();
-        if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
-      } else if (k === 'arrowright' || k === 'd') {
+        if (this.menuSelectedIndex > 0) {
+          this.menuSelectedIndex--;
+          if (this.menuSelectedIndex !== 5) {
+            this.selectLineage(lineages[this.menuSelectedIndex]);
+          }
+          this.updateMenuKeyboardSelection();
+          if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
+        }
+      }
+      // Down / Right: Move Down in the list
+      else if (k === 'arrowdown' || k === 's' || k === 'arrowright' || k === 'd') {
         e.preventDefault();
-        this.menuSelectedIndex = 1;
-        this.selectLineage('empiricism');
-        this.updateMenuKeyboardSelection();
-        if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
-      } else if (k === 'arrowup' || k === 'w' || k === 'arrowdown' || k === 's') {
+        if (this.menuSelectedIndex < 5) {
+          this.menuSelectedIndex++;
+          if (this.menuSelectedIndex !== 5) {
+            this.selectLineage(lineages[this.menuSelectedIndex]);
+          }
+          this.updateMenuKeyboardSelection();
+          if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
+        }
+      }
+      // Enter / Space: Select / Start Game
+      else if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-      } else if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        if (this.player && this.player.lineage) {
-          this.startGame();
+        if (this.menuSelectedIndex === 5) {
+          if (this.player && this.player.lineage) {
+            this.startGame();
+          }
+        } else {
+          this.selectLineage(lineages[this.menuSelectedIndex]);
+          this.menuSelectedIndex = 5;
+          this.updateMenuKeyboardSelection();
+          if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
         }
       }
       return;
@@ -294,32 +324,140 @@ export function gameEvents() {
   }
   const cardIdealism = document.getElementById('card-idealism');
   if (cardIdealism) {
-    cardIdealism.addEventListener('click', () => { this.menuSelectedIndex = 0; this.selectLineage('idealism'); this.updateMenuKeyboardSelection(); });
-    cardIdealism.addEventListener('mouseenter', () => { this.menuSelectedIndex = 0; this.updateMenuKeyboardSelection(); });
+    const selectIdealism = (e) => {
+      if (e && e.type === 'touchstart') e.preventDefault();
+      this.menuSelectedIndex = 0; 
+      this.selectLineage('idealism'); 
+      this.updateMenuKeyboardSelection();
+    };
+    cardIdealism.addEventListener('click', selectIdealism);
+    cardIdealism.addEventListener('touchstart', selectIdealism, { passive: false });
+    cardIdealism.addEventListener('mouseenter', () => {
+      if (window.matchMedia('(hover: hover)').matches) {
+        this.menuSelectedIndex = 0; 
+        this.updateMenuKeyboardSelection();
+      }
+    });
   }
 
   const cardEmpiricism = document.getElementById('card-empiricism');
   if (cardEmpiricism) {
-    cardEmpiricism.addEventListener('click', () => { this.menuSelectedIndex = 1; this.selectLineage('empiricism'); this.updateMenuKeyboardSelection(); });
-    cardEmpiricism.addEventListener('mouseenter', () => { this.menuSelectedIndex = 1; this.updateMenuKeyboardSelection(); });
+    const selectEmpiricism = (e) => {
+      if (e && e.type === 'touchstart') e.preventDefault();
+      this.menuSelectedIndex = 1; 
+      this.selectLineage('empiricism'); 
+      this.updateMenuKeyboardSelection();
+    };
+    cardEmpiricism.addEventListener('click', selectEmpiricism);
+    cardEmpiricism.addEventListener('touchstart', selectEmpiricism, { passive: false });
+    cardEmpiricism.addEventListener('mouseenter', () => {
+      if (window.matchMedia('(hover: hover)').matches) {
+        this.menuSelectedIndex = 1; 
+        this.updateMenuKeyboardSelection();
+      }
+    });
+  }
+
+  const cardConfucianism = document.getElementById('card-confucianism');
+  if (cardConfucianism) {
+    const selectConfucianism = (e) => {
+      if (e && e.type === 'touchstart') e.preventDefault();
+      this.menuSelectedIndex = 2; 
+      this.selectLineage('confucianism'); 
+      this.updateMenuKeyboardSelection();
+    };
+    cardConfucianism.addEventListener('click', selectConfucianism);
+    cardConfucianism.addEventListener('touchstart', selectConfucianism, { passive: false });
+    cardConfucianism.addEventListener('mouseenter', () => {
+      if (window.matchMedia('(hover: hover)').matches) {
+        this.menuSelectedIndex = 2; 
+        this.updateMenuKeyboardSelection();
+      }
+    });
+  }
+
+  const cardTaoism = document.getElementById('card-taoism');
+  if (cardTaoism) {
+    const selectTaoism = (e) => {
+      if (e && e.type === 'touchstart') e.preventDefault();
+      this.menuSelectedIndex = 3; 
+      this.selectLineage('taoism'); 
+      this.updateMenuKeyboardSelection();
+    };
+    cardTaoism.addEventListener('click', selectTaoism);
+    cardTaoism.addEventListener('touchstart', selectTaoism, { passive: false });
+    cardTaoism.addEventListener('mouseenter', () => {
+      if (window.matchMedia('(hover: hover)').matches) {
+        this.menuSelectedIndex = 3; 
+        this.updateMenuKeyboardSelection();
+      }
+    });
+  }
+
+  const cardBuddhism = document.getElementById('card-buddhism');
+  if (cardBuddhism) {
+    const selectBuddhism = (e) => {
+      if (e && e.type === 'touchstart') e.preventDefault();
+      this.menuSelectedIndex = 4; 
+      this.selectLineage('buddhism'); 
+      this.updateMenuKeyboardSelection();
+    };
+    cardBuddhism.addEventListener('click', selectBuddhism);
+    cardBuddhism.addEventListener('touchstart', selectBuddhism, { passive: false });
+    cardBuddhism.addEventListener('mouseenter', () => {
+      if (window.matchMedia('(hover: hover)').matches) {
+        this.menuSelectedIndex = 4; 
+        this.updateMenuKeyboardSelection();
+      }
+    });
   }
 
   const startGameBtn = document.getElementById('start-game-btn');
   if (startGameBtn) {
-    startGameBtn.addEventListener('click', () => this.startGame());
-    startGameBtn.addEventListener('mouseenter', () => { this.menuSelectedIndex = 2; this.updateMenuKeyboardSelection(); });
+    const handleStartGame = (e) => {
+      if (e && e.type === 'touchstart') e.preventDefault();
+      this.startGame();
+    };
+    startGameBtn.addEventListener('click', handleStartGame);
+    startGameBtn.addEventListener('touchstart', handleStartGame, { passive: false });
+    startGameBtn.addEventListener('mouseenter', () => {
+      if (window.matchMedia('(hover: hover)').matches) {
+        this.menuSelectedIndex = 5; 
+        this.updateMenuKeyboardSelection();
+      }
+    });
   }
 
   const tutYesBtn = document.getElementById('tutorial-yes-btn');
   if (tutYesBtn) {
-    tutYesBtn.addEventListener('click', () => this.acceptTutorial(true));
-    tutYesBtn.addEventListener('mouseenter', () => { this.tutorialSelectedIndex = 0; this.updateTutorialKeyboardSelection(); });
+    const handleYes = (e) => {
+      if (e && e.type === 'touchstart') e.preventDefault();
+      this.acceptTutorial(true);
+    };
+    tutYesBtn.addEventListener('click', handleYes);
+    tutYesBtn.addEventListener('touchstart', handleYes, { passive: false });
+    tutYesBtn.addEventListener('mouseenter', () => {
+      if (window.matchMedia('(hover: hover)').matches) {
+        this.tutorialSelectedIndex = 0; 
+        this.updateTutorialKeyboardSelection();
+      }
+    });
   }
 
   const tutNoBtn = document.getElementById('tutorial-no-btn');
   if (tutNoBtn) {
-    tutNoBtn.addEventListener('click', () => this.acceptTutorial(false));
-    tutNoBtn.addEventListener('mouseenter', () => { this.tutorialSelectedIndex = 1; this.updateTutorialKeyboardSelection(); });
+    const handleNo = (e) => {
+      if (e && e.type === 'touchstart') e.preventDefault();
+      this.acceptTutorial(false);
+    };
+    tutNoBtn.addEventListener('click', handleNo);
+    tutNoBtn.addEventListener('touchstart', handleNo, { passive: false });
+    tutNoBtn.addEventListener('mouseenter', () => {
+      if (window.matchMedia('(hover: hover)').matches) {
+        this.tutorialSelectedIndex = 1; 
+        this.updateTutorialKeyboardSelection();
+      }
+    });
   }
 
   document.getElementById('gacha-close-btn').addEventListener('click', () => this.resumeFromGacha());
@@ -461,6 +599,13 @@ export function gameEvents() {
   container.addEventListener('touchstart', e => {
     if (!this.isPlaying) return;
     const touch = e.touches[0];
+    
+    // 모바일 조이스틱은 화면의 왼쪽 영역(55% 이하) 터치 시에만 발동되도록 제한
+    // 이를 통해 우측 영역의 UI 버튼이나 카드 등을 자유롭게 터치 선택할 수 있도록 함
+    if (touch.clientX > window.innerWidth * 0.55) {
+      return;
+    }
+    
     this.joystick.active = true; this.joystick.startX = touch.clientX; this.joystick.startY = touch.clientY;
     const jz = document.getElementById('joystick-zone');
     jz.style.display = 'flex'; jz.style.left = `${touch.clientX - 60}px`; jz.style.top = `${touch.clientY - 60}px`;

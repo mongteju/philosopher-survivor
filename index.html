@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>철학의 미궁: 뱀서류 에디션 (Philosophy Quest)</title>
-  <meta name="description" content="철학의 미궁(Philosophy Quest)은 이데아의 불꽃, 중용의 얼음 송곳 등 다양한 철학적 무기와 패시브 스킬을 활용하여 무지와 편견을 물리치는 뱀파이어 서바이벌 장르의 RPG 웹게임입니다.">
+  <title>이세계 철학자 키우기</title>
+  <meta name="description" content="이세계 철학자 키우기는 이데아의 불꽃, 중용의 얼음 송곳 등 다양한 철학적 무기와 패시브 스킬을 활용하여 무지와 편견을 물리치는 뱀파이어 서바이벌 장르의 RPG 웹게임입니다.">
   <script>
     window.addEventListener('error', function(e) {
       var errBox = document.createElement('div');
@@ -129,40 +129,75 @@
 
     <!-- Screen 1: MAIN MENU (LINEAGE CHOICE) -->
     <div id="menu-screen" class="overlay-screen">
-      <div class="modal-content" style="max-width: 700px;">
-        <h1 class="menu-title-glow">철학의 미궁</h1>
-        <p class="menu-subtitle">Philosophy Quest — 무지와 편견을 물리치고 진리에 도달하라</p>
+      <div class="modal-content select-menu-modal">
+        <h1 class="menu-title-glow">이세계 철학자 키우기</h1>
+        <p class="menu-subtitle">무지와 편견을 물리치고 진리에 도달하라</p>
 
-        <div class="lineage-select-box">
+        <div class="lineage-select-box single-column">
           <!-- Lineage A: Idealism -->
-          <div id="card-idealism" class="lineage-card idealism">
-            <div style="font-size: 44px; margin-bottom: 8px;">🔥</div>
-            <h3 style="font-size: 22px; margin-bottom: 4px;">이성주의</h3>
-            <p style="font-size: 12px; opacity: 0.65; margin-bottom: 14px;">합리론 (Rationalism)</p>
-            <div class="lineage-tags">
-              <span class="tag-badge fire">화염 폭발</span>
-              <span class="tag-badge">범위형</span>
-              <span class="tag-badge">고화력</span>
+          <button id="card-idealism" class="lineage-card-row idealism">
+            <div class="card-left">
+              <div class="emoji-circle-bg">🔥</div>
             </div>
-            <p style="margin-top: 14px; font-size: 13px; line-height: 1.6; color: rgba(255,255,255,0.85);">
-              이데아의 불꽃으로 광역을 태우는<br><strong>화염 공격 특화</strong> 계열
-            </p>
-          </div>
+            <div class="card-center">
+              <h3 class="card-title">이성주의</h3>
+            </div>
+            <div class="card-right">
+              <p class="lineage-desc">이데아의 불꽃을 일으켜 적을 태우는 <strong>광역 화염 특화</strong></p>
+            </div>
+          </button>
 
           <!-- Lineage B: Empiricism -->
-          <div id="card-empiricism" class="lineage-card empiricism">
-            <div style="font-size: 44px; margin-bottom: 8px;">❄️</div>
-            <h3 style="font-size: 22px; margin-bottom: 4px;">경험주의</h3>
-            <p style="font-size: 12px; opacity: 0.65; margin-bottom: 14px;">경험론 (Empiricism)</p>
-            <div class="lineage-tags">
-              <span class="tag-badge ice">냉기 관통</span>
-              <span class="tag-badge">군중 제어</span>
-              <span class="tag-badge">둔화형</span>
+          <button id="card-empiricism" class="lineage-card-row empiricism">
+            <div class="card-left">
+              <div class="emoji-circle-bg">❄️</div>
             </div>
-            <p style="margin-top: 14px; font-size: 13px; line-height: 1.6; color: rgba(255,255,255,0.85);">
-              얼음 송곳으로 적을 관통하는<br><strong>냉기 제어 특화</strong> 계열
-            </p>
-          </div>
+            <div class="card-center">
+              <h3 class="card-title">경험주의</h3>
+            </div>
+            <div class="card-right">
+              <p class="lineage-desc">얼음 송곳을 발사해 적을 꿰뚫고 얼리는 <strong>냉기 제어</strong></p>
+            </div>
+          </button>
+
+          <!-- Lineage C: Confucianism -->
+          <button id="card-confucianism" class="lineage-card-row confucianism">
+            <div class="card-left">
+              <div class="emoji-circle-bg">⚡</div>
+            </div>
+            <div class="card-center">
+              <h3 class="card-title">유가</h3>
+            </div>
+            <div class="card-right">
+              <p class="lineage-desc">인의예지의 질서로 벼락 레이저를 내리는 <strong>전격 유도</strong></p>
+            </div>
+          </button>
+
+          <!-- Lineage D: Taoism -->
+          <button id="card-taoism" class="lineage-card-row taoism">
+            <div class="card-left">
+              <div class="emoji-circle-bg">🌪️</div>
+            </div>
+            <div class="card-center">
+              <h3 class="card-title">도가</h3>
+            </div>
+            <div class="card-right">
+              <p class="lineage-desc">무위자연의 기운으로 돌풍을 다루는 <strong>바람 관통</strong></p>
+            </div>
+          </button>
+
+          <!-- Lineage E: Buddhism -->
+          <button id="card-buddhism" class="lineage-card-row buddhism">
+            <div class="card-left">
+              <div class="emoji-circle-bg">📿</div>
+            </div>
+            <div class="card-center">
+              <h3 class="card-title">불교</h3>
+            </div>
+            <div class="card-right">
+              <p class="lineage-desc">금강석 파편과 번뇌의 염주를 몸에 두르는 <strong>대지 넉백 해탈</strong></p>
+            </div>
+          </button>
         </div>
 
         <button id="start-game-btn" class="btn-primary" style="display: none;" disabled>학파 선택 필수</button>
@@ -290,7 +325,8 @@
     <div id="true-ending-screen" class="overlay-screen" style="background-color: #000;">
       <div id="true-ending-text" style="color: #fff; font-family: 'Share Tech Mono', sans-serif; font-size: 22px; line-height: 2.2; padding: 40px; text-align: center; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; box-sizing: border-box;">
         <div id="typing-container" style="min-height: 250px;"></div>
-        <div id="credits-container" style="margin-top: 50px; color: #fff; font-size: 20px; font-weight: bold; opacity: 0; transition: opacity 2s;">
+        <div id="credits-container" style="margin-top: 120px; color: #fff; font-size: 20px; font-weight: bold; opacity: 0; transition: opacity 2s;">
+          <br>
           제작 임진택
           <div id="true-ending-playtime" style="font-size: 15px; font-weight: normal; margin-top: 15px; color: rgba(255, 255, 255, 0.75);">플레이타임: 0분 0초</div>
         </div>

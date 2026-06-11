@@ -62,6 +62,96 @@ const PLAYER_QUOTES = {
     "우리는 실천하고 행동함으로써 진정으로 배운다 (Learning by doing).",
     "고정된 진리란 없다. 지식은 삶의 도구로서 계속 검증되어야 한다.",
     "민주주의는 단지 통치 형태가 아니라 공동체의 적극적 참여 방식이다."
+  ],
+  '공자': [
+    "덕이 있으면 외롭지 않고 반드시 이웃이 있다.",
+    "배우고 때로 익히면 또한 기쁘지 아니한가.",
+    "의를 보고 행하지 않는 것은 용기가 없는 것이다."
+  ],
+  '맹자': [
+    "사람의 본성은 물이 아래로 흐르듯 선하다.",
+    "스스로 반성하여 정직하다면 천만인이 앞을 가로막아도 나아가리라.",
+    "마음을 다스리는 자는 남을 다스리고, 몸을 괴롭히는 자는 남의 다스림을 받는다."
+  ],
+  '주희': [
+    "격물치지, 사물의 이치를 끝까지 파고들어 앎에 도달하라.",
+    "인욕을 물리치고 천리를 보존하라.",
+    "성인의 학문은 오직 경(敬)을 근본으로 삼는다."
+  ],
+  '이황': [
+    "이는 존귀하고 기는 비천하니, 이가 발하여 기가 따르는 것이다.",
+    "경(敬)의 자세로 마음을 곧게 지켜라.",
+    "스스로 닦아 깨닫지 못하면 지식은 헛된 껍데기일 뿐이다."
+  ],
+  '이이': [
+    "이와 기는 둘이면서 하나요, 하나이면서 둘이다.",
+    "기가 발하면 이가 올라타는 오직 하나의 길뿐이다(기발이승일도설).",
+    "정치가 백성을 구제하지 못하면 그것은 학문이 아니다."
+  ],
+  '현대의 선비': [
+    "군자의 도를 닦아 세상의 도덕을 바로 세워야 하오.",
+    "법과 규제만으로는 안 되오, 인의와 예의로 세상을 구해야 하오.",
+    "자신을 닦아 백성을 편안하게 하는 것, 이것이 진정한 선비정신이오."
+  ],
+  '노자': [
+    "도가도비상도 명가명비상명.",
+    "가장 좋은 것은 물과 같다(상선약수). 물은 만물을 이롭게 한다.",
+    "함이 없으나 하지 못함이 없다(무위이무불위)."
+  ],
+  '장자': [
+    "하늘과 땅은 나와 함께 태어났고 만물은 나와 하나다.",
+    "나비가 나인지, 내가 나비인지 어찌 알겠는가(호접지몽).",
+    "쓸모없어 보임의 참된 가치(무용지용)를 알아야 한다."
+  ],
+  '열자': [
+    "우매한 노인이 산을 옮기듯, 지극한 마음은 천지를 감동시킨다(우공이산).",
+    "삶은 임시 여정이고, 죽음은 본향으로의 귀환이다.",
+    "바람을 타고 노닐듯 자연의 순리에 순응하라."
+  ],
+  '위백양': [
+    "음양의 합으로 내단을 수련하여 불로장생에 이르라.",
+    "금단의 도리는 우주의 변화 원리와 다르지 않다.",
+    "내면의 정, 기, 신을 온전히 다스려 진인이 되라."
+  ],
+  '이지함': [
+    "토정비결로 길흉을 예측하여 백성들의 화를 면하게 하노라.",
+    "하늘의 운수를 알고 땅의 이치를 쓰면 굶주린 백성을 구제할 수 있다.",
+    "욕심을 버리고 대자연의 흐름에 순응할 때 삶이 편안해진다."
+  ],
+  '현대의 도인': [
+    "바람이 불면 부는 대로, 흘러가는 물처럼 순리대로 사시오.",
+    "도는 멀리 있지 않소. 지금 내쉬고 들이쉬는 호흡 속에 있소.",
+    "인위적인 인과와 집착을 벗어날 때 진정한 자유를 얻으리라."
+  ],
+  '석가모니': [
+    "일체유심조, 삼라만상 모든 것은 마음이 지어내는 것이다.",
+    "우주의 모든 것은 변한다. 게으르지 말고 부지런히 정진하라.",
+    "하늘 위와 하늘 아래 오직 나 홀로 존귀하다(천상천하 유아독존)."
+  ],
+  '혜능': [
+    "본래 한 물건도 없는데, 어느 곳에 먼지가 앉겠는가.",
+    "마음이 흔들리지 않으면 본래 스스로의 성품이 고요하고 맑다.",
+    "스스로의 성품을 깨달아 즉시 부처가 되라(견성성불)."
+  ],
+  '원효': [
+    "마음이 생겨나므로 갖가지 법이 생기고, 마음이 멸하면 해골물도 다를 바 없다.",
+    "하나의 마음(일심)으로 돌아가 모든 논쟁을 조화롭게 통합하라(화쟁).",
+    "걸림이 없는 사람은 단번에 생사를 뛰어넘는다(무애)."
+  ],
+  '의상': [
+    "하나 속에 전체가 있고 전체 속에 하나가 있다(일즉다 다즉일).",
+    "법성의 진리는 융통하여 두 가지 모습이 없다.",
+    "지극한 마음으로 아미타불을 부르면 극락에 이르리라."
+  ],
+  '지눌': [
+    "단번에 깨치고 점진적으로 닦아나가라(돈오점수).",
+    "참선과 교학은 둘이 아니니, 선정과 지혜를 쌍으로 닦으라(정혜쌍수).",
+    "자기 마음이 곧 부처임을 굳게 믿고 수행하라."
+  ],
+  '현대의 수행자': [
+    "번뇌도 고통도 실체가 없는 마음의 허상일 뿐입니다.",
+    "한 걸음 한 걸음 깨어있을 때, 마음에 평화가 찾아옵니다.",
+    "모든 존재가 긴밀히 연결되어 있으니 자비로운 마음으로 행하소서."
   ]
 };
 
@@ -136,15 +226,15 @@ export class Player {
       const tier = this.skillTiers[id] || 'normal';
       const tm = tierMuls[tier] || 1.0;
       
-      if (id === 'passive_idealism_dmg') this.dmgMultiplier = 1 + lvl * 0.12 * tm;
-      if (id === 'passive_idealism_area') this.areaMultiplier = 1 + lvl * 0.12 * tm;
-      if (id === 'passive_speed') this.speed = 3.2 * (1 + lvl * 0.12 * tm);
-      if (id === 'passive_cooldown') this.cooldownReduction = lvl * 0.048 * tm;
-      if (id === 'passive_regen') this.regenHp = lvl * 0.8 * tm;
+      if (id === 'passive_idealism_dmg' || id === 'passive_confucian_dmg' || id === 'passive_taoist_dmg' || id === 'passive_buddhist_dmg') this.dmgMultiplier = 1 + lvl * 0.12 * tm;
+      if (id === 'passive_idealism_area' || id === 'passive_confucian_area' || id === 'passive_taoist_area' || id === 'passive_buddhist_area') this.areaMultiplier = 1 + lvl * 0.12 * tm;
+      if (id === 'passive_speed' || id === 'passive_confucian_speed' || id === 'passive_taoist_speed' || id === 'passive_buddhist_speed') this.speed = 3.2 * (1 + lvl * 0.12 * tm);
+      if (id === 'passive_cooldown' || id === 'passive_confucian_cooldown' || id === 'passive_taoist_cooldown' || id === 'passive_buddhist_cooldown') this.cooldownReduction = lvl * 0.048 * tm;
+      if (id === 'passive_regen' || id === 'passive_confucian_regen' || id === 'passive_taoist_regen' || id === 'passive_buddhist_regen') this.regenHp = lvl * 0.8 * tm;
       if (id === 'passive_empiricism_slow') this.slowBonus = lvl * 0.12 * tm;
       if (id === 'passive_empiricism_xp') this.xpMultiplier = 1 + lvl * 0.12 * tm;
       if (id === 'passive_max_hp') baseMaxHp += lvl * 20 * tm;
-      if (id === 'passive_armor') this.armorReduction = lvl * 0.16 * tm;
+      if (id === 'passive_armor' || id === 'passive_confucian_defense' || id === 'passive_taoist_defense' || id === 'passive_buddhist_defense') this.armorReduction = lvl * 0.16 * tm;
       if (id === 'passive_crit_dmg') this.critMultiplier = 1 + lvl * 0.20 * tm;
     }
     
@@ -272,8 +362,10 @@ export class Player {
 
     const len = Math.hypot(dx, dy);
     if (len > 0 && this.stunnedTimer <= 0 && this.kantStunnedTimer <= 0) {
-      this.vx = (dx / len) * this.effectiveSpeed;
-      this.vy = (dy / len) * this.effectiveSpeed;
+      // 조이스틱 조작인 경우 세기(Strength)를 반영하고, 키보드인 경우 1.0(최대)으로 작동
+      const speedMultiplier = (joystickStrength > 0) ? joystickStrength : 1.0;
+      this.vx = (dx / len) * this.effectiveSpeed * speedMultiplier;
+      this.vy = (dy / len) * this.effectiveSpeed * speedMultiplier;
       this.faceAngle = Math.atan2(dy, dx);
       // Determine movement direction state without diagonal jitter
       if (Math.abs(this.vx) >= Math.abs(this.vy) * 0.7) {
@@ -876,13 +968,34 @@ export class Player {
       else if (evIdx === 3) bodyColor = '#2c3e50'; // Descartes: Dark Rose coat style
       else if (evIdx === 4) bodyColor = '#2c003e'; // Kant: Imperial Clockwork Dark Purple
       else if (evIdx === 5) bodyColor = '#1e0505'; // Sartre: Heavy existentialist black-red coat
-    } else {
+    } else if (this.lineage === 'empiricism') {
       if (evIdx === 0) bodyColor = '#2471a3'; // Aristotle: Pure Blue
       else if (evIdx === 1) bodyColor = '#16a085'; // Epicurus: Forest Greenish-Teal
       else if (evIdx === 2) { bodyColor = '#2980b9'; beltColor = '#bdc3c7'; } // Aquinas: Sacred White/Silver-Blue
       else if (evIdx === 3) bodyColor = '#27ae60'; // Bacon: Rich Emerald Scholar
       else if (evIdx === 4) bodyColor = '#130f40'; // Bentham/Mill: Deep Indigo Utilitarian robe
       else if (evIdx === 5) bodyColor = '#0f172a'; // Dewey: Infinite Cosmos Slate Navy
+    } else if (this.lineage === 'confucianism') {
+      if (evIdx === 0) { bodyColor = '#2980b9'; beltColor = '#ffd200'; } // 공자: 청색 도포 & 금빛 띠
+      else if (evIdx === 1) { bodyColor = '#1e3799'; beltColor = '#ffd200'; } // 맹자: 심청색 도포
+      else if (evIdx === 2) { bodyColor = '#8c7ae6'; beltColor = '#ffd200'; } // 주희: 보라색 도포
+      else if (evIdx === 3) { bodyColor = '#ffffff'; beltColor = '#2f3542'; } // 이황: 백색 도포
+      else if (evIdx === 4) { bodyColor = '#747d8c'; beltColor = '#f1c40f'; } // 이이: 청회색 도포
+      else if (evIdx === 5) { bodyColor = '#2f3542'; beltColor = '#ffd200'; } // 현대의 선비: 단정한 먹색 도포
+    } else if (this.lineage === 'taoism') {
+      if (evIdx === 0) { bodyColor = '#f5f6fa'; beltColor = '#7f8c8d'; } // 노자: 소박한 백색 도포
+      else if (evIdx === 1) { bodyColor = '#7bed9f'; beltColor = '#2ed573'; } // 장자: 옥색 도포
+      else if (evIdx === 2) { bodyColor = '#2ecc71'; beltColor = '#27ae60'; } // 열자: 초록 도포
+      else if (evIdx === 3) { bodyColor = '#eccc68'; beltColor = '#e1b12c'; } // 위백양: 황토 도포
+      else if (evIdx === 4) { bodyColor = '#70a1ff'; beltColor = '#1e90ff'; } // 이지함: 하늘 도포
+      else if (evIdx === 5) { bodyColor = '#1abc9c'; beltColor = '#16a085'; } // 현대의 도인: 청록 개량한복
+    } else if (this.lineage === 'buddhism') {
+      if (evIdx === 0) { bodyColor = '#ffd200'; beltColor = '#ff9f43'; } // 석가모니: 황금색 장삼 & 주황 가사
+      else if (evIdx === 1) { bodyColor = '#5d4037'; beltColor = '#8d6e63'; } // 혜능: 짙은 갈색 법복
+      else if (evIdx === 2) { bodyColor = '#d35400'; beltColor = '#f39c12'; } // 원효: 붉은 가사 & 주황 장삼
+      else if (evIdx === 3) { bodyColor = '#e67e22'; beltColor = '#e17055'; } // 의상: 주황 장삼
+      else if (evIdx === 4) { bodyColor = '#95a5a6'; beltColor = '#7f8c8d'; } // 지눌: 회색 장삼
+      else if (evIdx === 5) { bodyColor = '#2c3e50'; beltColor = '#7f8c8d'; } // 현대의 수행자: 짙은 회색 개량법복
     }
     
     ctx.shadowBlur = evIdx >= 3 ? 12 : 0;
@@ -983,7 +1096,7 @@ export class Player {
         ctx.strokeStyle = '#2d3436'; ctx.lineWidth = 2;
         ctx.strokeRect(2, -22, 5.5, 4.5);
       }
-    } else {
+    } else if (this.lineage === 'empiricism') {
       if (evIdx === 0) {
         // Aristotle: smart brown baby perm coils (no beard)
         ctx.fillStyle = '#6f4e37';
@@ -1032,6 +1145,128 @@ export class Player {
         ctx.arc(0, -28, 6, 0, Math.PI*2);
         ctx.fillRect(-10, -25, 20, 4);
         ctx.fill();
+      }
+    } else if (this.lineage === 'confucianism') {
+      if (evIdx === 0) {
+        // 공자: 검은 머리 & 전통 관모
+        ctx.fillStyle = '#111111';
+        ctx.beginPath(); ctx.arc(-9, -24, 4.5, 0, Math.PI*2); ctx.arc(9, -24, 4.5, 0, Math.PI*2); ctx.arc(0, -27, 6, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#2c3e50';
+        ctx.fillRect(-6, -33, 12, 6);
+        ctx.beginPath(); ctx.arc(0, -33, 3, 0, Math.PI * 2); ctx.fill();
+      } else if (evIdx === 1) {
+        // 맹자: 두건
+        ctx.fillStyle = '#111111';
+        ctx.beginPath(); ctx.arc(-8, -24, 4.5, 0, Math.PI*2); ctx.arc(8, -24, 4.5, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#2c3e50'; // 청색 두건
+        ctx.fillRect(-9, -27, 18, 4);
+        ctx.beginPath(); ctx.moveTo(-9, -25); ctx.lineTo(-13, -15); ctx.lineTo(-6, -20); ctx.closePath(); ctx.fill(); // 휘날리는 두건 끈
+      } else if (evIdx === 2) {
+        // 주희: 정자관
+        ctx.fillStyle = '#111111';
+        ctx.beginPath(); ctx.arc(-8, -24, 4.5, 0, Math.PI*2); ctx.arc(8, -24, 4.5, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#231F20'; // 검정 정자관
+        ctx.beginPath();
+        ctx.moveTo(-5, -26); ctx.lineTo(-7, -35); ctx.lineTo(-2, -31); ctx.lineTo(0, -36); ctx.lineTo(2, -31); ctx.lineTo(7, -35); ctx.lineTo(5, -26);
+        ctx.closePath(); ctx.fill();
+      } else if (evIdx === 3) {
+        // 이황: 백색 정포관
+        ctx.fillStyle = '#ffffff'; // 백색 관
+        ctx.fillRect(-5, -34, 10, 8);
+        ctx.strokeStyle = '#2f3542'; ctx.lineWidth = 1; ctx.strokeRect(-5, -34, 10, 8);
+        ctx.fillStyle = '#111111';
+        ctx.beginPath(); ctx.arc(-9, -23, 4.5, 0, Math.PI*2); ctx.arc(9, -23, 4.5, 0, Math.PI*2); ctx.fill();
+      } else if (evIdx === 4) {
+        // 이이: 갓
+        ctx.fillStyle = '#111111';
+        ctx.beginPath(); ctx.arc(-9, -24, 4.5, 0, Math.PI*2); ctx.arc(9, -24, 4.5, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = 'rgba(15, 15, 15, 0.95)';
+        ctx.fillRect(-4.5, -34, 9, 8); // 갓 대
+        ctx.strokeStyle = '#000000'; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(-16, -26); ctx.lineTo(16, -26); ctx.stroke(); // 갓 차양
+      } else if (evIdx === 5) {
+        // 현대의 선비: 안경 & 깔끔한 숏컷
+        ctx.fillStyle = '#2c3e50';
+        ctx.beginPath(); ctx.arc(-9, -25, 4.5, 0, Math.PI*2); ctx.arc(9, -25, 4.5, 0, Math.PI*2); ctx.arc(0, -27, 5.5, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#ffd200'; ctx.lineWidth = 1.2; // 금테 안경
+        ctx.beginPath(); ctx.arc(4, -20, 2.5, 0, Math.PI*2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(1, -20); ctx.stroke();
+      }
+    } else if (this.lineage === 'taoism') {
+      if (evIdx === 0) {
+        // 노자: 흰 긴 머리와 상투
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.arc(-9, -23, 5, 0, Math.PI*2); ctx.arc(9, -23, 5, 0, Math.PI*2); ctx.arc(0, -27, 6.5, 0, Math.PI*2); ctx.arc(0, -32, 4.5, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#d2b48c'; ctx.lineWidth = 1.5; // 비녀
+        ctx.beginPath(); ctx.moveTo(-6, -32); ctx.lineTo(6, -32); ctx.stroke();
+      } else if (evIdx === 1) {
+        // 장자: 옥색 댕기머리
+        ctx.fillStyle = '#7f5f40';
+        ctx.beginPath(); ctx.arc(-9, -23, 5, 0, Math.PI*2); ctx.arc(9, -23, 5, 0, Math.PI*2); ctx.arc(0, -27, 6, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#2ed573'; // 옥색 리본
+        ctx.beginPath(); ctx.arc(-10, -14, 3, 0, Math.PI*2); ctx.fill();
+        ctx.fillRect(-11, -14, 2, 8);
+      } else if (evIdx === 2) {
+        // 열자: 갈색 더벅머리
+        ctx.fillStyle = '#8e7054';
+        ctx.beginPath();
+        ctx.arc(-9, -23, 5, 0, Math.PI*2); ctx.arc(9, -23, 5, 0, Math.PI*2);
+        ctx.arc(0, -27, 6.5, 0, Math.PI*2);
+        ctx.arc(-11, -17, 4, 0, Math.PI*2); ctx.arc(11, -17, 4, 0, Math.PI*2);
+        ctx.fill();
+      } else if (evIdx === 3) {
+        // 위백양: 황토 비녀 상투
+        ctx.fillStyle = '#2c3e50';
+        ctx.beginPath(); ctx.arc(-9, -23, 5, 0, Math.PI*2); ctx.arc(9, -23, 5, 0, Math.PI*2); ctx.arc(0, -27, 6, 0, Math.PI*2); ctx.arc(0, -32, 4, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#ffd200'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(-5, -32); ctx.lineTo(5, -32); ctx.stroke();
+      } else if (evIdx === 4) {
+        // 이지함: 패랭이 대나무 모자
+        ctx.fillStyle = '#332211';
+        ctx.beginPath(); ctx.arc(-9, -23, 4.5, 0, Math.PI*2); ctx.arc(9, -23, 4.5, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#cd853f'; // 대나무 색상 모자
+        ctx.beginPath();
+        ctx.moveTo(-15, -24); ctx.lineTo(0, -34); ctx.lineTo(15, -24); ctx.closePath(); ctx.fill();
+      } else if (evIdx === 5) {
+        // 현대의 도인: 백발 포니테일
+        ctx.fillStyle = '#dfe4ea';
+        ctx.beginPath(); ctx.arc(-9, -24, 4.5, 0, Math.PI*2); ctx.arc(9, -24, 4.5, 0, Math.PI*2); ctx.arc(0, -27, 6, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#2ed573'; // 끈
+        ctx.fillRect(-11, -16, 2, 3);
+        ctx.fillStyle = '#dfe4ea'; // 휘날리는 포니테일 뭉치
+        ctx.beginPath(); ctx.arc(-14, -12, 4, 0, Math.PI*2); ctx.arc(-17, -6, 3, 0, Math.PI*2); ctx.fill();
+      }
+    } else if (this.lineage === 'buddhism') {
+      if (evIdx === 0) {
+        // 석가모니: 나발 머리 & 백호
+        ctx.fillStyle = '#2c3e50'; // 감청색 나발
+        ctx.beginPath();
+        ctx.arc(-8, -25, 4.5, 0, Math.PI*2); ctx.arc(8, -25, 4.5, 0, Math.PI*2);
+        ctx.arc(0, -27, 6, 0, Math.PI*2);
+        // 육계 (머리 위에 솟은 것)
+        ctx.arc(0, -32, 4, 0, Math.PI*2);
+        ctx.fill();
+        // 백호 (붉은 점)
+        ctx.fillStyle = '#e74c3c';
+        ctx.beginPath(); ctx.arc(0, -21, 1.5, 0, Math.PI*2); ctx.fill();
+      } else if (evIdx === 2) {
+        // 원효: 삭발 & 이마 붉은 띠
+        ctx.fillStyle = '#e74c3c';
+        ctx.fillRect(-10, -24, 20, 2.5);
+        ctx.fillStyle = '#ffd200';
+        ctx.beginPath(); ctx.arc(0, -22.5, 2, 0, Math.PI*2); ctx.fill(); // 염주 구슬
+      } else if (evIdx === 3) {
+        // 의상: 승려 고깔모자
+        ctx.fillStyle = '#f5f6fa';
+        ctx.beginPath();
+        ctx.moveTo(-10, -20); ctx.lineTo(0, -36); ctx.lineTo(10, -20);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = '#dcdde1'; ctx.lineWidth = 1; ctx.stroke();
+      } else if (evIdx === 4) {
+        // 지눌: 회색 승려 모자
+        ctx.fillStyle = '#7f8c8d';
+        ctx.fillRect(-8, -29, 16, 5);
+        ctx.beginPath(); ctx.arc(0, -29, 8, Math.PI, 0); ctx.fill();
       }
     }
     
@@ -1169,7 +1404,7 @@ export class Player {
           ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI * 2); ctx.fill();
         }
       }
-    } else {
+    } else if (this.lineage === 'empiricism') {
       // ─── STAVES ───
       // Staff shaft (pointing upward locally, towards -Y)
       ctx.strokeStyle = evIdx >= 2 ? '#ced6e0' : '#8e7054';
@@ -1241,6 +1476,122 @@ export class Player {
         ctx.ellipse(0, -6, 10, 2.5, -time * 0.002, 0, Math.PI*2);
         ctx.stroke();
       }
+      ctx.restore();
+    } else if (this.lineage === 'confucianism') {
+      // ─── CONFUCIANIST BRUSH STAFF ───
+      ctx.strokeStyle = '#8d6e63';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(0, 8);
+      ctx.lineTo(0, -24);
+      ctx.stroke();
+
+      ctx.save();
+      ctx.translate(0, -24);
+      ctx.shadowBlur = 10 + evIdx * 3.5;
+      ctx.shadowColor = themeColor;
+
+      // 붓의 목 부분 (황동색)
+      ctx.fillStyle = '#ffd200';
+      ctx.fillRect(-2.5, -3, 5, 4);
+
+      // 붓의 털 부분 (흰색 & 먹물 포인트)
+      ctx.fillStyle = '#f5f6fa';
+      ctx.beginPath();
+      ctx.moveTo(-2.5, -3);
+      ctx.quadraticCurveTo(-6, -10, 0, -16); // 붓끝
+      ctx.quadraticCurveTo(6, -10, 2.5, -3);
+      ctx.closePath();
+      ctx.fill();
+
+      // 붓끝 먹물 칠 (검정색)
+      ctx.fillStyle = '#231F20';
+      ctx.beginPath();
+      ctx.moveTo(-1.5, -9);
+      ctx.quadraticCurveTo(-3, -13, 0, -16);
+      ctx.quadraticCurveTo(3, -13, 1.5, -9);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.restore();
+    } else if (this.lineage === 'taoism') {
+      // ─── TAOIST FEATHER FAN ───
+      // 손잡이
+      ctx.strokeStyle = '#d2b48c';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, 8);
+      ctx.lineTo(0, -6);
+      ctx.stroke();
+
+      ctx.save();
+      ctx.translate(0, -6);
+      ctx.shadowBlur = 10 + evIdx * 3.5;
+      ctx.shadowColor = themeColor;
+
+      // 부채 깃털 부분 (하늘색 & 흰색 깃)
+      ctx.fillStyle = 'rgba(126, 214, 223, 0.85)';
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(-14, -12, -10, -20);
+      ctx.quadraticCurveTo(0, -26, 10, -20);
+      ctx.quadraticCurveTo(14, -12, 0, 0);
+      ctx.closePath();
+      ctx.fill();
+
+      // 중앙의 작은 태극 무늬
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(0, -10, 3.5, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#231F20';
+      ctx.beginPath(); ctx.arc(0, -10, 3.5, -Math.PI/2, Math.PI/2); ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(0, -11.75, 1.75, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#231F20';
+      ctx.beginPath(); ctx.arc(0, -8.25, 1.75, 0, Math.PI*2); ctx.fill();
+
+      ctx.restore();
+    } else if (this.lineage === 'buddhism') {
+      // ─── BUDDHIST KHAKKHARA (석장) ───
+      // 손잡이 봉
+      ctx.strokeStyle = '#8d6e63';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(0, 8);
+      ctx.lineTo(0, -24);
+      ctx.stroke();
+
+      ctx.save();
+      ctx.translate(0, -24);
+      ctx.shadowBlur = 10 + evIdx * 3.5;
+      ctx.shadowColor = themeColor;
+
+      // 석장 머리 부분 (황금 고리 장식)
+      ctx.strokeStyle = '#ffd200';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, -8, 6, 0, Math.PI*2); // 큰 고리
+      ctx.stroke();
+
+      // 작은 고리 4개
+      ctx.fillStyle = '#ffd200';
+      const time = performance.now();
+      const swayRings = Math.sin(time * 0.01) * 1.5;
+      ctx.beginPath();
+      ctx.arc(-5, -8 + swayRings, 1.5, 0, Math.PI*2);
+      ctx.arc(5, -8 - swayRings, 1.5, 0, Math.PI*2);
+      ctx.arc(-2, -14 + swayRings, 1.5, 0, Math.PI*2);
+      ctx.arc(2, -14 - swayRings, 1.5, 0, Math.PI*2);
+      ctx.fill();
+
+      // 꼭대기 보주
+      ctx.beginPath();
+      ctx.moveTo(0, -14);
+      ctx.lineTo(-2, -18);
+      ctx.lineTo(0, -22);
+      ctx.lineTo(2, -18);
+      ctx.closePath();
+      ctx.fill();
+
       ctx.restore();
     }
     ctx.restore(); // Weapon restore
