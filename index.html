@@ -120,10 +120,13 @@
       <div id="joystick-handle"></div>
     </div>
 
+    <!-- Mobile Pause Button (touch only, shown during gameplay) -->
+    <button id="mobile-pause-btn" style="display: none;" aria-label="일시정지">⏸</button>
+
     <!-- Screen 0: TITLE SCREEN (GAME START) -->
     <div id="title-screen" class="overlay-screen active" style="cursor: pointer;">
       <button id="title-start-btn" class="btn-start-neon">
-        <span class="btn-text">스페이스 눌러 시작</span>
+        <span class="btn-text" id="title-start-text">화면을 터치하여 시작</span>
       </button>
     </div>
 
@@ -201,8 +204,11 @@
         </div>
 
         <button id="start-game-btn" class="btn-primary" style="display: none;" disabled>학파 선택 필수</button>
-        <p style="color: var(--xp-color); font-size: 12px; margin-top: 12px; font-family: var(--font-title);">
-          [←] / [→] 방향키로 학파를 선택하고 [Enter] / [Space]로 시작할 수 있습니다.
+        <p id="menu-keyboard-hint" style="color: var(--xp-color); font-size: 12px; margin-top: 12px; font-family: var(--font-title);">
+          [↑] / [↓] 방향키로 학파를 선택하고 [Enter] / [Space]로 시작할 수 있습니다.
+        </p>
+        <p id="menu-touch-hint" style="color: var(--xp-color); font-size: 13px; margin-top: 12px; font-family: var(--font-title); display: none;">
+          학파 카드를 탭하여 선택 → 게임 시작!
         </p>
       </div>
     </div>
@@ -215,8 +221,11 @@
         <div id="socrates-dialogue" class="socrates-quote">
           "자네는 지금 들고 있는 무기의 본질을 아는가? 스스로 모른다는 사실을 깨닫지 못하면, 그 어떤 진리(대미지)도 적에게 닿지 않네."
         </div>
-        <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 12px;">
+        <p id="tutorial-keyboard-hint" style="color: var(--text-secondary); font-size: 12px; margin-bottom: 12px;">
           방향키 [←]/[→]로 이동하고 [Enter]/[Space]로 선택하십시오.
+        </p>
+        <p id="tutorial-touch-hint" style="color: var(--text-secondary); font-size: 13px; margin-bottom: 12px; display: none;">
+          버튼을 탭하여 선택하십시오.
         </p>
         <div class="socrates-choices">
           <button id="tutorial-yes-btn" class="btn-yes">예, 아무것도 모름을 인정합니다</button>
@@ -235,7 +244,8 @@
         <div class="levelup-ribbon-title">스킬 선택</div>
         
         <!-- Instructions -->
-        <div class="levelup-instructions">방향키 [↑]/[↓]로 이동하고 [Enter]/[Space]로 선택하십시오.</div>
+        <div id="levelup-keyboard-hint" class="levelup-instructions">방향키 [↑]/[↓]로 이동하고 [Enter]/[Space]로 선택하십시오.</div>
+        <div id="levelup-touch-hint" class="levelup-instructions" style="display:none;">카드를 탭하여 스킬을 선택하십시오.</div>
         
         <!-- Card Choices container -->
         <div id="card-choices-container" class="card-choices-stack">

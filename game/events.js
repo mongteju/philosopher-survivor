@@ -26,6 +26,41 @@ export function updateMenuKeyboardSelection() {
   }
 }
 
+// Detect touch device and update UI accordingly
+function applyMobileUI() {
+  const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+  
+  // Title screen text
+  const titleText = document.getElementById('title-start-text');
+  if (titleText) {
+    titleText.textContent = isTouchDevice ? '화면을 터치하여 시작' : '스페이스 눌러 시작';
+  }
+  
+  // Menu screen hints
+  const menuKeyHint = document.getElementById('menu-keyboard-hint');
+  const menuTouchHint = document.getElementById('menu-touch-hint');
+  if (menuKeyHint) menuKeyHint.style.display = isTouchDevice ? 'none' : 'block';
+  if (menuTouchHint) menuTouchHint.style.display = isTouchDevice ? 'block' : 'none';
+  
+  // Tutorial hints
+  const tutKeyHint = document.getElementById('tutorial-keyboard-hint');
+  const tutTouchHint = document.getElementById('tutorial-touch-hint');
+  if (tutKeyHint) tutKeyHint.style.display = isTouchDevice ? 'none' : 'block';
+  if (tutTouchHint) tutTouchHint.style.display = isTouchDevice ? 'block' : 'none';
+  
+  // Levelup hints
+  const lvlKeyHint = document.getElementById('levelup-keyboard-hint');
+  const lvlTouchHint = document.getElementById('levelup-touch-hint');
+  if (lvlKeyHint) lvlKeyHint.style.display = isTouchDevice ? 'none' : 'block';
+  if (lvlTouchHint) lvlTouchHint.style.display = isTouchDevice ? 'block' : 'none';
+  
+  // ESC pause instruction - hide on mobile
+  const escHint = document.querySelector('#hud [style*="font-size: 10px"]');
+  if (escHint && isTouchDevice) escHint.style.display = 'none';
+
+  return isTouchDevice;
+}
+
 export function updateTutorialKeyboardSelection() {
   const yesBtn = document.getElementById('tutorial-yes-btn');
   const noBtn = document.getElementById('tutorial-no-btn');
@@ -307,6 +342,9 @@ export function gameEvents() {
     } catch (err) {}
   };
 
+  // ── Mobile UI detection ──────────────────────────────────────────────
+  const isTouchDevice = applyMobileUI();
+
   // Bind UI buttons
   const titleScr = document.getElementById('title-screen');
   if (titleScr) {
@@ -314,6 +352,11 @@ export function gameEvents() {
       enterFullscreen();
       this.showMenuScreen();
     });
+    titleScr.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      enterFullscreen();
+      this.showMenuScreen();
+    }, { passive: false });
   }
   const titleBtn = document.getElementById('title-start-btn');
   if (titleBtn) {
@@ -329,6 +372,8 @@ export function gameEvents() {
       this.menuSelectedIndex = 0; 
       this.selectLineage('idealism'); 
       this.updateMenuKeyboardSelection();
+      // On touch: auto-highlight start button after selection
+      if (isTouchDevice) this._flashStartButton();
     };
     cardIdealism.addEventListener('click', selectIdealism);
     cardIdealism.addEventListener('touchstart', selectIdealism, { passive: false });
@@ -347,6 +392,7 @@ export function gameEvents() {
       this.menuSelectedIndex = 1; 
       this.selectLineage('empiricism'); 
       this.updateMenuKeyboardSelection();
+      if (isTouchDevice) this._flashStartButton();
     };
     cardEmpiricism.addEventListener('click', selectEmpiricism);
     cardEmpiricism.addEventListener('touchstart', selectEmpiricism, { passive: false });
@@ -365,6 +411,7 @@ export function gameEvents() {
       this.menuSelectedIndex = 2; 
       this.selectLineage('confucianism'); 
       this.updateMenuKeyboardSelection();
+      if (isTouchDevice) this._flashStartButton();
     };
     cardConfucianism.addEventListener('click', selectConfucianism);
     cardConfucianism.addEventListener('touchstart', selectConfucianism, { passive: false });
@@ -383,6 +430,7 @@ export function gameEvents() {
       this.menuSelectedIndex = 3; 
       this.selectLineage('taoism'); 
       this.updateMenuKeyboardSelection();
+      if (isTouchDevice) this._flashStartButton();
     };
     cardTaoism.addEventListener('click', selectTaoism);
     cardTaoism.addEventListener('touchstart', selectTaoism, { passive: false });
@@ -401,6 +449,7 @@ export function gameEvents() {
       this.menuSelectedIndex = 4; 
       this.selectLineage('buddhism'); 
       this.updateMenuKeyboardSelection();
+      if (isTouchDevice) this._flashStartButton();
     };
     cardBuddhism.addEventListener('click', selectBuddhism);
     cardBuddhism.addEventListener('touchstart', selectBuddhism, { passive: false });
@@ -411,6 +460,17 @@ export function gameEvents() {
       }
     });
   }
+
+  // ── Helper: flash start button on mobile after lineage selection ─────
+  this._flashStartButton = () => {
+    const startBtn = document.getElementById('start-game-btn');
+    if (!startBtn) return;
+    // Scroll start button into view and pulse-animate it
+    startBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    startBtn.classList.remove('mobile-pulse');
+    void startBtn.offsetWidth; // force reflow
+    startBtn.classList.add('mobile-pulse');
+  };
 
   const startGameBtn = document.getElementById('start-game-btn');
   if (startGameBtn) {
@@ -484,6 +544,24 @@ export function gameEvents() {
   if (goRestart) {
     goRestart.addEventListener('click', () => location.reload());
   }
+
+  // Mobile pause button binding (only shown on touch devices during gameplay)
+  const mobilePauseBtn = document.getElementById('mobile-pause-btn');
+  if (mobilePauseBtn && isTouchDevice) {
+    mobilePauseBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      if (this.isPlaying || this.isPaused) this.togglePause();
+    }, { passive: false });
+    mobilePauseBtn.addEventListener('click', () => {
+      if (this.isPlaying || this.isPaused) this.togglePause();
+    });
+    // Show this button when game starts (hook into acceptTutorial flow)
+    const origAcceptTutorial = this.acceptTutorial.bind(this);
+    this._showMobilePauseOnStart = () => {
+      mobilePauseBtn.style.display = 'flex';
+    };
+  }
+
   document.getElementById('pause-resume-btn').addEventListener('click', () => this.togglePause());
   document.getElementById('pause-restart-btn').addEventListener('click', () => location.reload());
   const endToMenu = document.getElementById('end-to-menu-btn');

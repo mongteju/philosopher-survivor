@@ -113,6 +113,10 @@ export function acceptTutorial(accepted) {
   if (this.bgm) {
     try { this.bgm.play().catch(() => {}); } catch (err) {}
   }
+  // Show mobile pause button if on touch device
+  if (typeof this._showMobilePauseOnStart === 'function') {
+    this._showMobilePauseOnStart();
+  }
   requestAnimationFrame(t => this.loop(t));
 }
 
@@ -925,15 +929,18 @@ export function togglePause() {
   this.isPaused = !this.isPaused;
   this.isPlaying = !this.isPaused;
   const ps = document.getElementById('pause-screen');
+  const mobilePauseBtn = document.getElementById('mobile-pause-btn');
   if (this.isPaused) {
     ps.classList.add('active');
     this.pauseSelectedIndex = 0;
     this.updatePauseKeyboardSelection(['pause-resume-btn', 'pause-restart-btn', 'pause-bgm-btn', 'pause-sfx-btn', 'pause-status-toggle-btn']);
     this.updatePauseStatusPanel();
+    if (mobilePauseBtn) mobilePauseBtn.textContent = '▶';
   } else {
     this.resetFocus();
     ps.classList.remove('active');
     this.lastTime = performance.now();
+    if (mobilePauseBtn) mobilePauseBtn.textContent = '⏸';
     requestAnimationFrame(t => this.loop(t));
   }
 }
