@@ -278,7 +278,7 @@ export function spawnAuraGacha() {
     const upDesc = document.getElementById('gacha-upgrade-desc');
     if (upDesc) {
       const specialLabel = isCurSynergy ? `<span style="background: #ffd200; color: #000; padding: 4px 10px; border-radius: 4px; font-size: 13.5px; font-weight: 900; margin-bottom: 12px; display: inline-block; box-shadow: 0 0 6px #ffd200;">★ 학파 고유 오라! ★</span><br>` : '';
-      const curName = isCurSynergy ? `${syn.name} ${curA.name}` : curA.name;
+      const curName = isCurSynergy ? curA.name : curA.name;
       upDesc.innerHTML = specialLabel +
                          `<span style="font-size: 21px; font-weight: 900; color: ${isCurSynergy ? '#ffd200' : curA.color}; display: block; margin-bottom: 12px; text-shadow: 0 0 6px ${isCurSynergy ? '#ffd200' : curA.color}55;">${curA.icon} ${curName}${currentLvlText} (강화)</span>` +
                          `<span style="color: #b7791f; font-weight: 900; font-size: 19px;">성능 강화하여 ${nextLvlText} 만들기</span><br>` +
@@ -287,7 +287,7 @@ export function spawnAuraGacha() {
     const chDesc = document.getElementById('gacha-change-desc');
     if (chDesc) {
       const specialLabel = isChangeSynergy ? `<span style="background: #ffd200; color: #000; padding: 4px 10px; border-radius: 4px; font-size: 13.5px; font-weight: 900; margin-bottom: 12px; display: inline-block; box-shadow: 0 0 6px #ffd200;">★ 학파 고유 오라! ★</span><br>` : '';
-      const changeName = isChangeSynergy ? `${syn.name} ${changeA.name}` : changeA.name;
+      const changeName = changeA.name;
       chDesc.innerHTML = specialLabel +
                          `<span style="font-size: 21px; font-weight: 900; color: ${isChangeSynergy ? '#ffd200' : changeA.color}; display: block; margin-bottom: 12px; text-shadow: 0 0 6px ${isChangeSynergy ? '#ffd200' : changeA.color}55;">${changeA.icon} ${changeName}로 교체</span>` +
                          `<span style="color: #b7791f; font-weight: 900; font-size: 19px;">현재 강화 등급 유지${currentLvlText}</span><br>` +
@@ -369,7 +369,7 @@ export function _showGachaResult(rolledKey) {
   const gTier = document.getElementById('gacha-tier');
   if (gTier) {
     const specialLabel = isSynergy ? '★ 학파 고유 오라! ★ ' : '';
-    const displayName = isSynergy ? `${syn.name} ${item.name}` : item.name;
+    const displayName = item.name;
     gTier.textContent = `${specialLabel}[신규 소환] ${displayName}`;
     gTier.style.color = isSynergy ? '#ffd200' : item.color;
   }
@@ -546,7 +546,7 @@ export function _applyAuraUpgrade() {
   const gTier = document.getElementById('gacha-tier');
   if (gTier) {
     const specialLabel = isSynergy ? '★ 학파 고유 오라! ★ ' : '';
-    const displayName = isSynergy ? `${syn.name} ${item.name}` : item.name;
+    const displayName = item.name;
     if (isBlessed) {
       gTier.textContent = `🎆 [소크라테스의 축복!] ${specialLabel}${displayName} +${this.activeAuraLevel - 1}강`;
       gTier.style.color = '#ffd200';
@@ -620,7 +620,7 @@ export function _applyAuraChange() {
   if (gTier) {
     const lvlText = this.activeAuraLevel === 1 ? '' : ` +${this.activeAuraLevel - 1}강`;
     const specialLabel = isSynergy ? '★ 학파 고유 오라! ★ ' : '';
-    const displayName = isSynergy ? `${syn.name} ${item.name}` : item.name;
+    const displayName = item.name;
     gTier.textContent = `[교체 성공] ${specialLabel}${displayName}${lvlText}`;
     gTier.style.color = isSynergy ? '#ffd200' : item.color;
   }
