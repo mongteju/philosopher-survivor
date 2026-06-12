@@ -258,24 +258,33 @@ export class Player {
   }
   takeDamage(dmg, game, bypassArmor = false) {
     if (this.isInvincible) return;
+    const activeGame = game || window.gameInstance;
     const reduced = bypassArmor ? dmg : Math.max(1, Math.floor(dmg * (1 - this.armorReduction) * (1 - (this.auraDamageReduction || 0))));
     this.hp = Math.max(0, this.hp - reduced);
-    game.addDamageText(this.x, this.y - 40, reduced, '#ff6b81', 16, false);
+    if (activeGame && typeof activeGame.addDamageText === 'function') {
+      activeGame.addDamageText(this.x, this.y - 40, reduced, '#ff6b81', 16, false);
+    }
     this.isInvincible = true; this.invincibilityFlash = 800;
     setTimeout(() => { this.isInvincible = false; this.invincibilityFlash = 0; }, 800);
     
     // Thorns Aura reflection
-    if (this.auraThornsReflection > 0 && game && game.enemies) {
+    if (this.auraThornsReflection > 0 && activeGame && activeGame.enemies) {
       const reflectDmg = Math.ceil(reduced * this.auraThornsReflection);
-      game.enemies.forEach(e => {
+      activeGame.enemies.forEach(e => {
         if (Math.hypot(e.x - this.x, e.y - this.y) < 180 && e.hp > 0) {
-          game.dealDamageToEnemy(e, reflectDmg);
-          game.spawnParticles(e.x, e.y, '#1dd1a1', 3, 5, -2);
+          if (typeof activeGame.dealDamageToEnemy === 'function') {
+            activeGame.dealDamageToEnemy(e, reflectDmg);
+          }
+          if (typeof activeGame.spawnParticles === 'function') {
+            activeGame.spawnParticles(e.x, e.y, '#1dd1a1', 3, 5, -2);
+          }
         }
       });
     }
     
-    if (this.hp <= 0) game.gameOver();
+    if (this.hp <= 0 && activeGame && typeof activeGame.gameOver === 'function') {
+      activeGame.gameOver();
+    }
   }
   heal(amt) { this.hp = Math.min(this.maxHp, this.hp + amt); }
   gainXp(val, game) {

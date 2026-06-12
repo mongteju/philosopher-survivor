@@ -49,6 +49,7 @@ export function showMenuScreen() {
 }
 
 export function startGame() {
+  this.hasRegisteredRanking = false;
   if (!this.player || !this.player.lineage) return;
   let firstSkillId = 'fire_projectile';
   if (this.player.lineage === 'empiricism') firstSkillId = 'ice_projectile';
@@ -1090,16 +1091,28 @@ export function spawnExistentialWords() {
 export function gameOver() {
   this.isPlaying = false;
   this.diedInBossFight = (this.currentBoss !== null);
-  const stages = EVOLUTION_STAGES[this.player.lineage];
-  const ev = stages[Math.min(this.player.evolutionIndex, stages.length - 1)];
-  const totalSecs = Math.floor(this.realSurvivalTimer);
+  const lineage = this.player ? this.player.lineage : null;
+  const stages = (lineage && EVOLUTION_STAGES) ? (EVOLUTION_STAGES[lineage] || []) : [];
+  const ev = (stages.length > 0 && this.player) ? stages[Math.min(this.player.evolutionIndex, stages.length - 1)] : null;
+  const totalSecs = Math.floor(this.realSurvivalTimer || 0);
   const m = String(Math.floor(totalSecs / 60)).padStart(2, '0');
   const s = String(totalSecs % 60).padStart(2, '0');
-  document.getElementById('go-philosopher').textContent = ev ? ev.title : '학자';
-  document.getElementById('go-era').textContent = ev ? ev.era : '고대';
-  document.getElementById('go-time').textContent = `${m}:${s}`;
-  document.getElementById('gameover-screen').classList.add('active');
-  sfx.playAlert();
+  
+  const goPhilosopher = document.getElementById('go-philosopher');
+  if (goPhilosopher) goPhilosopher.textContent = ev ? ev.title : '학자';
+  
+  const goEra = document.getElementById('go-era');
+  if (goEra) goEra.textContent = ev ? ev.era : '고대';
+  
+  const goTime = document.getElementById('go-time');
+  if (goTime) goTime.textContent = `${m}:${s}`;
+  
+  const goScreen = document.getElementById('gameover-screen');
+  if (goScreen) goScreen.classList.add('active');
+  
+  if (typeof sfx !== 'undefined' && sfx.playAlert) {
+    sfx.playAlert();
+  }
 
   const retryBtn = document.getElementById('gameover-retry-btn');
   if (retryBtn) retryBtn.classList.add('keyboard-selected');
@@ -1126,11 +1139,19 @@ export function triggerEnding() {
   const playtimeEl = document.getElementById('true-ending-playtime');
   if (playtimeEl) playtimeEl.textContent = `플레이타임: ${playtimeStr}`;
   
-  // Hide return to menu button initially
-  const menuBtn = document.getElementById('end-to-menu-btn');
-  if (menuBtn) {
-    menuBtn.style.display = 'none';
-    menuBtn.style.opacity = '0';
+  // Hide return to menu actions initially
+  const endActions = document.getElementById('end-actions-container');
+  if (endActions) {
+    endActions.style.display = 'none';
+    endActions.style.opacity = '0';
+  }
+  const regBtn = document.getElementById('end-register-rank-btn');
+  if (regBtn) {
+    if (this.hasRegisteredRanking) {
+      regBtn.style.display = 'none';
+    } else {
+      regBtn.style.display = 'block';
+    }
   }
   
   if (typingContainer) {
@@ -1173,15 +1194,16 @@ export function triggerEnding() {
         setTimeout(() => {
           if (creditsContainer) creditsContainer.style.opacity = '1';
           
-          // Show the menu return button 1.0s after credits fade in
+          // Show the end actions container 1.0s after credits fade in
           setTimeout(() => {
-            const restartBtn = document.getElementById('end-to-menu-btn');
-            if (restartBtn) {
-              restartBtn.style.display = 'block';
-              void restartBtn.offsetWidth; // trigger reflow
-              restartBtn.style.opacity = '1';
-              restartBtn.focus();
+            const endActions = document.getElementById('end-actions-container');
+            if (endActions) {
+              endActions.style.display = 'flex';
+              void endActions.offsetWidth; // trigger reflow
+              endActions.style.opacity = '1';
             }
+            const restartBtn = document.getElementById('end-to-menu-btn');
+            if (restartBtn) restartBtn.focus();
           }, 1000);
         }, 1500);
       }
@@ -1461,6 +1483,7 @@ export function applyUniqueHitAction(stageIndex) {
 
 export function retryCurrentStageOrBoss() {
   if (!this.player) return;
+  this.hasRegisteredRanking = false;
   
   // Hide game over screen
   document.getElementById('gameover-screen').classList.remove('active');

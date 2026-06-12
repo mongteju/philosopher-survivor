@@ -24,6 +24,11 @@ export function updateMenuKeyboardSelection() {
   if (startBtn) {
     startBtn.classList.toggle('keyboard-selected', this.menuSelectedIndex === 5);
   }
+  
+  const menuRankingBtn = document.getElementById('menu-ranking-btn');
+  if (menuRankingBtn) {
+    menuRankingBtn.classList.toggle('keyboard-selected', this.menuSelectedIndex === 6);
+  }
 }
 
 // Detect touch device and update UI accordingly
@@ -77,20 +82,39 @@ export function updateKeyboardCardSelection() {
 
 
 export function gameEvents() {
+  let debugInputBuffer = '';
+
   window.addEventListener('keydown', e => {
+    // If user is focused on an input element, do not capture key events for game navigation
+    if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+      return;
+    }
+
     let keyStr = (e.key || '').toLowerCase();
     let codeStr = (e.code || '').toLowerCase();
 
-    // Secret backdoor to toggle debug panel: Backtick (`) key
-    if (e.key === '`' || e.key === '₩' || codeStr === 'backquote') {
-      e.preventDefault();
-      const dbg = document.getElementById('debug-panel');
-      if (dbg) {
-        const isHidden = dbg.style.display === 'none';
-        dbg.style.display = isHidden ? 'block' : 'none';
-        if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
+    // Check for secret debug panel passcode: "philosopher"
+    if (e.key && e.key.length === 1) {
+      debugInputBuffer += e.key.toLowerCase();
+      if (debugInputBuffer.length > 20) {
+        debugInputBuffer = debugInputBuffer.slice(-20);
       }
-      return;
+      if (debugInputBuffer.endsWith('philosopher')) {
+        const dbg = document.getElementById('debug-panel');
+        if (dbg) {
+          const isHidden = dbg.style.display === 'none';
+          dbg.style.display = isHidden ? 'block' : 'none';
+          if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
+          console.log("[Secret] Debug panel toggled via secret command!");
+
+          // Refresh the ranking board rendering to show/hide individual delete buttons
+          if (typeof window.renderRankingsGlobal === 'function') {
+            window.renderRankingsGlobal();
+          }
+        }
+        debugInputBuffer = '';
+        return;
+      }
     }
     
     // Normalize legacy arrow keys
@@ -159,16 +183,26 @@ export function gameEvents() {
       return;
     }
 
-    // ESC: pause
+    // ESC: close ranking/registration if active, otherwise pause
     if (e.key === 'Escape') {
       e.preventDefault();
+      const rankingScreen = document.getElementById('ranking-screen');
+      if (rankingScreen && rankingScreen.classList.contains('active')) {
+        document.getElementById('ranking-close-btn').click();
+        return;
+      }
+      const rankRegisterModal = document.getElementById('rank-register-modal');
+      if (rankRegisterModal && rankRegisterModal.classList.contains('active')) {
+        document.getElementById('rank-cancel-btn').click();
+        return;
+      }
       if (this.isPlaying || this.isPaused) this.togglePause();
       return;
     }
 
     // Pause screen navigation
     if (this.isPaused) {
-      const pauseBtns = ['pause-resume-btn', 'pause-restart-btn', 'pause-bgm-btn', 'pause-sfx-btn', 'pause-status-toggle-btn'];
+      const pauseBtns = ['pause-resume-btn', 'pause-restart-btn', 'pause-bgm-btn', 'pause-sfx-btn', 'pause-status-toggle-btn', 'pause-ranking-btn'];
       if (k === 'arrowup' || k === 'w') { e.preventDefault(); this.pauseSelectedIndex = (this.pauseSelectedIndex - 1 + pauseBtns.length) % pauseBtns.length; this.updatePauseKeyboardSelection(pauseBtns); sfx.playTick(); }
       else if (k === 'arrowdown' || k === 's') { e.preventDefault(); this.pauseSelectedIndex = (this.pauseSelectedIndex + 1) % pauseBtns.length; this.updatePauseKeyboardSelection(pauseBtns); sfx.playTick(); }
       else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); const btn = document.getElementById(pauseBtns[this.pauseSelectedIndex]); if (btn) btn.click(); }
@@ -185,7 +219,7 @@ export function gameEvents() {
         e.preventDefault();
         if (this.menuSelectedIndex > 0) {
           this.menuSelectedIndex--;
-          if (this.menuSelectedIndex !== 5) {
+          if (this.menuSelectedIndex !== 5 && this.menuSelectedIndex !== 6) {
             this.selectLineage(lineages[this.menuSelectedIndex]);
           }
           this.updateMenuKeyboardSelection();
@@ -195,22 +229,25 @@ export function gameEvents() {
       // Down / Right: Move Down in the list
       else if (k === 'arrowdown' || k === 's' || k === 'arrowright' || k === 'd') {
         e.preventDefault();
-        if (this.menuSelectedIndex < 5) {
+        if (this.menuSelectedIndex < 6) {
           this.menuSelectedIndex++;
-          if (this.menuSelectedIndex !== 5) {
+          if (this.menuSelectedIndex !== 5 && this.menuSelectedIndex !== 6) {
             this.selectLineage(lineages[this.menuSelectedIndex]);
           }
           this.updateMenuKeyboardSelection();
           if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
         }
       }
-      // Enter / Space: Select / Start Game
+      // Enter / Space: Select / Start Game / Open Rankings
       else if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         if (this.menuSelectedIndex === 5) {
           if (this.player && this.player.lineage) {
             this.startGame();
           }
+        } else if (this.menuSelectedIndex === 6) {
+          const rankBtn = document.getElementById('menu-ranking-btn');
+          if (rankBtn) rankBtn.click();
         } else {
           this.selectLineage(lineages[this.menuSelectedIndex]);
           this.menuSelectedIndex = 5;
@@ -305,6 +342,11 @@ export function gameEvents() {
   });
 
   window.addEventListener('keyup', e => {
+    // If user is focused on an input element, do not capture key events for game navigation
+    if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+      return;
+    }
+
     let keyStr = (e.key || '').toLowerCase();
     let codeStr = (e.code || '').toLowerCase();
     

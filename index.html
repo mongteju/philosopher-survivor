@@ -203,7 +203,10 @@
           </button>
         </div>
 
-        <button id="start-game-btn" class="btn-primary" style="display: none;" disabled>학파 선택 필수</button>
+        <div class="menu-action-buttons" style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 16px;">
+          <button id="start-game-btn" class="btn-primary" style="display: none;" disabled>학파 선택 필수</button>
+          <button id="menu-ranking-btn" class="btn-secondary" style="margin-top: 0; border-color: #ffd200; color: #ffd200; padding: 12px 36px;">🏆 랭킹 보기</button>
+        </div>
         <p id="menu-keyboard-hint" style="color: var(--xp-color); font-size: 12px; margin-top: 12px; font-family: var(--font-title);">
           [↑] / [↓] 방향키로 학파를 선택하고 [Enter] / [Space]로 시작할 수 있습니다.
         </p>
@@ -329,6 +332,70 @@
       </div>
     </div>
 
+    <!-- Screen 11: RANKING OVERLAY -->
+    <div id="ranking-screen" class="overlay-screen">
+      <div class="modal-content ranking-content" style="border-color: #ffd200;">
+        <div class="ranking-header">
+          <div class="ranking-title">🏆 철학자 명예의 전당 (Rankings)</div>
+          <button id="ranking-close-btn" class="btn-secondary" style="margin-top:0;">닫기</button>
+        </div>
+
+        <div class="ranking-tabs">
+          <button id="rank-tab-all" class="ranking-tab active">전체</button>
+          <button id="rank-tab-idealism" class="ranking-tab">이성주의</button>
+          <button id="rank-tab-empiricism" class="ranking-tab">경험주의</button>
+          <button id="rank-tab-confucianism" class="ranking-tab">유가</button>
+          <button id="rank-tab-taoism" class="ranking-tab">도가</button>
+          <button id="rank-tab-buddhism" class="ranking-tab">불교</button>
+        </div>
+
+        <div id="ranking-list" class="ranking-list">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 12: RANK REGISTRATION MODAL -->
+    <div id="rank-register-modal" class="overlay-screen">
+      <div class="modal-content" style="max-width: 450px; padding: 24px 32px; border-color: #ffd200;">
+        <h2 style="font-family: var(--font-title); color: #ffd200; font-size: 22px; font-weight: 800; margin-bottom: 6px;">
+          🏆 명예의 전당 랭킹 등록
+        </h2>
+        <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 20px;">
+          축하합니다! 당신의 업적을 기록하십시오.
+        </p>
+
+        <!-- Form fields for Grade, Class, Name -->
+        <div style="display: flex; flex-direction: column; gap: 14px; text-align: left; margin-bottom: 20px;">
+          <div style="display: flex; gap: 12px;">
+            <div style="flex: 1;">
+              <label style="display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; font-weight: bold;">학년</label>
+              <input type="number" id="rank-grade" placeholder="예: 3" min="1" max="9" class="rank-input" required>
+            </div>
+            <div style="flex: 1;">
+              <label style="display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; font-weight: bold;">반</label>
+              <input type="number" id="rank-class" placeholder="예: 2" min="1" max="99" class="rank-input" required>
+            </div>
+          </div>
+          <div>
+            <label style="display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; font-weight: bold;">이름</label>
+            <input type="text" id="rank-name" placeholder="예: 김철수" maxlength="10" class="rank-input" required>
+          </div>
+        </div>
+
+        <div id="rank-register-error" style="color: #ff4757; font-size: 12px; margin-bottom: 12px; display: none;">모든 빈칸을 채워주세요!</div>
+
+        <div style="display: flex; gap: 12px; justify-content: center; width: 100%;">
+          <button id="rank-submit-btn" class="btn-primary" style="background: #ffd200; color: #000; box-shadow: 0 4px 15px rgba(255, 210, 0, 0.4); flex: 1; padding: 12px 16px; margin: 0; font-size: 14px; border: none; cursor: pointer;">
+            등록 완료
+          </button>
+          <button id="rank-cancel-btn" class="btn-secondary" style="flex: 1; border-color: rgba(255, 255, 255, 0.25); padding: 12px 16px; margin: 0; font-size: 14px; font-weight: bold; background: rgba(255, 255, 255, 0.05); color: #fff; border-radius: 30px;">
+            취소
+          </button>
+        </div>
+      </div>
+    </div>
+
 
 
     <!-- Screen 10: TRUE ENDING (Cinematic) -->
@@ -340,7 +407,10 @@
           제작 임진택
           <div id="true-ending-playtime" style="font-size: 15px; font-weight: normal; margin-top: 15px; color: rgba(255, 255, 255, 0.75);">플레이타임: 0분 0초</div>
         </div>
-        <button id="end-to-menu-btn" class="btn-primary" style="margin-top: 30px; padding: 12px 36px; display: none; opacity: 0; transition: opacity 1s;">다른 철학자로 모험하기</button>
+        <div id="end-actions-container" style="display: flex; gap: 16px; margin-top: 30px; display: none; opacity: 0; transition: opacity 1s; justify-content: center; align-items: center;">
+          <button id="end-register-rank-btn" class="btn-primary" style="margin-top: 0; padding: 12px 36px; background: #ffd200; border-color: #ffd200; color: #000; box-shadow: 0 4px 15px rgba(255, 210, 0, 0.4);">🏆 랭킹 등록하기</button>
+          <button id="end-to-menu-btn" class="btn-secondary" style="margin-top: 0; padding: 12px 36px;">다른 철학자로 모험하기</button>
+        </div>
       </div>
     </div>
 
@@ -388,6 +458,9 @@
 
         <button id="pause-status-toggle-btn" class="btn-secondary" style="width: 100%; margin-top: 0; padding: 10px; font-weight: bold; border-color: var(--xp-color); color: var(--xp-color);">
           📋 캐릭터 상태창 열기
+        </button>
+        <button id="pause-ranking-btn" class="btn-secondary" style="width: 100%; margin-top: 10px; padding: 10px; font-weight: bold; border-color: #ffd200; color: #ffd200;">
+          🏆 랭킹 보기
         </button>
 
         <!-- Dynamic Status Panel -->
@@ -476,6 +549,9 @@
       <div class="debug-row">
         <button id="dbg-boss" class="btn-debug">보스 소환</button>
         <button id="dbg-clear" class="btn-debug">보스 퇴치</button>
+      </div>
+      <div class="debug-row">
+        <button id="dbg-reset-rank" class="btn-debug" style="background: #ff4757; color: #fff; width: 100%; border-color: #ff6b81; margin-top: 4px;">🏆 랭킹 데이터 초기화</button>
       </div>
     </div>
 

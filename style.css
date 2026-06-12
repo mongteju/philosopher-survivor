@@ -1974,7 +1974,7 @@ button.keyboard-selected,
 }
 /* Buggy duplicate overlay style removed to keep the readable skill card description styling */
 
-#ending-screen {
+#true-ending-screen {
   z-index: 1000 !important;
   pointer-events: auto !important;
 }
@@ -2016,8 +2016,12 @@ button.keyboard-selected,
 }
 
 /* GameOver & Ending active layer priority */
-#gameover-screen.active, #ending-screen.active {
+#gameover-screen.active, #true-ending-screen.active {
   z-index: 10000 !important;
+}
+
+#ranking-screen.active, #rank-register-modal.active {
+  z-index: 10010 !important;
 }
 
 /* Levelup Container styles - 2D Casual Cartoon Webtoon Style Overhaul */
@@ -3369,4 +3373,208 @@ button.keyboard-selected,
   .choice-card-horizontal {
     padding: 8px 10px;
   }
+}
+
+/* ==========================================================================
+   Ranking System Styling
+   ========================================================================== */
+
+.ranking-content {
+  max-width: 650px;
+  width: 95%;
+  height: 80%;
+  display: flex;
+  flex-direction: column;
+}
+
+.ranking-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 12px;
+}
+
+.ranking-title {
+  font-family: var(--font-title);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--xp-color);
+  text-shadow: 0 0 10px var(--xp-glow);
+}
+
+.ranking-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.ranking-tab {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  padding: 6px 14px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-family: var(--font-title);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.ranking-tab:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+}
+
+.ranking-tab.active {
+  background: var(--xp-color);
+  color: #000;
+  border-color: transparent;
+  font-weight: bold;
+}
+
+.ranking-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 8px;
+  text-align: left;
+}
+
+.ranking-list::-webkit-scrollbar {
+  width: 6px;
+}
+.ranking-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.ranking-list::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+}
+
+.ranking-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s;
+}
+
+.ranking-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border-glow);
+}
+
+.ranking-item.highlight-new {
+  border-color: var(--xp-color) !important;
+  background: rgba(255, 192, 72, 0.08) !important;
+  box-shadow: 0 0 15px rgba(255, 192, 72, 0.2);
+  animation: ranking-new-pulse 2.0s infinite alternate;
+}
+
+@keyframes ranking-new-pulse {
+  0% { border-color: rgba(255, 192, 72, 0.4); box-shadow: 0 0 8px rgba(255, 192, 72, 0.1); }
+  100% { border-color: rgba(255, 192, 72, 1); box-shadow: 0 0 16px rgba(255, 192, 72, 0.4); }
+}
+
+.rank-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-title);
+  font-weight: bold;
+  font-size: 13px;
+  margin-right: 12px;
+}
+
+.rank-badge.rank-1 {
+  background: #ffd200;
+  color: #000;
+  box-shadow: 0 0 10px rgba(255, 210, 0, 0.5);
+}
+.rank-badge.rank-2 {
+  background: #dfe4ea;
+  color: #000;
+  box-shadow: 0 0 10px rgba(223, 228, 234, 0.5);
+}
+.rank-badge.rank-3 {
+  background: #cd7f32;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(205, 127, 50, 0.5);
+}
+.rank-badge.rank-other {
+  background: rgba(255,255,255,0.08);
+  color: var(--text-secondary);
+}
+
+.rank-info-left {
+  display: flex;
+  align-items: center;
+}
+
+.rank-user-name {
+  font-family: var(--font-title);
+  font-weight: 600;
+  font-size: 15px;
+  color: #fff;
+}
+
+.rank-user-details {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.rank-info-right {
+  text-align: right;
+}
+
+.rank-playtime {
+  font-family: var(--font-mono);
+  font-weight: bold;
+  font-size: 16px;
+  color: var(--xp-color);
+}
+
+.rank-lineage-badge {
+  font-size: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-light);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  display: inline-block;
+  margin-top: 4px;
+}
+
+/* Rank Register Input styles */
+.rank-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.rank-input:focus {
+  border-color: var(--xp-color);
+  box-shadow: 0 0 8px var(--xp-glow);
 }

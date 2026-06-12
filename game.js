@@ -1,5 +1,6 @@
 import { TIMELINE, EVOLUTION_STAGES } from './db.js';
 import { sfx } from './audio.js';
+import { initRankingSystem } from './game/ranking.js';
 import {
   gameUpdate,
   handleWeaponTriggers,
@@ -373,6 +374,7 @@ class Game {
     };
 
     this.initEvents();
+    initRankingSystem(this);
     this.resetFocus();
     
     // Highlight title screen start button by default on load
