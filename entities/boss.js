@@ -194,8 +194,8 @@ export class WarningZone {
       const dx = p.x - this.x;
       const dy = p.y - this.y;
       if (!p.isInvincible && (dx * dx + dy * dy) < this.radius * this.radius) {
-        p.takeDamage(999999, game, true);
-        game.addDamageText(p.x, p.y - 60, "💥 발판 즉사!", "#ff4757", 30, true);
+        p.takeDamage(this.damage, game, false);
+        game.addDamageText(p.x, p.y - 60, "💥 발판 피격!", "#ff4757", 22, false);
       }
       game.spawnParticles(this.x, this.y, '#ff4757', 6, 15, -3);
       this.life = 0;
@@ -809,8 +809,8 @@ export class Boss {
             
             // Execute the massive attack!
             if (!player.superInvincible && !player.isInvincible) {
-              player.takeDamage(9999, game); // Insta-kill if not in safe zone
-              game.addDamageText(player.x, player.y - 60, "💥 파멸!", "#ff4757", 30, true);
+              player.takeDamage(550, game, false); // 550 damage (not instant kill, shield/armor applies)
+              game.addDamageText(player.x, player.y - 60, "💥 파멸의 브레스!", "#ff4757", 24, false);
             }
           }
         } else if (this.dragonBreathState === 'firing') {

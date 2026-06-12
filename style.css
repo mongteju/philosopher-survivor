@@ -3578,3 +3578,24 @@ button.keyboard-selected,
   border-color: var(--xp-color);
   box-shadow: 0 0 8px var(--xp-glow);
 }
+
+/* Synergy Aura Card Glow Effect */
+@keyframes synergy-glow-pulse {
+  0% {
+    border-color: #ffd200;
+    box-shadow: 0 0 12px #ffd200, inset 0 0 10px rgba(255, 210, 0, 0.15);
+  }
+  50% {
+    border-color: #ff9f43;
+    box-shadow: 0 0 24px #ff9f43, inset 0 0 20px rgba(255, 159, 103, 0.3);
+  }
+  100% {
+    border-color: #ffd200;
+    box-shadow: 0 0 12px #ffd200, inset 0 0 10px rgba(255, 210, 0, 0.15);
+  }
+}
+
+.synergy-card-glow {
+  border: 4px solid #ffd200 !important;
+  animation: synergy-glow-pulse 2s infinite ease-in-out !important;
+}

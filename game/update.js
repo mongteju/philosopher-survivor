@@ -263,6 +263,105 @@ export function gameUpdate(dt) {
   }
 
   this.player.update(dt, this.keys, this.joystick.angle, this.joystick.strength);
+
+  // ─── Update Synergies & Ground Effects ───────────────────────────
+  // 1. Frost Trails (Empiricism + Endurance)
+  if (this.player.empiricismEnduranceSynergy) {
+    const lastTrail = this.frostTrails[this.frostTrails.length - 1];
+    if (!lastTrail || Math.hypot(this.player.x - lastTrail.x, this.player.y - lastTrail.y) > 20) {
+      const lvl = this.activeAuraLevel || 1;
+      this.frostTrails.push({
+        x: this.player.x,
+        y: this.player.y,
+        radius: 65,
+        dmg: lvl * 40, // 상향 (레벨당 40)
+        life: 3000,
+        maxLife: 3000
+      });
+    }
+  }
+
+  // Update Frost Trails
+  for (let i = this.frostTrails.length - 1; i >= 0; i--) {
+    const t = this.frostTrails[i];
+    t.life -= dt;
+    if (t.life <= 0) {
+      this.frostTrails.splice(i, 1);
+      continue;
+    }
+    this.enemies.forEach(e => {
+      if (e.hp > 0 && Math.hypot(e.x - t.x, e.y - t.y) < t.radius) {
+        e.slowMul = 0.25; // 75% slow
+        e.slowTimer = Math.max(e.slowTimer || 0, 1500);
+        if (!t.tickTimers) t.tickTimers = new Map();
+        const lastTick = t.tickTimers.get(e) || 0;
+        if (performance.now() - lastTick > 500) {
+          this.dealDamageToEnemy(e, Math.ceil(t.dmg * 0.5));
+          t.tickTimers.set(e, performance.now());
+        }
+      }
+    });
+  }
+
+  // 2. Wind Vortexes (Taoism + Thorns)
+  for (let i = this.windVortexes.length - 1; i >= 0; i--) {
+    const v = this.windVortexes[i];
+    v.life -= dt;
+    if (v.life <= 0) {
+      this.windVortexes.splice(i, 1);
+      continue;
+    }
+    this.enemies.forEach(e => {
+      if (e.hp > 0) {
+        const dx = v.x - e.x, dy = v.y - e.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < v.radius) {
+          if (e.type !== 'boss') {
+            const pullForce = 2.0;
+            const hyp = Math.max(1, dist);
+            e.x += (dx / hyp) * pullForce;
+            e.y += (dy / hyp) * pullForce;
+          }
+          if (!v.tickTimers) v.tickTimers = new Map();
+          const lastTick = v.tickTimers.get(e) || 0;
+          if (performance.now() - lastTick > 500) {
+            this.dealDamageToEnemy(e, Math.ceil(v.dmg * 0.5));
+            v.tickTimers.set(e, performance.now());
+          }
+        }
+      }
+    });
+  }
+
+  // 3. Fire Puddles (Idealism + Warsong)
+  for (let i = this.firePuddles.length - 1; i >= 0; i--) {
+    const p = this.firePuddles[i];
+    p.life -= dt;
+    if (p.life <= 0) {
+      this.firePuddles.splice(i, 1);
+      continue;
+    }
+    this.enemies.forEach(e => {
+      if (e.hp > 0 && Math.hypot(e.x - p.x, e.y - p.y) < p.radius) {
+        if (!p.tickTimers) p.tickTimers = new Map();
+        const lastTick = p.tickTimers.get(e) || 0;
+        if (performance.now() - lastTick > 500) {
+          this.dealDamageToEnemy(e, Math.ceil(p.dmg * 0.5));
+          p.tickTimers.set(e, performance.now());
+        }
+      }
+    });
+  }
+
+  // 4. Chain Lightnings
+  for (let i = this.chainLightnings.length - 1; i >= 0; i--) {
+    const c = this.chainLightnings[i];
+    c.life -= dt;
+    if (c.life <= 0) {
+      this.chainLightnings.splice(i, 1);
+    }
+  }
+
   if (this.cameraLocked && this.nietzscheArenaCenter) {
     this.camera.x = this.nietzscheArenaCenter.x;
     this.camera.y = this.nietzscheArenaCenter.y;
@@ -530,7 +629,11 @@ export function gameUpdate(dt) {
       const dmgM = this.player.dmgMultiplier * tierMul * (1 + (this.player.auraDamageBonus || 0));
 
       const radius = (stats.radius || 70) * sizeM;
-      const dmg = (stats.dmg || 30) * dmgM;
+      let dmg = (stats.dmg || 30) * dmgM;
+      if (this.player.buddhismDevotionSynergy) {
+        const synLvl = this.activeAuraLevel || 1;
+        dmg *= (1 + synLvl * 0.35); // 불교 고유 오라: 초근접 스킬 데미지 +35%/레벨
+      }
       const rockOrbitAngle = -this.orbitAngle * 0.7;
 
       this.enemies.forEach(e => {
@@ -702,6 +805,29 @@ export function gameUpdate(dt) {
       } else {
         this.spawnXpFrags(e.x, e.y, e.xpVal);
         this.spawnParticles(e.x, e.y, e.color, 5, 8, -2);
+
+        // Confucianism + Unholy Synergy: 킬 시 즉시 체력 회복
+        if (this.player.confucianismUnholySynergy) {
+          const synLvl = this.activeAuraLevel || 1;
+          const healAmt = synLvl * 50;
+          this.player.heal(healAmt);
+          this.addDamageText(this.player.x, this.player.y - 50, `+${healAmt} 회복`, '#ffb300', 16, true);
+        }
+
+        // Idealism + Vampiric Synergy: 킬 시 즉시 회복 + 킬 위치에 화염 장판
+        if (this.player.idealismVampiricSynergy) {
+          const synLvl = this.activeAuraLevel || 1;
+          const healAmt = Math.ceil(this.player.maxHp * synLvl * 0.02); // 최대체력의 레벨×2%
+          this.player.heal(healAmt);
+          this.firePuddles.push({
+            x: e.x, y: e.y,
+            radius: 70,
+            dmg: synLvl * 55,
+            life: 2500, maxLife: 2500
+          });
+          this.spawnParticles(e.x, e.y, '#ff4757', 6, 8, -2);
+        }
+
       }
       return false;
     }
@@ -750,9 +876,18 @@ export function fireWeapon(id, lvl, stats, awakening) {
   const tierMuls = { normal: 1.0, rare: 1.25, unique: 1.55, epic: 1.9 };
   const tierMul = tierMuls[skillTier] || 1.0;
 
-  const sizeM = (awakening ? 1.1 : 1.0) * this.player.areaMultiplier * (1 + (tierMul - 1) * 0.5);
+  let sizeM = (awakening ? 1.1 : 1.0) * this.player.areaMultiplier * (1 + (tierMul - 1) * 0.5);
   const isEmpiricism = this.player.lineage === 'empiricism';
-  const dmgM = (awakening ? (isEmpiricism ? 4.5 : 1.5) : 1.0) * this.player.dmgMultiplier * tierMul * (1 + (this.player.auraDamageBonus || 0));
+  let dmgM = (awakening ? (isEmpiricism ? 4.5 : 1.5) : 1.0) * this.player.dmgMultiplier * tierMul * (1 + (this.player.auraDamageBonus || 0));
+
+  // Synergy adjustments
+  const synLvl = this.activeAuraLevel || 1;
+  if (this.player.buddhismDevotionSynergy) {
+    dmgM *= (1 + synLvl * 0.35); // 불교 고유 오라: 초근접 스킬 데미지 +35%/레벨
+  }
+  if (this.player.idealismVampiricSynergy) {
+    sizeM *= 1.4; // 화염 폭발 반경 40% 증가 (관념론 고유 오라)
+  }
 
   if (id === 'fire_projectile') {
     const target = this.getNearestEnemy();
@@ -1103,7 +1238,10 @@ export function handleCombatCollisions() {
           e.slowTimer = 3000; // 3초 감속
         }
         if (proj.type === 'fire_explosion') {
-          const expRadius = pSize * 1.4;
+          let expRadius = pSize * 1.4;
+          if (this.player.idealismVampiricSynergy) {
+            expRadius *= 1.4; // 40% increased explosion radius
+          }
           const expRadiusSq = expRadius * expRadius;
           for (let k = 0; k < numEnemies; k++) {
             const e2 = enemies[k];
@@ -1116,6 +1254,19 @@ export function handleCombatCollisions() {
             }
           }
           this.spawnParticles(px, py, '#ff4757', 10, 10, -3);
+          
+          // Spawn fire puddle under explosion if Idealism + Vampiric synergy is active
+          if (this.player.idealismVampiricSynergy) {
+            const lvl = this.activeAuraLevel || 1;
+            this.firePuddles.push({
+              x: px,
+              y: py,
+              radius: expRadius * 0.9,
+              dmg: lvl * 55, // 공용 화염장판 (lvl × 55)
+              life: 2000,
+              maxLife: 2000
+            });
+          }
           proj.life = 0;
         } else if (proj.type === 'wind_vortex') {
           // pull enemies slightly towards wind center
@@ -1154,7 +1305,7 @@ export function dealDamageToEnemy(e, dmg, proj) {
   }
 
   const isCrit = Math.random() < (0.15 + (this.player.auraCritChance || 0));
-  let baseMultiplier = isCrit ? (1.5 * this.player.critMultiplier) : 1;
+  let baseMultiplier = isCrit ? (1.5 * this.player.critMultiplier + (this.player.auraCritDamageBonus || 0)) : 1;
   
   // Double damage against groggy (stunned) boss
   if (e.type === 'boss' && e.isStunned) {
@@ -1171,5 +1322,49 @@ export function dealDamageToEnemy(e, dmg, proj) {
   if (this.player.auraLifesteal > 0) {
     this.player.heal(Math.ceil(finalDmg * this.player.auraLifesteal));
     this.spawnParticles(e.x, e.y, '#e84118', 4, 6, -3);
+  }
+
+  // Trueshot Aura (public): Chain Lightning on Crit (now applies to ALL trueshot users)
+  if (isCrit && this.activeAura === 'trueshot') {
+    const lvl = this.activeAuraLevel || 1;
+    const chainDmg = lvl * 100; // 상향 (레벨당 100)
+    let currentSource = e;
+    const limit = 4;
+    const visited = new Set([e]);
+    const maxJumpDist = 250;
+    
+    for (let step = 0; step < limit; step++) {
+      let nearest = null;
+      let nearestDist = maxJumpDist;
+      this.enemies.forEach(e2 => {
+        if (e2.hp > 0 && !visited.has(e2)) {
+          const dist = Math.hypot(e2.x - currentSource.x, e2.y - currentSource.y);
+          if (dist < nearestDist) {
+            nearest = e2;
+            nearestDist = dist;
+          }
+        }
+      });
+      
+      if (nearest) {
+        visited.add(nearest);
+        const isChainCrit = Math.random() < 0.15;
+        const finalChainDmg = isChainCrit ? Math.floor(chainDmg * 2.0) : chainDmg;
+        nearest.hp -= finalChainDmg;
+        this.addDamageText(nearest.x, nearest.y - nearest.size - 10, "⚡ " + finalChainDmg, isChainCrit ? '#ffd200' : '#48dbfb', 14, isChainCrit);
+        
+        this.chainLightnings.push({
+          x1: currentSource.x,
+          y1: currentSource.y,
+          x2: nearest.x,
+          y2: nearest.y,
+          life: 150,
+          maxLife: 150
+        });
+        currentSource = nearest;
+      } else {
+        break;
+      }
+    }
   }
 }

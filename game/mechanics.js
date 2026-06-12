@@ -1,4 +1,4 @@
-import { PHILOSOPHY_DB, EVOLUTION_STAGES, TIMELINE, AURA_DB } from '../db.js';
+import { PHILOSOPHY_DB, EVOLUTION_STAGES, TIMELINE, AURA_DB, LINEAGE_AURA_SYNERGY } from '../db.js';
 import { sfx } from '../audio.js';
 import {
   Enemy,
@@ -259,15 +259,37 @@ export function spawnAuraGacha() {
     const currentLvlText = this.activeAuraLevel === 1 ? '' : ` +${this.activeAuraLevel - 1}강`;
     const nextLvlText = `+${this.activeAuraLevel}강`;
     
+    // School Unique Aura detection for glow effects and special labels
+    const syn = LINEAGE_AURA_SYNERGY[this.player.lineage];
+    const isCurSynergy = syn && syn.aura === this.activeAura;
+    const isChangeSynergy = syn && syn.aura === preRolledChangeAura;
+    
+    const upBtn = document.getElementById('gacha-upgrade-btn');
+    if (upBtn) {
+      if (isCurSynergy) upBtn.classList.add('synergy-card-glow');
+      else upBtn.classList.remove('synergy-card-glow');
+    }
+    const chBtn = document.getElementById('gacha-change-btn');
+    if (chBtn) {
+      if (isChangeSynergy) chBtn.classList.add('synergy-card-glow');
+      else chBtn.classList.remove('synergy-card-glow');
+    }
+    
     const upDesc = document.getElementById('gacha-upgrade-desc');
     if (upDesc) {
-      upDesc.innerHTML = `<span style="font-size: 21px; font-weight: 900; color: ${curA.color}; display: block; margin-bottom: 12px; text-shadow: 0 0 6px ${curA.color}55;">${curA.icon} ${curA.name}${currentLvlText} (강화)</span>` +
+      const specialLabel = isCurSynergy ? `<span style="background: #ffd200; color: #000; padding: 4px 10px; border-radius: 4px; font-size: 13.5px; font-weight: 900; margin-bottom: 12px; display: inline-block; box-shadow: 0 0 6px #ffd200;">★ 학파 고유 오라! ★</span><br>` : '';
+      const curName = isCurSynergy ? `${syn.name} ${curA.name}` : curA.name;
+      upDesc.innerHTML = specialLabel +
+                         `<span style="font-size: 21px; font-weight: 900; color: ${isCurSynergy ? '#ffd200' : curA.color}; display: block; margin-bottom: 12px; text-shadow: 0 0 6px ${isCurSynergy ? '#ffd200' : curA.color}55;">${curA.icon} ${curName}${currentLvlText} (강화)</span>` +
                          `<span style="color: #b7791f; font-weight: 900; font-size: 19px;">성능 강화하여 ${nextLvlText} 만들기</span><br>` +
                          `<span style="font-size: 16.5px; color: #231F20; font-weight: 900; display: inline-block; margin-top: 12px;">[${curA.statsDesc}] 수치가 한 단계 영구 증폭됩니다.</span>`;
     }
     const chDesc = document.getElementById('gacha-change-desc');
     if (chDesc) {
-      chDesc.innerHTML = `<span style="font-size: 21px; font-weight: 900; color: ${changeA.color}; display: block; margin-bottom: 12px; text-shadow: 0 0 6px ${changeA.color}55;">${changeA.icon} ${changeA.name}로 교체</span>` +
+      const specialLabel = isChangeSynergy ? `<span style="background: #ffd200; color: #000; padding: 4px 10px; border-radius: 4px; font-size: 13.5px; font-weight: 900; margin-bottom: 12px; display: inline-block; box-shadow: 0 0 6px #ffd200;">★ 학파 고유 오라! ★</span><br>` : '';
+      const changeName = isChangeSynergy ? `${syn.name} ${changeA.name}` : changeA.name;
+      chDesc.innerHTML = specialLabel +
+                         `<span style="font-size: 21px; font-weight: 900; color: ${isChangeSynergy ? '#ffd200' : changeA.color}; display: block; margin-bottom: 12px; text-shadow: 0 0 6px ${isChangeSynergy ? '#ffd200' : changeA.color}55;">${changeA.icon} ${changeName}로 교체</span>` +
                          `<span style="color: #b7791f; font-weight: 900; font-size: 19px;">현재 강화 등급 유지${currentLvlText}</span><br>` +
                          `<span style="font-size: 16.5px; color: #231F20; font-weight: 900; display: inline-block; margin-top: 12px;">[${changeA.statsDesc}] 효과를 획득합니다.</span>`;
     }
@@ -335,20 +357,25 @@ export function _showGachaResult(rolledKey) {
   const descEl = document.querySelector('#gacha-screen p');
   if (descEl) descEl.style.display = 'none'; // Hide the subtitle only after gacha result is shown!
   
+  const syn = LINEAGE_AURA_SYNERGY[this.player.lineage];
+  const isSynergy = syn && syn.aura === rolledKey;
+  
   const gVisual = document.getElementById('gacha-aura-visual');
   if (gVisual) {
     gVisual.textContent = item.icon;
-    gVisual.style.color = item.color;
-    gVisual.style.textShadow = `0 0 20px ${item.color}`;
+    gVisual.style.color = isSynergy ? '#ffd200' : item.color;
+    gVisual.style.textShadow = isSynergy ? `0 0 20px #ffd200` : `0 0 20px ${item.color}`;
   }
   const gTier = document.getElementById('gacha-tier');
   if (gTier) {
-    gTier.textContent = `[신규 소환] ${item.name}`;
-    gTier.style.color = item.color;
+    const specialLabel = isSynergy ? '★ 학파 고유 오라! ★ ' : '';
+    const displayName = isSynergy ? `${syn.name} ${item.name}` : item.name;
+    gTier.textContent = `${specialLabel}[신규 소환] ${displayName}`;
+    gTier.style.color = isSynergy ? '#ffd200' : item.color;
   }
   const gDesc = document.getElementById('gacha-desc');
   if (gDesc) {
-    gDesc.textContent = `효과: ${item.desc}`;
+    gDesc.textContent = `효과: ${isSynergy ? syn.desc : item.desc}`;
     gDesc.style.fontSize = '18.5px';
     gDesc.style.fontWeight = 'bold';
     gDesc.style.color = '#ffffff';
@@ -386,6 +413,7 @@ export function applyAuraStats() {
   this.player.auraRegenBonus = 0;
   this.player.auraThornsReflection = 0;
   this.player.auraCritChance = 0;
+  this.player.auraCritDamageBonus = 0;
   
   if (!this.activeAura || this.activeAuraLevel <= 0) return;
   
@@ -400,7 +428,8 @@ export function applyAuraStats() {
     this.player.auraSpeedBonus = lvl * 0.10;
     this.player.auraProjSpeedBonus = lvl * 0.10;
   } else if (key === 'warsong') {
-    this.player.auraDamageBonus = lvl * 0.15;
+    // 상향: 레벨당 40% 공격력 증가 (기존 15%) → 5레벨 시 +200% (3.0배)
+    this.player.auraDamageBonus = lvl * 0.40;
   } else if (key === 'unholy') {
     this.player.auraSpeedBonus = lvl * 0.08;
     this.player.auraRegenBonus = lvl * 1.5;
@@ -409,7 +438,55 @@ export function applyAuraStats() {
   } else if (key === 'thorns') {
     this.player.auraThornsReflection = lvl * 0.25;
   } else if (key === 'trueshot') {
-    this.player.auraCritChance = lvl * 0.12;
+    // 상향: 크리확률 레벨당 15% (기존 12%), 크리대미지 배율 레벨당 50% 추가
+    this.player.auraCritChance = lvl * 0.15;
+    this.player.auraCritDamageBonus = lvl * 0.50;
+  }
+
+  // ─── 학파 고유 오라 시너지 플래그 설정 ──────────────────────────────
+  const lineage = this.player.lineage;
+  const synergyMap = {
+    buddhism:     { flag: 'buddhismDevotionSynergy',    aura: 'devotion'  },
+    taoism:       { flag: 'taoismThornsSynergy',         aura: 'thorns'   },
+    empiricism:   { flag: 'empiricismEnduranceSynergy',  aura: 'endurance'},
+    confucianism: { flag: 'confucianismUnholySynergy',   aura: 'unholy'   }, // 변경: trueshot → unholy
+    idealism:     { flag: 'idealismVampiricSynergy',     aura: 'vampiric' }, // 변경: warsong → vampiric
+  };
+
+  // 모든 시너지 플래그 초기화
+  Object.values(synergyMap).forEach(({ flag }) => { this.player[flag] = false; });
+
+  // 학파와 오라가 매칭되면 해당 시너지 플래그 활성화
+  const syn = synergyMap[lineage];
+  if (syn && key === syn.aura) {
+    this.player[syn.flag] = true;
+
+    // 경험주의 + 인듀어런스: 추가 속도/쿨감 (레벨당 +20% 속도, +10% 쿨감)
+    if (lineage === 'empiricism') {
+      this.player.auraSpeedBonus += lvl * 0.20;
+      this.player.auraProjSpeedBonus += lvl * 0.20;
+      this.player.auraCooldownReduction += lvl * 0.10;
+    }
+    // 도가 + 쏜즈: 절대 회피율 레벨당 10% 추가
+    if (lineage === 'taoism') {
+      this.player.auraDodgeChance = Math.min(0.50, lvl * 0.10);
+    }
+    // 이성주의 + 뱀파이어릭: 흡혈률 레벨당 15% 추가 (기본 + 추가)
+    if (lineage === 'idealism') {
+      this.player.auraLifesteal += lvl * 0.15;
+    }
+    // 불교 + 디보션: 추가 피해 감소 레벨당 6%
+    if (lineage === 'buddhism') {
+      this.player.auraDamageReduction = Math.min(0.75, (this.player.auraDamageReduction || 0) + lvl * 0.06);
+    }
+    // 유가 + 언홀리: 이동속도 레벨당 15% 추가, 킬 힐/재생 증폭은 update.js에서 처리
+    if (lineage === 'confucianism') {
+      this.player.auraSpeedBonus += lvl * 0.15;
+      this.player.auraRegenBonus += lvl * 3.0; // 초당 regen lvl×3 추가
+    }
+  } else {
+    // 도가가 쏜즈 아닌 다른 오라 착용 시 회피율 리셋
+    this.player.auraDodgeChance = 0;
   }
 }
 
@@ -456,27 +533,32 @@ export function _applyAuraUpgrade() {
   const descEl = document.querySelector('#gacha-screen p');
   if (descEl) descEl.style.display = 'none';
   
+  const syn = LINEAGE_AURA_SYNERGY[this.player.lineage];
+  const isSynergy = syn && syn.aura === this.activeAura;
+
   const gVisual = document.getElementById('gacha-aura-visual');
   if (gVisual) {
     gVisual.textContent = item.icon;
-    gVisual.style.color = item.color;
-    gVisual.style.textShadow = `0 0 20px ${item.color}`;
+    gVisual.style.color = isSynergy ? '#ffd200' : item.color;
+    gVisual.style.textShadow = isSynergy ? `0 0 20px #ffd200` : `0 0 20px ${item.color}`;
   }
   
   const gTier = document.getElementById('gacha-tier');
   if (gTier) {
+    const specialLabel = isSynergy ? '★ 학파 고유 오라! ★ ' : '';
+    const displayName = isSynergy ? `${syn.name} ${item.name}` : item.name;
     if (isBlessed) {
-      gTier.textContent = `🎆 [소크라테스의 축복!] ${item.name} +${this.activeAuraLevel - 1}강`;
+      gTier.textContent = `🎆 [소크라테스의 축복!] ${specialLabel}${displayName} +${this.activeAuraLevel - 1}강`;
       gTier.style.color = '#ffd200';
     } else {
-      gTier.textContent = `[강화 성공] ${item.name} +${this.activeAuraLevel - 1}강`;
-      gTier.style.color = item.color;
+      gTier.textContent = `[강화 성공] ${specialLabel}${displayName} +${this.activeAuraLevel - 1}강`;
+      gTier.style.color = isSynergy ? '#ffd200' : item.color;
     }
   }
   
   const gDesc = document.getElementById('gacha-desc');
   if (gDesc) {
-    gDesc.textContent = `효과: ${item.desc} (현재 +${this.activeAuraLevel - 1}강)`;
+    gDesc.textContent = `효과: ${isSynergy ? syn.desc : item.desc} (현재 +${this.activeAuraLevel - 1}강)`;
     gDesc.style.fontSize = '18.5px';
     gDesc.style.fontWeight = 'bold';
     gDesc.style.color = '#ffffff';
@@ -524,24 +606,29 @@ export function _applyAuraChange() {
   const descEl = document.querySelector('#gacha-screen p');
   if (descEl) descEl.style.display = 'none';
   
+  const syn = LINEAGE_AURA_SYNERGY[this.player.lineage];
+  const isSynergy = syn && syn.aura === this.activeAura;
+
   const gVisual = document.getElementById('gacha-aura-visual');
   if (gVisual) {
     gVisual.textContent = item.icon;
-    gVisual.style.color = item.color;
-    gVisual.style.textShadow = `0 0 20px ${item.color}`;
+    gVisual.style.color = isSynergy ? '#ffd200' : item.color;
+    gVisual.style.textShadow = isSynergy ? `0 0 20px #ffd200` : `0 0 20px ${item.color}`;
   }
   
   const gTier = document.getElementById('gacha-tier');
   if (gTier) {
     const lvlText = this.activeAuraLevel === 1 ? '' : ` +${this.activeAuraLevel - 1}강`;
-    gTier.textContent = `[교체 성공] ${item.name}${lvlText}`;
-    gTier.style.color = item.color;
+    const specialLabel = isSynergy ? '★ 학파 고유 오라! ★ ' : '';
+    const displayName = isSynergy ? `${syn.name} ${item.name}` : item.name;
+    gTier.textContent = `[교체 성공] ${specialLabel}${displayName}${lvlText}`;
+    gTier.style.color = isSynergy ? '#ffd200' : item.color;
   }
   
   const gDesc = document.getElementById('gacha-desc');
   if (gDesc) {
     const lvlText = this.activeAuraLevel === 1 ? '' : ` +${this.activeAuraLevel - 1}강`;
-    gDesc.textContent = `효과: ${item.desc} (현재${lvlText})`;
+    gDesc.textContent = `효과: ${isSynergy ? syn.desc : item.desc} (현재${lvlText})`;
     gDesc.style.fontSize = '18.5px';
     gDesc.style.fontWeight = 'bold';
     gDesc.style.color = '#ffffff';

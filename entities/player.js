@@ -178,6 +178,13 @@ export class Player {
     this.auraLifesteal = 0;
     this.auraThornsReflection = 0;
     this.auraCritChance = 0;
+    this.auraCritDamageBonus = 0;
+    this.auraDodgeChance = 0;
+    this.buddhismDevotionSynergy = false;
+    this.taoismThornsSynergy = false;
+    this.empiricismEnduranceSynergy = false;
+    this.confucianismUnholySynergy = false;
+    this.idealismVampiricSynergy = false;
     this.auraTier = 0;
     this.lastDirection = 'down';
     this.facing = 'left';
@@ -259,27 +266,106 @@ export class Player {
   takeDamage(dmg, game, bypassArmor = false) {
     if (this.isInvincible) return;
     const activeGame = game || window.gameInstance;
-    const reduced = bypassArmor ? dmg : Math.max(1, Math.floor(dmg * (1 - this.armorReduction) * (1 - (this.auraDamageReduction || 0))));
+    
+    // Taoism + Thorns Synergy: Dodge Chance
+    if (this.taoismThornsSynergy && this.auraDodgeChance > 0 && Math.random() < this.auraDodgeChance) {
+      if (activeGame && typeof activeGame.addDamageText === 'function') {
+        activeGame.addDamageText(this.x, this.y - 40, "Miss (회풍)", "#2ed573", 16, true);
+      }
+      // Trigger Wind Vortex on dodge
+      if (activeGame && activeGame.windVortexes) {
+        const lvl = activeGame.activeAuraLevel || 1;
+        activeGame.windVortexes.push({
+          x: this.x,
+          y: this.y,
+          radius: 120,
+          dmg: lvl * 55, // 상향 (레벨당 55)
+          life: 2500,
+          maxLife: 2500
+        });
+      }
+      return;
+    }
+
+    // Apply Devotion Aura even on bypassArmor attacks!
+    const auraRed = this.auraDamageReduction || 0;
+    const reduced = bypassArmor ? 
+      Math.floor(dmg * (1 - auraRed)) : 
+      Math.max(1, Math.floor(dmg * (1 - this.armorReduction) * (1 - auraRed)));
+
     this.hp = Math.max(0, this.hp - reduced);
     if (activeGame && typeof activeGame.addDamageText === 'function') {
       activeGame.addDamageText(this.x, this.y - 40, reduced, '#ff6b81', 16, false);
     }
+    
     this.isInvincible = true; this.invincibilityFlash = 800;
     setTimeout(() => { this.isInvincible = false; this.invincibilityFlash = 0; }, 800);
     
-    // Thorns Aura reflection
-    if (this.auraThornsReflection > 0 && activeGame && activeGame.enemies) {
-      const reflectDmg = Math.ceil(reduced * this.auraThornsReflection);
+    // Buddhism + Devotion Synergy: Vajra Shockwave on Hit
+    if (this.buddhismDevotionSynergy && activeGame && activeGame.enemies) {
+      const lvl = activeGame.activeAuraLevel || 1;
+      const shkDmg = lvl * 80; // 상향 (레벨당 80)
       activeGame.enemies.forEach(e => {
-        if (Math.hypot(e.x - this.x, e.y - this.y) < 180 && e.hp > 0) {
+        const dist = Math.hypot(e.x - this.x, e.y - this.y);
+        if (dist < 200 && e.hp > 0) {
           if (typeof activeGame.dealDamageToEnemy === 'function') {
-            activeGame.dealDamageToEnemy(e, reflectDmg);
+            activeGame.dealDamageToEnemy(e, shkDmg);
           }
-          if (typeof activeGame.spawnParticles === 'function') {
-            activeGame.spawnParticles(e.x, e.y, '#1dd1a1', 3, 5, -2);
-          }
+          // Knock back enemy
+          const force = 6;
+          const dx = e.x - this.x, dy = e.y - this.y;
+          const hyp = Math.max(1, Math.hypot(dx, dy));
+          e.knockbackX = (dx / hyp) * force;
+          e.knockbackY = (dy / hyp) * force;
+          e.knockbackTimer = 250;
         }
       });
+      // Add visual trigger
+      this._vajraWaveActive = true;
+      this._vajraWaveRadius = 0;
+    }
+
+    // Taoism + Thorns Synergy: Wind Vortex on Hit
+    if (this.taoismThornsSynergy && activeGame && activeGame.windVortexes) {
+      const lvl = activeGame.activeAuraLevel || 1;
+      activeGame.windVortexes.push({
+        x: this.x,
+        y: this.y,
+        radius: 120,
+        dmg: lvl * 55, // 상향 (레벨당 55)
+        life: 2500,
+        maxLife: 2500
+      });
+    }
+
+    // Thorns Aura reflection
+    if (this.auraThornsReflection > 0 && activeGame) {
+      const reflectDmg = Math.ceil(reduced * this.auraThornsReflection);
+      
+      // Taoism + Thorns Synergy: Global Boss Tracking Reflection
+      if (this.taoismThornsSynergy && activeGame.currentBoss && activeGame.currentBoss.hp > 0) {
+        const bossReflect = reflectDmg * 20; // 20배 증폭 (기존 15배 ➔ 20배 상향)
+        if (typeof activeGame.dealDamageToEnemy === 'function') {
+          activeGame.dealDamageToEnemy(activeGame.currentBoss, bossReflect);
+        }
+        if (typeof activeGame.spawnParticles === 'function') {
+          activeGame.spawnParticles(activeGame.currentBoss.x, activeGame.currentBoss.y, '#1dd1a1', 8, 8, -3);
+        }
+      }
+
+      // Normal Thorns Reflection to nearby enemies
+      if (activeGame.enemies) {
+        activeGame.enemies.forEach(e => {
+          if (Math.hypot(e.x - this.x, e.y - this.y) < 180 && e.hp > 0) {
+            if (typeof activeGame.dealDamageToEnemy === 'function') {
+              activeGame.dealDamageToEnemy(e, reflectDmg);
+            }
+            if (typeof activeGame.spawnParticles === 'function') {
+              activeGame.spawnParticles(e.x, e.y, '#1dd1a1', 3, 5, -2);
+            }
+          }
+        });
+      }
     }
     
     if (this.hp <= 0 && activeGame && typeof activeGame.gameOver === 'function') {
@@ -537,24 +623,36 @@ export class Player {
       
       // 2. DEVOTION AURA (하얀색 방패 문양 마법진 + 노란색 원형 이펙트)
       else if (auraKey === 'devotion') {
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.shadowColor = '#ffffff';
+        if (this.buddhismDevotionSynergy) {
+          ctx.strokeStyle = 'rgba(255, 210, 0, 0.85)';
+          ctx.shadowColor = '#ffd200';
+        } else {
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.shadowColor = '#ffffff';
+        }
         
         // Outer rotating shielding rings
         ctx.save();
         ctx.translate(rx, ry);
         ctx.rotate(-time * 0.0004);
         
-        // Draw 3 shield emblems along the ring
+        // Draw 3 shield emblems (or golden lotus shapes if synergy is active) along the ring
         for (let i = 0; i < 3; i++) {
           const a = (Math.PI * 2 / 3) * i;
           ctx.save();
           ctx.translate(Math.cos(a) * radius, Math.sin(a) * radius);
           ctx.rotate(a + Math.PI / 2);
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-          ctx.beginPath();
-          ctx.moveTo(-5, -6); ctx.lineTo(5, -6); ctx.lineTo(4, 2); ctx.lineTo(0, 6); ctx.lineTo(-4, 2);
-          ctx.closePath(); ctx.fill();
+          if (this.buddhismDevotionSynergy) {
+            ctx.fillStyle = 'rgba(255, 210, 0, 0.85)';
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 6, 10, 0, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+            ctx.beginPath();
+            ctx.moveTo(-5, -6); ctx.lineTo(5, -6); ctx.lineTo(4, 2); ctx.lineTo(0, 6); ctx.lineTo(-4, 2);
+            ctx.closePath(); ctx.fill();
+          }
           ctx.restore();
         }
         
@@ -575,27 +673,47 @@ export class Player {
       
       // 3. ENDURANCE AURA (붉은색 부족 문양 소용돌이 + 붉은색 원형 이펙트)
       else if (auraKey === 'endurance') {
-        ctx.strokeStyle = 'rgba(255, 71, 87, 0.8)';
-        ctx.shadowColor = '#ff4757';
+        if (this.empiricismEnduranceSynergy) {
+          ctx.strokeStyle = 'rgba(0, 210, 211, 0.8)';
+          ctx.shadowColor = '#00d2d3';
+        } else {
+          ctx.strokeStyle = 'rgba(255, 71, 87, 0.8)';
+          ctx.shadowColor = '#ff4757';
+        }
         
-        // Rapid rotating tribal swirl
+        // Rapid rotating tribal swirl (or snowflake arcs for synergy)
         ctx.save();
         ctx.translate(rx, ry);
         ctx.rotate(time * 0.0015);
         ctx.lineWidth = 3;
         
-        // Draw 6 claw-like tribal curves
-        for (let i = 0; i < 6; i++) {
-          ctx.rotate(Math.PI / 3);
-          ctx.beginPath();
-          ctx.moveTo(radius * 0.3, 0);
-          ctx.quadraticCurveTo(radius * 0.6, radius * 0.4, radius, 0);
-          ctx.stroke();
+        if (this.empiricismEnduranceSynergy) {
+          // Draw ice crystal lines
+          for (let i = 0; i < 6; i++) {
+            ctx.rotate(Math.PI / 3);
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(radius, 0);
+            ctx.moveTo(radius * 0.6, 0);
+            ctx.lineTo(radius * 0.75, radius * 0.15);
+            ctx.moveTo(radius * 0.6, 0);
+            ctx.lineTo(radius * 0.75, -radius * 0.15);
+            ctx.stroke();
+          }
+        } else {
+          // Draw 6 claw-like tribal curves
+          for (let i = 0; i < 6; i++) {
+            ctx.rotate(Math.PI / 3);
+            ctx.beginPath();
+            ctx.moveTo(radius * 0.3, 0);
+            ctx.quadraticCurveTo(radius * 0.6, radius * 0.4, radius, 0);
+            ctx.stroke();
+          }
         }
         ctx.restore();
         
-        // Pulsing red feet circle
-        ctx.strokeStyle = 'rgba(255, 71, 87, 0.45)';
+        // Pulsing feet circle
+        ctx.strokeStyle = this.empiricismEnduranceSynergy ? 'rgba(0, 210, 211, 0.45)' : 'rgba(255, 71, 87, 0.45)';
         ctx.lineWidth = 4;
         ctx.beginPath();
         ctx.arc(rx, ry, radius + 8, 0, Math.PI * 2);
@@ -604,10 +722,15 @@ export class Player {
       
       // 4. WARSONG BATTLE DRUM (주황색 작은 원형 이펙트 + 소리 파동)
       else if (auraKey === 'warsong') {
-        ctx.strokeStyle = 'rgba(255, 159, 67, 0.8)';
-        ctx.shadowColor = '#ff9f43';
+        if (this.idealismWarsongSynergy) {
+          ctx.strokeStyle = 'rgba(255, 71, 87, 0.8)';
+          ctx.shadowColor = '#ff4757';
+        } else {
+          ctx.strokeStyle = 'rgba(255, 159, 67, 0.8)';
+          ctx.shadowColor = '#ff9f43';
+        }
         
-        // Pulsing small orange circles
+        // Pulsing small orange/red circles
         const rSmall = 35 + Math.sin(time * 0.008) * 8;
         ctx.lineWidth = 3.5;
         ctx.beginPath();
@@ -681,7 +804,30 @@ export class Player {
           ctx.arc(px, py, (1 - pct) * 4, 0, Math.PI * 2);
           ctx.fill();
         }
+
+        // Confucianism + Unholy Synergy: Orbiting gold lightning sparks (군자의 빠른 발걸음)
+        if (this.confucianismUnholySynergy) {
+          ctx.save();
+          ctx.translate(rx, ry);
+          ctx.rotate(-time * 0.002);
+          ctx.shadowColor = '#ffd200';
+          ctx.shadowBlur = 10;
+          for (let i = 0; i < 4; i++) {
+            const a = (Math.PI * 2 / 4) * i;
+            const sparkR = radius + 12;
+            ctx.fillStyle = `rgba(255, 210, 0, ${0.6 + Math.sin(time * 0.006 + i) * 0.4})`;
+            ctx.beginPath();
+            // Lightning bolt shape mini
+            ctx.moveTo(Math.cos(a) * sparkR, Math.sin(a) * sparkR - 5);
+            ctx.lineTo(Math.cos(a) * sparkR - 3, Math.sin(a) * sparkR);
+            ctx.lineTo(Math.cos(a) * sparkR, Math.sin(a) * sparkR + 2);
+            ctx.lineTo(Math.cos(a) * sparkR + 3, Math.sin(a) * sparkR + 5);
+            ctx.fill();
+          }
+          ctx.restore();
+        }
       }
+
       
       // 6. VAMPIRIC AURA (보라색 박쥐 문양 + 흡혈)
       else if (auraKey === 'vampiric') {
@@ -717,6 +863,28 @@ export class Player {
         ctx.lineWidth = 1.5;
         ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.stroke();
         ctx.restore();
+
+        // Idealism + Vampiric Synergy: Orbiting fire sparks (흡혈 화염 궤도)
+        if (this.idealismVampiricSynergy) {
+          ctx.save();
+          ctx.translate(rx, ry);
+          ctx.rotate(time * 0.0015);
+          for (let i = 0; i < 6; i++) {
+            const a = (Math.PI * 2 / 6) * i;
+            const sparkR = radius + 10 + Math.sin(time * 0.005 + i) * 4;
+            const grad = ctx.createRadialGradient(
+              Math.cos(a) * sparkR, Math.sin(a) * sparkR, 0,
+              Math.cos(a) * sparkR, Math.sin(a) * sparkR, 5
+            );
+            grad.addColorStop(0, '#ff4757');
+            grad.addColorStop(1, 'rgba(165,94,234,0)');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(Math.cos(a) * sparkR, Math.sin(a) * sparkR, 5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
+        }
       }
       
       // 7. THORNS AURA (초록색 가시나무 덩굴 + 가시덤불 이펙트)
@@ -746,12 +914,33 @@ export class Player {
         ctx.arc(0, 0, radius, 0, Math.PI * 2);
         ctx.stroke();
         ctx.restore();
+
+        // Taoism + Thorns Synergy: Wind Vortex visual curls
+        if (this.taoismThornsSynergy) {
+          ctx.save();
+          ctx.translate(rx, ry);
+          ctx.rotate(time * 0.0012);
+          ctx.strokeStyle = 'rgba(29, 209, 161, 0.5)';
+          ctx.lineWidth = 1.5;
+          for (let i = 0; i < 4; i++) {
+            ctx.rotate(Math.PI / 2);
+            ctx.beginPath();
+            ctx.arc(0, 0, radius + 14, 0, Math.PI * 0.35);
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
       }
       
       // 8. TRUESHOT AURA (하늘색 깃털과 화살촉 + 크리티컬)
       else if (auraKey === 'trueshot') {
-        ctx.strokeStyle = 'rgba(72, 219, 251, 0.85)';
-        ctx.shadowColor = '#48dbfb';
+        if (this.confucianismTrueshotSynergy) {
+          ctx.strokeStyle = 'rgba(72, 219, 251, 0.85)';
+          ctx.shadowColor = '#ffd200'; // Gold shadow for lightning crit synergy
+        } else {
+          ctx.strokeStyle = 'rgba(72, 219, 251, 0.85)';
+          ctx.shadowColor = '#48dbfb';
+        }
         
         // Feathers and arrowheads rotating ring
         ctx.save();
@@ -777,9 +966,35 @@ export class Player {
         ctx.lineWidth = 1.5;
         ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.stroke();
         ctx.restore();
+
+        // Trueshot is now a public aura - no school synergy visuals
       }
+
       
       ctx.restore();
+    }
+
+    // Buddhism Devotion Synergy: expanding golden wave drawing
+    if (this._vajraWaveActive) {
+      if (!this._lastWaveTime) this._lastWaveTime = Date.now();
+      const waveElapsed = Date.now() - this._lastWaveTime;
+      this._lastWaveTime = Date.now();
+      this._vajraWaveRadius = (this._vajraWaveRadius || 0) + waveElapsed * 0.35;
+      
+      ctx.save();
+      ctx.strokeStyle = `rgba(255, 210, 0, ${Math.max(0, 1 - this._vajraWaveRadius / 250)})`;
+      ctx.lineWidth = 4;
+      ctx.shadowColor = '#ffd200';
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.arc(rx, ry, this._vajraWaveRadius, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+      if (this._vajraWaveRadius >= 250) {
+        this._vajraWaveActive = false;
+      }
+    } else {
+      this._lastWaveTime = Date.now();
     }
 
     // ─── Drawing Reason's Aura Glowing Red Ring of Fire ───────────────────

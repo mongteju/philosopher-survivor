@@ -138,6 +138,10 @@ class Game {
     this.bossFightStartTime = 0; this.lastBossKillTime = 0;
     this.finalBossKillTime = 0;
     this.magnetTimer = 0;
+    this.frostTrails = [];
+    this.windVortexes = [];
+    this.firePuddles = [];
+    this.chainLightnings = [];
 
     // BGM
     this.bgm = new Audio('music1.mp3');
