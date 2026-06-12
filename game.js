@@ -47,6 +47,36 @@ if (typeof CanvasRenderingContext2D !== 'undefined' && !CanvasRenderingContext2D
     return this;
   };
 }
+
+// ─── 각성 확인 인게임 모달 헬퍼 ─────────────────────────────────────────
+window.showAwakeningConfirm = function(skillName, onConfirm) {
+  const modal = document.getElementById('awakening-confirm-modal');
+  const skillNameEl = document.getElementById('awakening-modal-skill-name');
+  const okBtn = document.getElementById('awakening-confirm-ok');
+  const cancelBtn = document.getElementById('awakening-confirm-cancel');
+  if (!modal || !okBtn || !cancelBtn) {
+    if (window.confirm('이 스킬을 각성하시겠습니까?')) onConfirm();
+    return;
+  }
+  if (skillNameEl) skillNameEl.textContent = `「${skillName}」을(를) 각성합니다`;
+
+  // 중복 리스너 방지: 버튼 교체
+  const newOk = okBtn.cloneNode(true);
+  const newCancel = cancelBtn.cloneNode(true);
+  okBtn.parentNode.replaceChild(newOk, okBtn);
+  cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
+
+  function closeModal() { modal.style.display = 'none'; }
+
+  newOk.addEventListener('click', () => { closeModal(); onConfirm(); });
+  newCancel.addEventListener('click', closeModal);
+  modal.addEventListener('click', function bgClick(e) {
+    if (e.target === modal) { closeModal(); modal.removeEventListener('click', bgClick); }
+  });
+
+  modal.style.display = 'flex';
+};
+
 import {
   gameEvents,
   updatePauseKeyboardSelection,

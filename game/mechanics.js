@@ -803,8 +803,11 @@ export function triggerEpicEvolutionUpgrade() {
       `;
       el.onclick = () => {
         if (isAwakening && upgrade.type === 'weapon') {
-          const confirmAwake = confirm("🔥 정말로 이 스킬을 각성하시겠습니까?\n\n(한 번 각성하면 다른 액티브 스킬은 각성할 수 없으며 최대 레벨이 3으로 제한됩니다!)");
-          if (!confirmAwake) return;
+          showAwakeningConfirm(upgrade.name, () => {
+            this.applyCardSelection(upgrade, isAwakening);
+            this.closeLevelUp();
+          });
+          return;
         }
         this.applyCardSelection(upgrade, isAwakening);
         this.closeLevelUp();
@@ -919,8 +922,11 @@ export function triggerLevelUp() {
       `;
       el.onclick = () => {
         if (isAwakening && upgrade.type === 'weapon') {
-          const confirmAwake = confirm("🔥 정말로 이 스킬을 각성하시겠습니까?\n\n(한 번 각성하면 다른 액티브 스킬은 각성할 수 없으며 최대 레벨이 3으로 제한됩니다!)");
-          if (!confirmAwake) return;
+          showAwakeningConfirm(upgrade.name, () => {
+            this.applyCardSelection(upgrade, isAwakening);
+            this.closeLevelUp();
+          });
+          return;
         }
         this.applyCardSelection(upgrade, isAwakening);
         this.closeLevelUp();

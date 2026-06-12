@@ -1,4 +1,6 @@
 import { sfx } from '../audio.js';
+import { TIMELINE, EVOLUTION_STAGES } from '../db.js';
+
 
 export function updatePauseKeyboardSelection(btns) {
   btns.forEach((id, i) => {
@@ -690,14 +692,46 @@ export function gameEvents() {
     dbgBoss.addEventListener('click', () => {
       if (!this.player) return;
       this.usedDebugCheat = true;
-      if (window.gameDebug && typeof window.gameDebug.spawnBoss === 'function') {
-        window.gameDebug.spawnBoss();
-      } else {
+
+      const stageSelect = document.getElementById('dbg-boss-stage');
+      const idx = stageSelect ? parseInt(stageSelect.value) : 1;
+
+      if (!isNaN(idx) && idx >= 1 && idx <= 6) {
+        this.stageIndex = idx - 1;
+        this.stage = TIMELINE[this.stageIndex];
+        this.eraSurvivalTime = 60;
+
+        this.enemies = [];
+        this.bossBullets = [];
+        this.warningZones = [];
+        this.gridLines = [];
+        this.candlesticks = [];
+        this.nietzcheRelics = [];
+        this.activeIdols.clear();
+        this.medievalDarkness = false;
+        this.kantRule = null;
+        this.kantDutyLine = null;
+        this.ataraxiaZone = null;
+        this.nietzscheArenaActive = false;
+        this.nietzscheArenaCenter = null;
+        this.nietzscheSafeZone = null;
+
+        if (this.player) {
+          this.player.evolutionIndex = Math.min(this.stageIndex, EVOLUTION_STAGES[this.player.lineage].length - 1);
+          this.addDamageText(this.player.x, this.player.y - 80,
+            `✨ ${EVOLUTION_STAGES[this.player.lineage][this.player.evolutionIndex].title} 전직!`, '#ffd200', 22);
+        }
+
+        this.currentBoss = null;
         this.spawnBossImmediate();
+        this.restoreHUD();
+        console.log(`[Debug] Spawned boss for stage ${idx}.`);
       }
+
       if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
     });
   }
+
 
   const dbgClear = document.getElementById('dbg-clear');
   if (dbgClear) {
