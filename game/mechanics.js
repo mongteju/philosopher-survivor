@@ -459,7 +459,7 @@ export function applyAuraStats() {
   } else if (key === 'vampiric') {
     this.player.auraLifesteal = lvl * 0.06;
   } else if (key === 'thorns') {
-    this.player.auraThornsReflection = lvl * 0.25;
+    // Thorns Aura is now Poison DoT handled in player.js update()
   } else if (key === 'trueshot') {
     // 상향: 크리확률 레벨당 15% (기존 12%), 크리대미지 배율 레벨당 50% 추가
     this.player.auraCritChance = lvl * 0.15;
@@ -1556,23 +1556,17 @@ export function endNietzscheQuiz() {
     // FAILURE: Take instant death damage, restore boss HP to 55%, apply blind & slow debuff
     const penaltyDmg = 999999;
     this.player.isInvincible = false;
-    const parried = this.player.takeDamage(penaltyDmg, this, true);
+    this.player.takeDamage(penaltyDmg, this);
     
-    if (parried) {
-      boss.nietzscheQuizTriggered = false;
-      this.gimmickActive = false;
-      this.gimmickTimer = 0;
-    } else {
-      boss.hp = boss.maxHp * 0.55;
-      boss.nietzscheQuizTriggered = false; // retry
-      
-      this.player.blindedTimer = 3000;
-      this.player.nietzscheVortexTimer = 3000;
-      
-      this.addDamageText(this.player.x, this.player.y - 80, '❌ 시험 낙제! 즉사!', '#ff4757', 24);
-      this.showBossTooltip("🦅 허무주의의 그림자: 그대의 깨달음이 부족하군. 잿빛의 심연 속에서 즉사하였습니다.");
-      sfx.playAlert();
-    }
+    boss.hp = boss.maxHp * 0.55;
+    boss.nietzscheQuizTriggered = false; // retry
+    
+    this.player.blindedTimer = 3000;
+    this.player.nietzscheVortexTimer = 3000;
+    
+    this.addDamageText(this.player.x, this.player.y - 80, '❌ 시험 낙제! 즉사!', '#ff4757', 24);
+    this.showBossTooltip("🦅 허무주의의 그림자: 그대의 깨달음이 부족하군. 잿빛의 심연 속에서 즉사하였습니다.");
+    sfx.playAlert();
   }
 }
 

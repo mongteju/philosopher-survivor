@@ -140,13 +140,7 @@ export function gameUpdate(dt) {
         // Take instant death damage
         const penaltyDmg = 999999;
         this.player.isInvincible = false;
-        const parried = this.player.takeDamage(penaltyDmg, this, true);
-        if (parried) {
-          b.isPatternActive = false;
-          this.gimmickActive = false;
-          this.gimmickTimer = 0;
-          return;
-        }
+        this.player.takeDamage(penaltyDmg, this);
 
         if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
         this.addDamageText(this.player.x, this.player.y - 80, `💥 기믹 실패! 즉사!`, '#ff4757', 24, true);
@@ -207,10 +201,7 @@ export function gameUpdate(dt) {
       
       const penaltyDmg = 999999;
       this.player.isInvincible = false;
-      const parried = this.player.takeDamage(penaltyDmg, this, true);
-      if (parried) {
-        return;
-      }
+      this.player.takeDamage(penaltyDmg, this);
       
       if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
       this.addDamageText(this.player.x, this.player.y - 80, `💥 신호 위반! 즉사!`, '#ff4757', 24, true);
@@ -1329,7 +1320,7 @@ export function handleCombatCollisions() {
   }
 }
 
-export function dealDamageToEnemy(e, dmg, proj, bypassInvincibility = false) {
+export function dealDamageToEnemy(e, dmg, proj, bypassInvincibility = false, isDoT = false) {
   if (e.isClone && !e.isRealClone) {
     this.addDamageText(e.x, e.y - e.size - 10, "Miss (궤변)", "#7f8c8d", 14, false);
     return;
@@ -1346,7 +1337,7 @@ export function dealDamageToEnemy(e, dmg, proj, bypassInvincibility = false) {
     return;
   }
 
-  const isCrit = Math.random() < (0.15 + (this.player.auraCritChance || 0));
+  const isCrit = isDoT ? false : (Math.random() < (0.15 + (this.player.auraCritChance || 0)));
   let baseMultiplier = isCrit ? (1.5 * this.player.critMultiplier + (this.player.auraCritDamageBonus || 0)) : 1;
   
   // Double damage against groggy (stunned) boss
@@ -1357,11 +1348,11 @@ export function dealDamageToEnemy(e, dmg, proj, bypassInvincibility = false) {
   const finalDmg = Math.floor(dmg * baseMultiplier);
   e.hp -= finalDmg;
   
-  const dmgColor = (e.type === 'boss' && e.isStunned) ? '#ff9f43' : (isCrit ? '#ffd200' : '#fff');
-  const dmgSize = (e.type === 'boss' && e.isStunned) ? 22 : (isCrit ? 20 : 14);
-  this.addDamageText(e.x, e.y - e.size - 10, (e.type === 'boss' && e.isStunned ? "🔥 2x!! " : "") + finalDmg, dmgColor, dmgSize, isCrit || (e.type === 'boss' && e.isStunned));
+  const dmgColor = isDoT ? '#1dd1a1' : ((e.type === 'boss' && e.isStunned) ? '#ff9f43' : (isCrit ? '#ffd200' : '#fff'));
+  const dmgSize = isDoT ? 14 : ((e.type === 'boss' && e.isStunned) ? 22 : (isCrit ? 20 : 14));
+  this.addDamageText(e.x, e.y - e.size - 10, (e.type === 'boss' && e.isStunned ? "🔥 2x!! " : "") + finalDmg, dmgColor, dmgSize, !isDoT && (isCrit || (e.type === 'boss' && e.isStunned)));
   
-  if (this.player.auraLifesteal > 0) {
+  if (!isDoT && this.player.auraLifesteal > 0) {
     this.player.heal(Math.ceil(finalDmg * this.player.auraLifesteal));
     this.spawnParticles(e.x, e.y, '#e84118', 4, 6, -3);
   }
