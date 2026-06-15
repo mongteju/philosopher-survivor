@@ -885,9 +885,13 @@ export function fireWeapon(id, lvl, stats, awakening) {
   if (this.player.buddhismDevotionSynergy) {
     dmgM *= (1 + synLvl * 0.35); // 불교 고유 오라: 초근접 스킬 데미지 +35%/레벨
   }
+  if (this.player.confucianismUnholySynergy && ['lightning_strike', 'lightning_sword', 'lightning_beam', 'lightning_orb'].includes(id)) {
+    dmgM *= (1 + synLvl * 0.25); // 유교 고유 오라: 번개 스킬 데미지 +25%/레벨
+  }
   if (this.player.idealismVampiricSynergy) {
     sizeM *= 1.4; // 화염 폭발 반경 40% 증가 (관념론 고유 오라)
   }
+
 
   if (id === 'fire_projectile') {
     const target = this.getNearestEnemy();
