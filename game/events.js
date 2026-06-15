@@ -83,6 +83,13 @@ export function updateKeyboardCardSelection() {
 
 
 
+export function updateAwakeningConfirmKeyboardSelection() {
+  const cancelBtn = document.getElementById('awakening-confirm-cancel');
+  const okBtn = document.getElementById('awakening-confirm-ok');
+  if (cancelBtn) cancelBtn.classList.toggle('keyboard-selected', this.awakeningSelectedIndex === 0);
+  if (okBtn) okBtn.classList.toggle('keyboard-selected', this.awakeningSelectedIndex === 1);
+}
+
 export function gameEvents() {
   let debugInputBuffer = '';
 
@@ -166,6 +173,24 @@ export function gameEvents() {
 
 
 
+    // Awakening Confirm Modal keyboard navigation
+    if (this.awakeningConfirmActive) {
+      if (k === 'arrowleft' || k === 'a' || k === 'arrowright' || k === 'd') {
+        e.preventDefault();
+        this.awakeningSelectedIndex = this.awakeningSelectedIndex === 0 ? 1 : 0;
+        this.updateAwakeningConfirmKeyboardSelection();
+        if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
+      } else if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (this.awakeningSelectedIndex === 1) {
+          document.getElementById('awakening-confirm-ok').click();
+        } else {
+          document.getElementById('awakening-confirm-cancel').click();
+        }
+      }
+      return;
+    }
+
     // Nietzsche Checkpoint Quiz keyboard navigation
     if (this.nietzscheQuizActive) {
       if (k === 'arrowup' || k === 'w') {
@@ -188,6 +213,11 @@ export function gameEvents() {
     // ESC: close ranking/registration if active, otherwise pause
     if (e.key === 'Escape') {
       e.preventDefault();
+      const awakeningConfirmModal = document.getElementById('awakening-confirm-modal');
+      if (awakeningConfirmModal && awakeningConfirmModal.style.display === 'flex') {
+        document.getElementById('awakening-confirm-cancel').click();
+        return;
+      }
       const rankingScreen = document.getElementById('ranking-screen');
       if (rankingScreen && rankingScreen.classList.contains('active')) {
         document.getElementById('ranking-close-btn').click();

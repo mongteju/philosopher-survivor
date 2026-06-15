@@ -50,6 +50,7 @@ if (typeof CanvasRenderingContext2D !== 'undefined' && !CanvasRenderingContext2D
 
 // ─── 각성 확인 인게임 모달 헬퍼 ─────────────────────────────────────────
 window.showAwakeningConfirm = function(skillName, onConfirm) {
+  const game = window.gameInstance;
   const modal = document.getElementById('awakening-confirm-modal');
   const skillNameEl = document.getElementById('awakening-modal-skill-name');
   const okBtn = document.getElementById('awakening-confirm-ok');
@@ -60,13 +61,27 @@ window.showAwakeningConfirm = function(skillName, onConfirm) {
   }
   if (skillNameEl) skillNameEl.textContent = `「${skillName}」을(를) 각성합니다`;
 
+  // Set keyboard navigation state
+  if (game) {
+    game.awakeningConfirmActive = true;
+    game.awakeningSelectedIndex = 1; // Default to OK (Index 1)
+    game.updateAwakeningConfirmKeyboardSelection();
+  }
+
   // 중복 리스너 방지: 버튼 교체
   const newOk = okBtn.cloneNode(true);
   const newCancel = cancelBtn.cloneNode(true);
   okBtn.parentNode.replaceChild(newOk, okBtn);
   cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
 
-  function closeModal() { modal.style.display = 'none'; }
+  function closeModal() { 
+    modal.style.display = 'none'; 
+    if (game) {
+      game.awakeningConfirmActive = false;
+      newOk.classList.remove('keyboard-selected');
+      newCancel.classList.remove('keyboard-selected');
+    }
+  }
 
   newOk.addEventListener('click', () => { closeModal(); onConfirm(); });
   newCancel.addEventListener('click', closeModal);
@@ -82,7 +97,8 @@ import {
   updatePauseKeyboardSelection,
   updateMenuKeyboardSelection,
   updateTutorialKeyboardSelection,
-  updateKeyboardCardSelection
+  updateKeyboardCardSelection,
+  updateAwakeningConfirmKeyboardSelection
 } from './game/events.js';
 import {
   selectLineage,
@@ -481,10 +497,11 @@ class Game {
   drawStageBackground(cx, cy, w, h) { drawStageBackground.call(this, cx, cy, w, h); }
   initEvents() { gameEvents.call(this); }
 
-  updatePauseKeyboardSelection(btns) { updatePauseKeyboardSelection.call(this, btns); }
+   updatePauseKeyboardSelection(btns) { updatePauseKeyboardSelection.call(this, btns); }
   updateMenuKeyboardSelection() { updateMenuKeyboardSelection.call(this); }
   updateTutorialKeyboardSelection() { updateTutorialKeyboardSelection.call(this); }
   updateKeyboardCardSelection() { updateKeyboardCardSelection.call(this); }
+  updateAwakeningConfirmKeyboardSelection() { updateAwakeningConfirmKeyboardSelection.call(this); }
 
   selectLineage(lineage) { selectLineage.call(this, lineage); }
   showMenuScreen() { showMenuScreen.call(this); }
