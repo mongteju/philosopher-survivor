@@ -139,7 +139,8 @@ export function gameUpdate(dt) {
         
         // Take instant death damage
         const penaltyDmg = 999999;
-        const parried = this.player.takeDamage(penaltyDmg, this, b);
+        this.player.isInvincible = false;
+        const parried = this.player.takeDamage(penaltyDmg, this, true);
         if (parried) {
           b.isPatternActive = false;
           this.gimmickActive = false;
@@ -205,7 +206,8 @@ export function gameUpdate(dt) {
       this.kantViolatedInThisRedTurn = true; // prevent multiple damage ticks in same red light turn
       
       const penaltyDmg = 999999;
-      const parried = this.player.takeDamage(penaltyDmg, this, b);
+      this.player.isInvincible = false;
+      const parried = this.player.takeDamage(penaltyDmg, this, true);
       if (parried) {
         return;
       }
