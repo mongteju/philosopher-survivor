@@ -1556,17 +1556,23 @@ export function endNietzscheQuiz() {
     // FAILURE: Take instant death damage, restore boss HP to 55%, apply blind & slow debuff
     const penaltyDmg = 999999;
     this.player.isInvincible = false;
-    this.player.takeDamage(penaltyDmg, this, true);
+    const parried = this.player.takeDamage(penaltyDmg, this, true);
     
-    boss.hp = boss.maxHp * 0.55;
-    boss.nietzscheQuizTriggered = false; // retry
-    
-    this.player.blindedTimer = 3000;
-    this.player.nietzscheVortexTimer = 3000;
-    
-    this.addDamageText(this.player.x, this.player.y - 80, '❌ 시험 낙제! 즉사!', '#ff4757', 24);
-    this.showBossTooltip("🦅 허무주의의 그림자: 그대의 깨달음이 부족하군. 잿빛의 심연 속에서 즉사하였습니다.");
-    sfx.playAlert();
+    if (parried) {
+      boss.nietzscheQuizTriggered = false;
+      this.gimmickActive = false;
+      this.gimmickTimer = 0;
+    } else {
+      boss.hp = boss.maxHp * 0.55;
+      boss.nietzscheQuizTriggered = false; // retry
+      
+      this.player.blindedTimer = 3000;
+      this.player.nietzscheVortexTimer = 3000;
+      
+      this.addDamageText(this.player.x, this.player.y - 80, '❌ 시험 낙제! 즉사!', '#ff4757', 24);
+      this.showBossTooltip("🦅 허무주의의 그림자: 그대의 깨달음이 부족하군. 잿빛의 심연 속에서 즉사하였습니다.");
+      sfx.playAlert();
+    }
   }
 }
 

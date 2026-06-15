@@ -298,7 +298,7 @@ export class Player {
       // Reflect to Boss if boss is active
       if (activeGame.currentBoss && activeGame.currentBoss.hp > 0) {
         if (typeof activeGame.dealDamageToEnemy === 'function') {
-          activeGame.dealDamageToEnemy(activeGame.currentBoss, reflectDmg);
+          activeGame.dealDamageToEnemy(activeGame.currentBoss, reflectDmg, null, true);
         }
         if (typeof activeGame.spawnParticles === 'function') {
           activeGame.spawnParticles(activeGame.currentBoss.x, activeGame.currentBoss.y, '#1dd1a1', 10, 8, -3);
@@ -310,7 +310,7 @@ export class Player {
         activeGame.enemies.forEach(e => {
           if (Math.hypot(e.x - this.x, e.y - this.y) < 250 && e.hp > 0) {
             if (typeof activeGame.dealDamageToEnemy === 'function') {
-              activeGame.dealDamageToEnemy(e, reflectDmg);
+              activeGame.dealDamageToEnemy(e, reflectDmg, null, true);
             }
             if (typeof activeGame.spawnParticles === 'function') {
               activeGame.spawnParticles(e.x, e.y, '#1dd1a1', 4, 6, -2);
@@ -331,7 +331,7 @@ export class Player {
         });
       }
       
-      return; // 100% Dodge and block!
+      return true; // 100% Dodge and block!
     }
     
     // Taoism + Thorns Synergy: Dodge Chance

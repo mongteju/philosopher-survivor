@@ -137,12 +137,17 @@ export function gameUpdate(dt) {
           }
         }
         
-        // Trigger Gimmick Failure!
-        if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
-        
         // Take instant death damage
         const penaltyDmg = 999999;
-        this.player.takeDamage(penaltyDmg, this, b);
+        const parried = this.player.takeDamage(penaltyDmg, this, b);
+        if (parried) {
+          b.isPatternActive = false;
+          this.gimmickActive = false;
+          this.gimmickTimer = 0;
+          return;
+        }
+
+        if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
         this.addDamageText(this.player.x, this.player.y - 80, `💥 기믹 실패! 즉사!`, '#ff4757', 24, true);
         this.showBossTooltip("💥 기믹 실패: 제한 시간 내에 공략하지 못해 즉사하였습니다!");
         
@@ -199,10 +204,13 @@ export function gameUpdate(dt) {
     if (this.kantTrafficLight === 'red' && isMoving && !this.kantViolatedInThisRedTurn) {
       this.kantViolatedInThisRedTurn = true; // prevent multiple damage ticks in same red light turn
       
-      if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
-      
       const penaltyDmg = 999999;
-      this.player.takeDamage(penaltyDmg, this, b);
+      const parried = this.player.takeDamage(penaltyDmg, this, b);
+      if (parried) {
+        return;
+      }
+      
+      if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
       this.addDamageText(this.player.x, this.player.y - 80, `💥 신호 위반! 즉사!`, '#ff4757', 24, true);
       this.showBossTooltip(`💥 신호 위반: 빨간불에 움직여 정언명령을 위배하고 즉사하였습니다!`);
       
@@ -1319,7 +1327,7 @@ export function handleCombatCollisions() {
   }
 }
 
-export function dealDamageToEnemy(e, dmg, proj) {
+export function dealDamageToEnemy(e, dmg, proj, bypassInvincibility = false) {
   if (e.isClone && !e.isRealClone) {
     this.addDamageText(e.x, e.y - e.size - 10, "Miss (궤변)", "#7f8c8d", 14, false);
     return;
@@ -1330,7 +1338,7 @@ export function dealDamageToEnemy(e, dmg, proj) {
     return;
   }
 
-  if (e.type === 'boss' && e.isPatternActive && e.stageIndex !== 4) {
+  if (e.type === 'boss' && e.isPatternActive && e.stageIndex !== 4 && !bypassInvincibility) {
     this.addDamageText(e.x, e.y - e.size - 10, "🛡️ 무적 (기믹 진행 중)", "#a4b0be", 14, false);
     this.spawnParticles(e.x, e.y, '#ffffff', 3, 5, -2);
     return;
