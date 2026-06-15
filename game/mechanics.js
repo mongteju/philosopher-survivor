@@ -802,8 +802,9 @@ export function triggerEpicEvolutionUpgrade() {
         this.updateKeyboardCardSelection();
       });
 
-      const bonusSpan = `<span class="rarity-bonus-pill epic">+90% 보너스 스텟</span>` + (isSynergized ? `<span class="rarity-bonus-pill synergy">🔥 시너지</span>` : '');
+      const bonusSpan = `<span class="rarity-bonus-pill epic">+90% 보너스 스텟</span>` + (isSynergized ? `<span class="rarity-bonus-pill synergy">🔥 고유오라 시너지</span>` : '');
       const lvLabel = isAwakening ? '각성' : `Lv.${nextLvl}`;
+
 
       
       el.innerHTML = `
@@ -925,8 +926,9 @@ export function triggerLevelUp() {
       const percentMap = { rare: '+25% 보너스 스텟', unique: '+55% 보너스 스텟', epic: '+90% 보너스 스텟' };
       let bonusSpan = tier !== 'normal' ? `<span class="rarity-bonus-pill ${tier}">${percentMap[tier]}</span>` : '';
       if (isSynergized) {
-        bonusSpan += `<span class="rarity-bonus-pill synergy">🔥 시너지</span>`;
+        bonusSpan += `<span class="rarity-bonus-pill synergy">🔥 고유오라 시너지</span>`;
       }
+
 
       const lvLabel = isAwakening ? '각성' : `Lv.${nextLvl}`;
 
