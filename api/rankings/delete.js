@@ -56,7 +56,7 @@ export default async function handler(req, res) {
         deleted = true;
         continue;
       }
-      updatedRankings.append ? updatedRankings.push(r) : updatedRankings.push(r);
+      updatedRankings.push(r);
     }
 
     // Save back to Redis
