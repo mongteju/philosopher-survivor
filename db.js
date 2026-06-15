@@ -234,8 +234,8 @@ export const AURA_DB = {
     name: '쏜즈 오라',
     icon: '🌵',
     color: '#1dd1a1',
-    desc: '가시 덩굴 장벽이 피격당했을 때 입은 피해를 일부 반사합니다.',
-    statsDesc: '받은 데미지 반사'
+    desc: '가시 덩굴 장벽이 피격당했을 때 입은 피해를 일부 반사합니다. 게이지 완충 시 100% 확률로 다음 공격(보스 기믹 포함)을 무효화하고 강력한 가시 반격을 가합니다.',
+    statsDesc: '받은 데미지 반사 및 게이지 완충 시 100% 무효화 반격'
   },
   trueshot: {
     name: '트루샷 오라',
@@ -251,7 +251,7 @@ export const LINEAGE_AURA_SYNERGY = {
   idealism:     { aura: 'vampiric',  name: '🔥 이성주의의 고유 오라', desc: '화염 스킬 흡혈률 lvl × 15% 추가 증가. 킬 시 주변에 불타는 장판(초당 lvl × 55 피해) 생성 + 즉시 체력 회복. 화염 폭발 반경 40% 증가' },
   empiricism:   { aura: 'endurance', name: '❄️ 경험주의의 고유 오라', desc: '이동 시 서리 발자국(이속 -75% 빙결, 초당 lvl × 40 냉기 피해) 생성, 속도/발사 속도 lvl × 20% 및 스킬 대기 시간 lvl × 10% 추가 감소' },
   confucianism: { aura: 'unholy',    name: '⚡ 유가의 고유 오라', desc: '번개 스킬 데미지 lvl × 25% 추가 증가. 이동 속도 lvl × 15% 추가 증가, 킬 시 즉시 체력 회복(lvl × 50), 번개 스킬 연속 적중 시 초당 체력 재생 lvl × 3 추가' },
-  taoism:       { aura: 'thorns',    name: '🌪️ 도가의 고유 오라', desc: '절대 회피율 lvl × 10% 증가. 회피/피격 시 주변 몹 흡입 가시 회오리(초당 lvl × 55 피해) 소환. 보스 반사 데미지 20배 증폭 및 추격 반격' },
+  taoism:       { aura: 'thorns',    name: '🌪️ 도가의 고유 오라', desc: '절대 회피율 lvl × 10% 증가. 회피/피격 시 주변 몹 흡입 가시 회오리 소환. 보스 반사 데미지 20배 증폭 및 게이지 반격 시 강력한 가시 회오리 추가 소환' },
   buddhism:     { aura: 'devotion',  name: '📿 불교의 고유 오라', desc: '초근접 스킬 데미지 lvl × 35% 증가, 피격 시 주변 넉백 및 광역 금강 충격파(lvl × 80 피해) 방출, 받는 피해 lvl × 6% 추가 감소' },
 };
 

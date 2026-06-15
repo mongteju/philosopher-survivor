@@ -188,6 +188,8 @@ export class Player {
     this.auraTier = 0;
     this.lastDirection = 'down';
     this.facing = 'left';
+    this.thornsGauge = 0;
+    this._thornsChargedSoundPlayed = false;
     
     // Gimmick failure debuff timers
     this.confusedTimer = 0;
@@ -266,6 +268,71 @@ export class Player {
   takeDamage(dmg, game, bypassArmor = false) {
     if (this.isInvincible) return;
     const activeGame = game || window.gameInstance;
+    
+    // Thorns Aura Perfect Counter
+    const hasThorns = (activeGame && activeGame.activeAura === 'thorns' && activeGame.activeAuraLevel > 0);
+    if (hasThorns && this.thornsGauge >= 100) {
+      this.thornsGauge = 0; // Consume gauge
+      
+      const lvl = activeGame.activeAuraLevel || 1;
+      
+      // Floating combat text
+      if (activeGame && typeof activeGame.addDamageText === 'function') {
+        activeGame.addDamageText(this.x, this.y - 65, "🛡️ 완벽 가시 반사! (무효화)", "#1dd1a1", 18, true);
+      }
+      
+      // Play sound
+      if (typeof sfx !== 'undefined' && sfx.playLightningAlert) {
+        sfx.playLightningAlert();
+      }
+      
+      // Trigger particles around player
+      if (activeGame && typeof activeGame.spawnParticles === 'function') {
+        activeGame.spawnParticles(this.x, this.y, '#1dd1a1', 15, 8, -4);
+      }
+      
+      // Calculate reflection damage
+      const baseReflect = Math.ceil(dmg * (1.0 + lvl * 0.5));
+      const reflectDmg = this.taoismThornsSynergy ? baseReflect * 20 : baseReflect;
+      
+      // Reflect to Boss if boss is active
+      if (activeGame.currentBoss && activeGame.currentBoss.hp > 0) {
+        if (typeof activeGame.dealDamageToEnemy === 'function') {
+          activeGame.dealDamageToEnemy(activeGame.currentBoss, reflectDmg);
+        }
+        if (typeof activeGame.spawnParticles === 'function') {
+          activeGame.spawnParticles(activeGame.currentBoss.x, activeGame.currentBoss.y, '#1dd1a1', 10, 8, -3);
+        }
+      }
+      
+      // Reflect to all nearby enemies in range 250
+      if (activeGame.enemies) {
+        activeGame.enemies.forEach(e => {
+          if (Math.hypot(e.x - this.x, e.y - this.y) < 250 && e.hp > 0) {
+            if (typeof activeGame.dealDamageToEnemy === 'function') {
+              activeGame.dealDamageToEnemy(e, reflectDmg);
+            }
+            if (typeof activeGame.spawnParticles === 'function') {
+              activeGame.spawnParticles(e.x, e.y, '#1dd1a1', 4, 6, -2);
+            }
+          }
+        });
+      }
+      
+      // Taoism + Thorns Synergy: Spawn Wind Vortex on Counter
+      if (this.taoismThornsSynergy && activeGame.windVortexes) {
+        activeGame.windVortexes.push({
+          x: this.x,
+          y: this.y,
+          radius: 150,
+          dmg: lvl * 75,
+          life: 3000,
+          maxLife: 3000
+        });
+      }
+      
+      return; // 100% Dodge and block!
+    }
     
     // Taoism + Thorns Synergy: Dodge Chance
     if (this.taoismThornsSynergy && this.auraDodgeChance > 0 && Math.random() < this.auraDodgeChance) {
@@ -539,6 +606,33 @@ export class Player {
     }
 
 
+
+    // Thorns Gauge Charging
+    const activeGame = window.gameInstance;
+    const hasThorns = (activeGame && activeGame.activeAura === 'thorns' && activeGame.activeAuraLevel > 0);
+    if (hasThorns) {
+      if (this.thornsGauge === undefined) this.thornsGauge = 0;
+      if (this.thornsGauge < 100) {
+        this._thornsChargedSoundPlayed = false; // Reset flag so it triggers when it reaches 100
+        const lvl = activeGame.activeAuraLevel || 1;
+        // Cooldown: lvl 1 = 15s, lvl 2 = 13s, lvl 3 = 11s, lvl 4 = 9s, lvl 5 = 7s
+        const cooldownMs = Math.max(5000, 17000 - lvl * 2000);
+        this.thornsGauge += (dt / cooldownMs) * 100;
+        if (this.thornsGauge >= 100) {
+          this.thornsGauge = 100;
+        }
+      }
+      
+      if (this.thornsGauge >= 100 && !this._thornsChargedSoundPlayed) {
+        this._thornsChargedSoundPlayed = true;
+        if (activeGame && typeof activeGame.addDamageText === 'function') {
+          activeGame.addDamageText(this.x, this.y - 50, "🌵 반격 준비 완료!", "#1dd1a1", 13, true);
+        }
+      }
+    } else {
+      this.thornsGauge = 0;
+      this._thornsChargedSoundPlayed = false;
+    }
 
     const totalRegen = this.regenHp + (this.auraRegenBonus || 0);
     if (totalRegen > 0) {
@@ -1926,6 +2020,93 @@ export class Player {
       ctx.moveTo(0, 0);
       ctx.lineTo(5, 2);
       ctx.stroke();
+      ctx.restore();
+    }
+
+    // Thorns Gauge UI Drawing
+    const activeGame = window.gameInstance;
+    const hasThornsAura = (activeGame && activeGame.activeAura === 'thorns' && activeGame.activeAuraLevel > 0);
+    if (hasThornsAura) {
+      const gVal = this.thornsGauge || 0;
+      
+      // 1. Draw Rotating Thorns Shield around player if fully charged
+      if (gVal >= 100) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(29, 209, 161, 0.9)';
+        ctx.shadowColor = '#1dd1a1';
+        ctx.shadowBlur = 12 + Math.sin(t * 0.006) * 5;
+        ctx.lineWidth = 2.0;
+        ctx.setLineDash([5, 5]);
+        
+        ctx.beginPath();
+        ctx.arc(rx, ry, this.size * 1.5, t * 0.0008, t * 0.0008 + Math.PI * 2);
+        ctx.stroke();
+        
+        // Draw 3 glowing spikes/thorns along the ring
+        ctx.fillStyle = '#1dd1a1';
+        ctx.shadowBlur = 8;
+        for (let i = 0; i < 3; i++) {
+          const angle = t * 0.0008 + (Math.PI * 2 / 3) * i;
+          ctx.save();
+          ctx.translate(rx + Math.cos(angle) * (this.size * 1.5), ry + Math.sin(angle) * (this.size * 1.5));
+          ctx.rotate(angle);
+          ctx.beginPath();
+          ctx.moveTo(0, -4);
+          ctx.lineTo(8, 0);
+          ctx.lineTo(0, 4);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
+        ctx.restore();
+      }
+
+      // 2. Draw Horizontal Progress Bar above player's head
+      ctx.save();
+      const barW = 32;
+      const barH = 5;
+      const barX = rx - barW / 2;
+      const barY = ry - this.size - 18;
+      
+      // Draw background bar
+      ctx.fillStyle = 'rgba(10, 15, 20, 0.85)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(barX, barY, barW, barH, 2.5);
+      ctx.fill();
+      ctx.stroke();
+      
+      // Draw fill bar
+      const fillW = Math.max(0, Math.min(barW, (gVal / 100) * barW));
+      if (gVal >= 100) {
+        // Glowing bright green gradient
+        const grad = ctx.createLinearGradient(barX, barY, barX + barW, barY);
+        grad.addColorStop(0, '#2ed573');
+        grad.addColorStop(1, '#1dd1a1');
+        ctx.fillStyle = grad;
+        ctx.shadowColor = '#1dd1a1';
+        ctx.shadowBlur = 6;
+      } else {
+        // Charging pale/mid green
+        ctx.fillStyle = 'rgba(29, 209, 161, 0.65)';
+      }
+      
+      if (fillW > 0) {
+        ctx.beginPath();
+        ctx.roundRect(barX, barY, fillW, barH, 2.5);
+        ctx.fill();
+      }
+      
+      // Draw tiny text label "READY" if full
+      if (gVal >= 100) {
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#1dd1a1';
+        ctx.font = 'bold 8px Outfit, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText("READY", rx, barY - 4);
+      }
+      
       ctx.restore();
     }
 
