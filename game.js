@@ -474,6 +474,18 @@ class Game {
       this.draw();
     } else {
       // While paused or in modal, only animate particles and damage texts
+      
+      // Accumulate real play-time during pause overlays, skill choices, and gacha (except gameover, ending, and main menu)
+      const isGameplayActive = this.player && 
+                               !document.getElementById('gameover-screen').classList.contains('active') && 
+                               !document.getElementById('true-ending-screen').classList.contains('active') &&
+                               !document.getElementById('menu-screen').classList.contains('active') &&
+                               !document.getElementById('title-screen').classList.contains('active');
+      if (isGameplayActive) {
+        this.realSurvivalTimer += dt / 1000;
+        this.cumulativeSurvivalTime += dt / 1000;
+      }
+
       if (this.particles) {
         this.particles.forEach(p => p.update(dt));
         this.particles = this.particles.filter(p => p.life > 0);
@@ -486,6 +498,7 @@ class Game {
     }
     requestAnimationFrame(t => this.loop(t));
   }
+
 
   update(dt) { gameUpdate.call(this, dt); }
   handleWeaponTriggers(dt) { handleWeaponTriggers.call(this, dt); }

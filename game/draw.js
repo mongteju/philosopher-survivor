@@ -491,7 +491,7 @@ export function gameDraw() {
         ctx.scale(1.8, 1.8);
         ctx.rotate(this.orbitAngle * 2.5 + i); // Spinning individual snowflakes
         
-        ctx.strokeStyle = '#00d2d3';
+        ctx.strokeStyle = this.player.empiricismEnduranceSynergy ? '#00b894' : '#00d2d3';
         ctx.lineWidth = 1.8;
 
         // Draw delicate 6-pointed snowflake barbs
@@ -509,6 +509,7 @@ export function gameDraw() {
           ctx.lineTo(3, 7.5);
           ctx.stroke();
         }
+
         
         // Inner shining ice core
         ctx.fillStyle = '#ffffff';
@@ -546,8 +547,9 @@ export function gameDraw() {
         ctx.rotate(angle + Date.now() * 0.003); // spin individual rocks
 
         // Draw rock shape: jagged polygon or a shield-like stone structure
-        ctx.fillStyle = '#7f8c8d'; // grey rock
-        ctx.strokeStyle = '#ffd700'; // gold accent/runes
+        const isSyn = this.player.buddhismDevotionSynergy;
+        ctx.fillStyle = isSyn ? '#f39c12' : '#7f8c8d'; // gold rock or grey rock
+        ctx.strokeStyle = isSyn ? '#ffffff' : '#ffd700'; // white or gold runes
         ctx.lineWidth = 2;
 
         ctx.beginPath();
@@ -563,10 +565,11 @@ export function gameDraw() {
         ctx.stroke();
 
         // Draw a glowing gold center or rune symbol
-        ctx.fillStyle = '#ffd700';
+        ctx.fillStyle = isSyn ? '#ffffff' : '#ffd700';
         ctx.beginPath();
         ctx.arc(0, 0, 4, 0, Math.PI * 2);
         ctx.fill();
+
 
         ctx.restore();
       }
@@ -593,18 +596,26 @@ export function gameDraw() {
         ctx.translate(ox, oy);
         ctx.rotate(angle + Date.now() * 0.002);
         
+        const isSyn = this.player.buddhismDevotionSynergy;
         ctx.shadowBlur = 10;
-        ctx.shadowColor = '#e67e22';
+        ctx.shadowColor = isSyn ? '#ffd200' : '#e67e22';
 
         const grad = ctx.createRadialGradient(-3, -3, 0, 0, 0, 9);
-        grad.addColorStop(0, '#ffd200');
-        grad.addColorStop(0.5, '#e67e22');
-        grad.addColorStop(1, '#5d4037');
+        if (isSyn) {
+          grad.addColorStop(0, '#ffffff');
+          grad.addColorStop(0.6, '#ffd200');
+          grad.addColorStop(1, '#d35400');
+        } else {
+          grad.addColorStop(0, '#ffd200');
+          grad.addColorStop(0.5, '#e67e22');
+          grad.addColorStop(1, '#5d4037');
+        }
         
         ctx.fillStyle = grad;
         ctx.beginPath();
         ctx.arc(0, 0, 9, 0, Math.PI * 2);
         ctx.fill();
+
 
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 9px Share Tech Mono, monospace';
@@ -623,9 +634,10 @@ export function gameDraw() {
     const radius = (this.windShieldRadius || 80) * this.player.areaMultiplier;
     
     ctx.save();
-    ctx.strokeStyle = 'rgba(85, 239, 196, 0.45)';
+    const isSyn = this.player.taoismThornsSynergy;
+    ctx.strokeStyle = isSyn ? 'rgba(46, 204, 113, 0.6)' : 'rgba(85, 239, 196, 0.45)';
     ctx.lineWidth = 6;
-    ctx.shadowColor = '#2ed573';
+    ctx.shadowColor = isSyn ? '#2ecc71' : '#2ed573';
     ctx.shadowBlur = 10;
     
     const time = performance.now();
@@ -642,6 +654,7 @@ export function gameDraw() {
     ctx.restore();
   }
 
+
   // 예의 광조 레이저 빔 그리기
   if (this.lightningBeams && this.lightningBeams.length > 0) {
     this.lightningBeams.forEach(b => {
@@ -653,8 +666,9 @@ export function gameDraw() {
       
       ctx.save();
       ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 6 * pct;
-      ctx.shadowColor = '#ffd200';
+      const isSyn = this.player.confucianismUnholySynergy;
+      ctx.lineWidth = (isSyn ? 10 : 6) * pct;
+      ctx.shadowColor = isSyn ? '#ff9f43' : '#ffd200';
       ctx.shadowBlur = 15;
       ctx.lineCap = 'round';
       ctx.beginPath();
@@ -662,7 +676,7 @@ export function gameDraw() {
       ctx.lineTo(rex, rey);
       ctx.stroke();
       
-      ctx.strokeStyle = '#ffd200';
+      ctx.strokeStyle = isSyn ? '#ff9f43' : '#ffd200';
       ctx.lineWidth = 2 * pct;
       ctx.stroke();
       ctx.restore();
@@ -670,6 +684,7 @@ export function gameDraw() {
     this.lightningBeams.forEach(b => b.life -= 16.66);
     this.lightningBeams = this.lightningBeams.filter(b => b.life > 0);
   }
+
 
   // 자비의 지진 땅 균열 그리기
   if (this.earthQuakes && this.earthQuakes.length > 0) {
@@ -679,9 +694,10 @@ export function gameDraw() {
       const pct = eq.life / eq.maxLife;
       
       ctx.save();
-      ctx.strokeStyle = 'rgba(127, 140, 141, ' + pct + ')';
+      const isSyn = this.player.buddhismDevotionSynergy;
+      ctx.strokeStyle = isSyn ? 'rgba(255, 210, 0, ' + pct + ')' : 'rgba(127, 140, 141, ' + pct + ')';
       ctx.lineWidth = 3;
-      ctx.shadowColor = '#7f8c8d';
+      ctx.shadowColor = isSyn ? '#ffd200' : '#7f8c8d';
       ctx.shadowBlur = 8;
       
       ctx.beginPath();
@@ -698,6 +714,7 @@ export function gameDraw() {
     this.earthQuakes = this.earthQuakes.filter(eq => eq.life > 0);
   }
 
+
   // 무량광의 장막 황금 부처 손바닥 그리기
   if (this.buddhaHands && this.buddhaHands.length > 0) {
     this.buddhaHands.forEach(bh => {
@@ -711,11 +728,12 @@ export function gameDraw() {
       ctx.translate(rx, ry);
       ctx.scale(scale, scale);
       ctx.globalAlpha = alpha;
+      const isSyn = this.player.buddhismDevotionSynergy;
       ctx.shadowColor = '#ffd200';
-      ctx.shadowBlur = 25;
+      ctx.shadowBlur = isSyn ? 45 : 25;
       
-      ctx.fillStyle = 'rgba(255, 210, 0, 0.4)';
-      ctx.strokeStyle = '#ffd200';
+      ctx.fillStyle = isSyn ? 'rgba(255, 210, 0, 0.65)' : 'rgba(255, 210, 0, 0.4)';
+      ctx.strokeStyle = isSyn ? '#ffffff' : '#ffd200';
       ctx.lineWidth = 2.5;
       
       ctx.beginPath();
@@ -740,6 +758,7 @@ export function gameDraw() {
     this.buddhaHands = this.buddhaHands.filter(bh => bh.life > 0);
   }
 
+
   // Enemies
   this.enemies.forEach(e => e.draw(ctx, this.camera));
 
@@ -759,12 +778,13 @@ export function gameDraw() {
       const ry = s.y - camY + H / 2;
       
       // Draw jagged dual-core lightning from above to the target
-      drawLightning(ctx, rx + (Math.sin(s.life) * 40), ry - 600, rx, ry, 10, 20);
+      const isSyn = this.player.confucianismUnholySynergy;
+      drawLightning(ctx, rx + (Math.sin(s.life) * 40), ry - 600, rx, ry, 10, 20, isSyn);
       
       // Draw discharge aura at impact point
       ctx.save();
-      ctx.fillStyle = 'rgba(255, 210, 0, 0.35)';
-      ctx.shadowColor = '#ffd200';
+      ctx.fillStyle = isSyn ? 'rgba(255, 159, 67, 0.35)' : 'rgba(255, 210, 0, 0.35)';
+      ctx.shadowColor = isSyn ? '#ff9f43' : '#ffd200';
       ctx.shadowBlur = 15;
       ctx.beginPath();
       ctx.arc(rx, ry, 30 * (s.life / s.maxLife), 0, Math.PI * 2);
@@ -772,6 +792,7 @@ export function gameDraw() {
       ctx.restore();
     });
   }
+
 
   // 태극의 조화 (Taeguk Aura) under the player's feet
   const taegukData = PHILOSOPHY_DB[this.player.lineage]?.find(c => c.id === 'taeguk_aura');
@@ -788,19 +809,21 @@ export function gameDraw() {
       const prx = W / 2, pry = H / 2;
       const pulse = 1 + Math.sin(Date.now() * 0.005) * 0.05; // gentle pulse
       const angle = (Date.now() * 0.0008) % (Math.PI * 2); // slow rotation
+      const isSyn = this.player.taoismThornsSynergy;
       
       ctx.save();
       // Draw a larger faint background aura pulse
-      ctx.fillStyle = 'rgba(255, 210, 0, 0.03)';
+      ctx.fillStyle = isSyn ? 'rgba(46, 204, 113, 0.04)' : 'rgba(255, 210, 0, 0.03)';
       ctx.beginPath();
       ctx.arc(prx, pry, radius * pulse, 0, Math.PI * 2);
       ctx.fill();
       
       // Draw standard Taeguk
-      drawTaeguk(ctx, prx, pry, radius * 0.7 * pulse, angle);
+      drawTaeguk(ctx, prx, pry, radius * 0.7 * pulse, angle, isSyn);
       ctx.restore();
     }
   }
+
 
   // Player
   this.player.draw(ctx, this.camera);
@@ -918,15 +941,15 @@ export function drawStageBackground(camX, camY, W, H) {
   ctx.restore();
 }
 
-function drawTaeguk(ctx, x, y, r, angle) {
+function drawTaeguk(ctx, x, y, r, angle, isSyn = false) {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(angle);
 
   // Draw outer circle with gold glow
-  ctx.strokeStyle = 'rgba(255, 210, 0, 0.8)';
+  ctx.strokeStyle = isSyn ? 'rgba(46, 204, 113, 0.8)' : 'rgba(255, 210, 0, 0.8)';
   ctx.lineWidth = 3;
-  ctx.shadowColor = '#ffd200';
+  ctx.shadowColor = isSyn ? '#2ecc71' : '#ffd200';
   ctx.shadowBlur = 10;
   ctx.beginPath();
   ctx.arc(0, 0, r, 0, Math.PI * 2);
@@ -934,37 +957,38 @@ function drawTaeguk(ctx, x, y, r, angle) {
   ctx.shadowBlur = 0; // reset shadow
 
   // Fill red (yang - top/right) and blue (yin - bottom/left)
-  ctx.fillStyle = 'rgba(235, 77, 75, 0.25)'; // semi-transparent red
+  ctx.fillStyle = isSyn ? 'rgba(46, 204, 113, 0.35)' : 'rgba(235, 77, 75, 0.25)'; // semi-transparent red
   ctx.beginPath();
   ctx.arc(0, 0, r, -Math.PI / 2, Math.PI / 2);
   ctx.fill();
 
-  ctx.fillStyle = 'rgba(72, 144, 226, 0.25)'; // semi-transparent blue
+  ctx.fillStyle = isSyn ? 'rgba(245, 246, 250, 0.35)' : 'rgba(72, 144, 226, 0.25)'; // semi-transparent blue
   ctx.beginPath();
   ctx.arc(0, 0, r, Math.PI / 2, -Math.PI / 2);
   ctx.fill();
 
   // Draw the two smaller interlocking half circles
-  ctx.fillStyle = 'rgba(235, 77, 75, 0.25)';
+  ctx.fillStyle = isSyn ? 'rgba(46, 204, 113, 0.35)' : 'rgba(235, 77, 75, 0.25)';
   ctx.beginPath();
   ctx.arc(0, -r / 2, r / 2, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = 'rgba(72, 144, 226, 0.25)';
+  ctx.fillStyle = isSyn ? 'rgba(245, 246, 250, 0.35)' : 'rgba(72, 144, 226, 0.25)';
   ctx.beginPath();
   ctx.arc(0, r / 2, r / 2, 0, Math.PI * 2);
   ctx.fill();
 
   // Draw the two small dots
-  ctx.fillStyle = '#4890e2'; // blue dot on red side
+  ctx.fillStyle = isSyn ? '#f5f6fa' : '#4890e2'; // blue/silver dot on red side
   ctx.beginPath();
   ctx.arc(0, -r / 2, r / 6, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = '#eb4d4b'; // red dot on blue side
+  ctx.fillStyle = isSyn ? '#2ecc71' : '#eb4d4b'; // red/jade dot on blue side
   ctx.beginPath();
   ctx.arc(0, r / 2, r / 6, 0, Math.PI * 2);
   ctx.fill();
+
 
   // Draw Trigrams (Geon, Gon, Gam, Ri) around the circle
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
@@ -1011,11 +1035,11 @@ function drawTaeguk(ctx, x, y, r, angle) {
   ctx.restore();
 }
 
-function drawLightning(ctx, sx, sy, tx, ty, segmentsCount = 8, offsetAmount = 15) {
+function drawLightning(ctx, sx, sy, tx, ty, segmentsCount = 8, offsetAmount = 15, isSyn = false) {
   ctx.save();
   ctx.strokeStyle = '#ffffff';
   ctx.lineWidth = 4;
-  ctx.shadowColor = '#54a0ff';
+  ctx.shadowColor = isSyn ? '#ff9f43' : '#54a0ff';
   ctx.shadowBlur = 15;
 
   ctx.beginPath();
@@ -1043,11 +1067,12 @@ function drawLightning(ctx, sx, sy, tx, ty, segmentsCount = 8, offsetAmount = 15
   ctx.stroke();
 
   // Draw inner thin core for "dual-core" effect
-  ctx.strokeStyle = '#ffd200';
+  ctx.strokeStyle = isSyn ? '#ffd200' : '#ffd200';
   ctx.lineWidth = 1.5;
   ctx.shadowBlur = 5;
   ctx.stroke();
 
   ctx.restore();
 }
+
 

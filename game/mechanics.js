@@ -35,6 +35,29 @@ export function selectLineage(lineage) {
   }
 }
 
+function checkSkillSynergy(player, skillId) {
+  if (!player || !player.lineage) return false;
+  const lineage = player.lineage;
+  
+  if (lineage === 'idealism' && player.idealismVampiricSynergy) {
+    return ['fire_projectile', 'fire_aura', 'fire_pillar', 'fire_sword'].includes(skillId);
+  }
+  if (lineage === 'empiricism' && player.empiricismEnduranceSynergy) {
+    return ['ice_projectile', 'ice_floor', 'ice_freeze', 'ice_ring'].includes(skillId);
+  }
+  if (lineage === 'confucianism' && player.confucianismUnholySynergy) {
+    return ['lightning_strike', 'lightning_sword', 'lightning_beam', 'lightning_orb'].includes(skillId);
+  }
+  if (lineage === 'taoism' && player.taoismThornsSynergy) {
+    return ['wind_vortex', 'wind_blade', 'wind_shield', 'taeguk_aura'].includes(skillId);
+  }
+  if (lineage === 'buddhism' && player.buddhismDevotionSynergy) {
+    return ['earth_barrier', 'earth_quake', 'buddha_hand', 'metal_beads'].includes(skillId);
+  }
+  return false;
+}
+
+
 export function showMenuScreen() {
   const titleScreen = document.getElementById('title-screen');
   if (titleScreen) titleScreen.classList.remove('active');
@@ -768,9 +791,10 @@ export function triggerEpicEvolutionUpgrade() {
       const tier = 'epic';
       upgrade.rolledTier = tier;
 
+      const isSynergized = checkSkillSynergy(this.player, upgrade.id);
       const categoryClass = upgrade.type === 'weapon' ? 'choice-card-weapon' : 'choice-card-passive';
       const el = document.createElement('div');
-      el.className = `choice-card choice-card-horizontal ${categoryClass} ${this.player.lineage}-card ${tier}-card${isAwakening ? ' awakening-card' : ''}`;
+      el.className = `choice-card choice-card-horizontal ${categoryClass} ${this.player.lineage}-card ${tier}-card${isAwakening ? ' awakening-card' : ''}${isSynergized ? ' synergy-active' : ''}`;
       if (idx === 0) el.classList.add('keyboard-selected');
 
       el.addEventListener('mouseenter', () => {
@@ -778,8 +802,9 @@ export function triggerEpicEvolutionUpgrade() {
         this.updateKeyboardCardSelection();
       });
 
-      const bonusSpan = `<span class="rarity-bonus-pill epic">+90% 보너스 스텟</span>`;
+      const bonusSpan = `<span class="rarity-bonus-pill epic">+90% 보너스 스텟</span>` + (isSynergized ? `<span class="rarity-bonus-pill synergy">🔥 시너지</span>` : '');
       const lvLabel = isAwakening ? '각성' : `Lv.${nextLvl}`;
+
       
       el.innerHTML = `
         <span class="card-finger-indicator">👉</span>
@@ -886,9 +911,10 @@ export function triggerLevelUp() {
       const curTier = this.player.skillTiers[upgrade.id] || 'normal';
       const curTm = tierMuls[curTier];
 
+      const isSynergized = checkSkillSynergy(this.player, upgrade.id);
       const categoryClass = upgrade.type === 'weapon' ? 'choice-card-weapon' : 'choice-card-passive';
       const el = document.createElement('div');
-      el.className = `choice-card choice-card-horizontal ${categoryClass} ${this.player.lineage}-card ${tier}-card${isAwakening ? ' awakening-card' : ''}`;
+      el.className = `choice-card choice-card-horizontal ${categoryClass} ${this.player.lineage}-card ${tier}-card${isAwakening ? ' awakening-card' : ''}${isSynergized ? ' synergy-active' : ''}`;
       if (idx === 0) el.classList.add('keyboard-selected');
 
       el.addEventListener('mouseenter', () => {
@@ -897,9 +923,13 @@ export function triggerLevelUp() {
       });
 
       const percentMap = { rare: '+25% 보너스 스텟', unique: '+55% 보너스 스텟', epic: '+90% 보너스 스텟' };
-      const bonusSpan = tier !== 'normal' ? `<span class="rarity-bonus-pill ${tier}">${percentMap[tier]}</span>` : '';
+      let bonusSpan = tier !== 'normal' ? `<span class="rarity-bonus-pill ${tier}">${percentMap[tier]}</span>` : '';
+      if (isSynergized) {
+        bonusSpan += `<span class="rarity-bonus-pill synergy">🔥 시너지</span>`;
+      }
 
       const lvLabel = isAwakening ? '각성' : `Lv.${nextLvl}`;
+
       el.innerHTML = `
         <span class="card-finger-indicator">👉</span>
         <div class="card-left-section">
@@ -1623,17 +1653,18 @@ export function retryCurrentStageOrBoss() {
   
   if (diedInBossFight) {
     this.eraSurvivalTime = 60;
-    this.realSurvivalTimer = this.stageIndex * 60 + 60;
+    // Keep this.realSurvivalTimer accumulated to prevent exploit resets
     this.currentBoss = null;
     this.spawnBossImmediate();
     this.showBossTooltip(`👑 ${this.stage.bossName}전 재도전!`);
   } else {
     this.eraSurvivalTime = 0;
-    this.realSurvivalTimer = this.stageIndex * 60;
+    // Keep this.realSurvivalTimer accumulated to prevent exploit resets
     this.currentBoss = null;
     this.spawnInitialEnemies();
     this.showBossTooltip(null);
   }
+
   
   this.scroll = 0;
   this.restoreHUD();

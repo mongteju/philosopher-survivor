@@ -895,43 +895,51 @@ export function fireWeapon(id, lvl, stats, awakening) {
     const ty = target ? target.y : this.player.y + Math.sin(this.player.faceAngle) * 300;
     const sz = (stats.size || 50) * sizeM * 0.5;
     const dmg = (stats.dmg || 35) * dmgM;
-    this.projectiles.push(new Projectile(this.player.x, this.player.y, tx, ty, 6 * (1 + (this.player.auraProjSpeedBonus || 0)), sz, dmg, '#ff4757', 'fire_explosion'));
+    const p = new Projectile(this.player.x, this.player.y, tx, ty, 6 * (1 + (this.player.auraProjSpeedBonus || 0)), sz, dmg, '#ff4757', 'fire_explosion');
+    if (this.player.idealismVampiricSynergy) p.synergy = true;
+    this.projectiles.push(p);
     sfx.playFireShoot();
   }
+
 
   if (id === 'fire_aura') {
     const radius = (stats.radius || 95) * sizeM;
     const radiusSq = radius * radius;
     const dmg = (stats.dmg || 16) * dmgM;
     const px = this.player.x, py = this.player.y;
+    const isSyn = this.player.idealismVampiricSynergy;
     this.enemies.forEach(e => {
       if (e.hp > 0) {
         const dx = e.x - px, dy = e.y - py;
         if (dx * dx + dy * dy < radiusSq) {
           this.dealDamageToEnemy(e, dmg);
-          this.spawnParticles(e.x, e.y, '#ff4757', 3, 5, -2);
+          this.spawnParticles(e.x, e.y, isSyn ? '#a55eea' : '#ff4757', 3, 5, -2);
         }
       }
     });
-    this.spawnParticles(px, py, '#ff6b35', 6, 8, -3);
+    this.spawnParticles(px, py, isSyn ? '#d6a2e8' : '#ff6b35', 6, 8, -3);
   }
+
 
   if (id === 'fire_pillar') {
     const count = (stats.count || 1) * (awakening ? 2 : 1);
     const dmg = (stats.dmg || 75) * dmgM;
+    const isSyn = this.player.idealismVampiricSynergy;
     for (let i = 0; i < count; i++) {
       const target = this.enemies[Math.floor(Math.random() * this.enemies.length)];
       if (!target) continue;
       const px = target.x + (Math.random() - 0.5) * 40;
       const py = target.y + (Math.random() - 0.5) * 40;
       setTimeout(() => {
+        if (target.hp <= 0) return;
         this.dealDamageToEnemy(target, dmg);
-        this.spawnParticles(px, py, '#ffd200', 10, 8, -4);
-        this.addDamageText(px, py - 30, dmg, '#ffd200', 20, false);
+        this.spawnParticles(px, py, isSyn ? '#a55eea' : '#ffd200', 10, 8, -4);
+        this.addDamageText(px, py - 30, dmg, isSyn ? '#a55eea' : '#ffd200', 20, false);
       }, i * 150);
     }
     sfx.playExplosion();
   }
+
 
   if (id === 'fire_sword') {
     const count = (stats.count || 3) * (awakening ? 2 : 1);
@@ -944,10 +952,12 @@ export function fireWeapon(id, lvl, stats, awakening) {
         this.player.x + Math.cos(angle), this.player.y + Math.sin(angle),
         spd, (20 + (lvl * 5)) * sizeM * 0.5, dmg, '#ff4757', 'fire_sword');
       p.pierceLeft = 99;
+      if (this.player.idealismVampiricSynergy) p.synergy = true;
       this.projectiles.push(p);
     }
     sfx.playExplosion();
   }
+
 
   if (id === 'ice_projectile') {
     const target = this.getNearestEnemy();
@@ -958,17 +968,20 @@ export function fireWeapon(id, lvl, stats, awakening) {
     const p = new Projectile(this.player.x, this.player.y, tx, ty, (stats.speed || 8) * (1 + (this.player.auraProjSpeedBonus || 0)), sz, dmg, '#00d2d3', 'ice_pierce');
     p.pierceLeft = awakening ? 999 : (stats.pierce || 2);
     p.slowAmount = (stats.slow || 0.35) * (1 + this.player.slowBonus);
+    if (this.player.empiricismEnduranceSynergy) p.synergy = true;
     this.projectiles.push(p);
     sfx.playFreeze();
   }
+
 
   if (id === 'ice_floor') {
     const sz = (stats.size || 100) * sizeM;
     this.iceFloors.push({ x: this.player.x, y: this.player.y, size: sz, life: stats.duration || 3500,
       dmg: (stats.dmg || 10) * dmgM * 10 });
-    this.spawnParticles(this.player.x, this.player.y, '#00d2d3', 8, 6, -2);
+    this.spawnParticles(this.player.x, this.player.y, this.player.empiricismEnduranceSynergy ? '#00b894' : '#00d2d3', 8, 6, -2);
     sfx.playFreeze();
   }
+
 
   if (id === 'ice_freeze') {
     const radius = (stats.radius || 170) * sizeM;
@@ -986,9 +999,10 @@ export function fireWeapon(id, lvl, stats, awakening) {
         }
       }
     });
-    this.spawnParticles(px, py, '#a8e6f0', 12, 10, -3);
+    this.spawnParticles(px, py, this.player.empiricismEnduranceSynergy ? '#01a3a4' : '#a8e6f0', 12, 10, -3);
     sfx.playFreeze();
   }
+
 
   if (id === 'ice_ring') {
     // Handled dynamically every frame in gameUpdate
@@ -999,12 +1013,13 @@ export function fireWeapon(id, lvl, stats, awakening) {
     const dmg = (stats.dmg || 45) * dmgM;
     const targets = this.enemies.filter(e => e.hp > 0).sort(() => Math.random() - 0.5).slice(0, count);
     if (!this.lightningStrikes) this.lightningStrikes = [];
+    const isSyn = this.player.confucianismUnholySynergy;
     targets.forEach((target, i) => {
       setTimeout(() => {
         if (target.hp <= 0) return;
         this.dealDamageToEnemy(target, dmg);
         this.spawnParticles(target.x, target.y, '#ffd200', 8, 8, -4);
-        this.spawnParticles(target.x, target.y, '#54a0ff', 4, 6, -3);
+        this.spawnParticles(target.x, target.y, isSyn ? '#ff9f43' : '#54a0ff', 4, 6, -3);
         this.lightningStrikes.push({
           x: target.x,
           y: target.y,
@@ -1016,6 +1031,7 @@ export function fireWeapon(id, lvl, stats, awakening) {
     sfx.playExplosion();
   }
 
+
   if (id === 'lightning_sword') {
     const target = this.getNearestEnemy();
     const tx = target ? target.x : this.player.x + Math.cos(this.player.faceAngle) * 300;
@@ -1024,9 +1040,11 @@ export function fireWeapon(id, lvl, stats, awakening) {
     const dmg = (stats.dmg || 35) * dmgM;
     const p = new Projectile(this.player.x, this.player.y, tx, ty, (stats.speed || 9) * (1 + (this.player.auraProjSpeedBonus || 0)), sz, dmg, '#ffd200', 'lightning_sword');
     p.pierceLeft = awakening ? 999 : 5;
+    if (this.player.confucianismUnholySynergy) p.synergy = true;
     this.projectiles.push(p);
     if (typeof sfx !== 'undefined' && sfx.playLightningAlert) sfx.playLightningAlert();
   }
+
 
   if (id === 'lightning_beam') {
     const count = (stats.count || 4) * (awakening ? 1.5 : 1);
@@ -1075,9 +1093,11 @@ export function fireWeapon(id, lvl, stats, awakening) {
     const p = new Projectile(this.player.x, this.player.y, tx, ty, 4.5 * (1 + (this.player.auraProjSpeedBonus || 0)), sz, dmg, '#c56cf0', 'lightning_orb');
     p.life = 4000;
     p.homing = true;
+    if (this.player.confucianismUnholySynergy) p.synergy = true;
     this.projectiles.push(p);
     if (typeof sfx !== 'undefined' && sfx.playLightningAlert) sfx.playLightningAlert();
   }
+
 
   if (id === 'wind_vortex') {
     const target = this.getNearestEnemy();
@@ -1087,9 +1107,11 @@ export function fireWeapon(id, lvl, stats, awakening) {
     const dmg = (stats.dmg || 20) * dmgM;
     const p = new Projectile(this.player.x, this.player.y, tx, ty, (stats.speed || 7) * (1 + (this.player.auraProjSpeedBonus || 0)), sz, dmg, '#54a0ff', 'wind_vortex');
     p.pierceLeft = 999;
+    if (this.player.taoismThornsSynergy) p.synergy = true;
     this.projectiles.push(p);
     sfx.playFreeze();
   }
+
 
   if (id === 'wind_blade') {
     const count = (stats.count || 2) * (awakening ? 2 : 1);
@@ -1101,18 +1123,21 @@ export function fireWeapon(id, lvl, stats, awakening) {
       const ty = this.player.y + Math.sin(angle) * 300;
       const p = new Projectile(this.player.x, this.player.y, tx, ty, spd, (25 + lvl * 4) * sizeM * 0.5, dmg, '#55efc4', 'wind_blade');
       p.pierceLeft = 3;
+      if (this.player.taoismThornsSynergy) p.synergy = true;
       this.projectiles.push(p);
     }
     sfx.playFreeze();
   }
 
+
   if (id === 'wind_shield') {
     this.windShieldActiveTimer = stats.duration || 2500;
     this.windShieldRadius = stats.radius || 80;
     this.windShieldDmg = stats.dmg || 15;
-    this.spawnParticles(this.player.x, this.player.y, '#2ed573', 12, 8, -2);
+    this.spawnParticles(this.player.x, this.player.y, this.player.taoismThornsSynergy ? '#00b894' : '#2ed573', 12, 8, -2);
     sfx.playFreeze();
   }
+
 
   if (id === 'taeguk_aura') {
     const radius = (stats.radius || 110) * sizeM;
@@ -1123,6 +1148,7 @@ export function fireWeapon(id, lvl, stats, awakening) {
     this.taegukElementIndex = (this.taegukElementIndex + 1) % 3;
     const elements = ['lightning', 'wind', 'earth'];
     const curElem = elements[this.taegukElementIndex];
+    const isSyn = this.player.taoismThornsSynergy;
     this.enemies.forEach(e => {
       if (e.hp > 0) {
         const dx = e.x - px, dy = e.y - py;
@@ -1132,19 +1158,20 @@ export function fireWeapon(id, lvl, stats, awakening) {
             this.spawnParticles(e.x, e.y, '#ffd200', 3, 5, -2);
             e.slowMul = 0.3; e.slowTimer = 800;
           } else if (curElem === 'wind') {
-            this.spawnParticles(e.x, e.y, '#54a0ff', 3, 5, -2);
+            this.spawnParticles(e.x, e.y, isSyn ? '#2ecc71' : '#54a0ff', 3, 5, -2);
             if (e.type !== 'boss') {
               const ang = Math.atan2(e.y - py, e.x - px);
               e.x += Math.cos(ang) * 15;
               e.y += Math.sin(ang) * 15;
             }
           } else {
-            this.spawnParticles(e.x, e.y, '#7f8c8d', 3, 5, -2);
+            this.spawnParticles(e.x, e.y, isSyn ? '#2ecc71' : '#7f8c8d', 3, 5, -2);
             e.slowMul = 0.5; e.slowTimer = 2000;
           }
         }
       }
     });
+
   }
 
   if (id === 'earth_quake') {
@@ -1164,10 +1191,11 @@ export function fireWeapon(id, lvl, stats, awakening) {
               this.dealDamageToEnemy(e, dmg);
               e.slowMul = 1 - slow;
               e.slowTimer = 2500;
-              this.spawnParticles(e.x, e.y, '#7f8c8d', 4, 6, -3);
+              this.spawnParticles(e.x, e.y, this.player.buddhismDevotionSynergy ? '#ffd200' : '#7f8c8d', 4, 6, -3);
             }
           }
         });
+
         this.earthQuakes.push({
           x: target.x, y: target.y, radius: radius,
           life: 400, maxLife: 400

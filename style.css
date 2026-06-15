@@ -3599,3 +3599,33 @@ button.keyboard-selected,
   border: 4px solid #ffd200 !important;
   animation: synergy-glow-pulse 2s infinite ease-in-out !important;
 }
+
+/* Synergy Active Choice Card Highlights */
+@keyframes synergy-card-pulse {
+  0% {
+    border-color: #ffd200 !important;
+    box-shadow: 0 0 15px rgba(255, 210, 0, 0.4), inset 0 0 12px rgba(255, 210, 0, 0.1);
+  }
+  50% {
+    border-color: #ffa500 !important;
+    box-shadow: 0 0 30px rgba(255, 165, 0, 0.85), inset 0 0 24px rgba(255, 165, 0, 0.35);
+  }
+  100% {
+    border-color: #ffd200 !important;
+    box-shadow: 0 0 15px rgba(255, 210, 0, 0.4), inset 0 0 12px rgba(255, 210, 0, 0.1);
+  }
+}
+
+.choice-card.synergy-active {
+  animation: synergy-card-pulse 2.2s infinite ease-in-out !important;
+  border-width: 3.5px !important;
+}
+
+.rarity-bonus-pill.synergy {
+  background: linear-gradient(135deg, #ffd200, #ffa500) !important;
+  color: #000000 !important;
+  font-weight: 900 !important;
+  text-shadow: none !important;
+  box-shadow: 0 0 8px rgba(255, 210, 0, 0.5) !important;
+}
+

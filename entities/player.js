@@ -1007,14 +1007,15 @@ export class Player {
           const time = performance.now();
           const baseRadius = stat.radius;
           const actualRadius = baseRadius * this.areaMultiplier;
+          const isSyn = this.idealismVampiricSynergy;
           
           ctx.save();
           ctx.shadowBlur = 12 + Math.sin(time * 0.006) * 4;
-          ctx.shadowColor = '#ff4d4d';
-          ctx.strokeStyle = 'rgba(255, 77, 77, 0.75)';
+          ctx.shadowColor = isSyn ? '#a55eea' : '#ff4d4d';
+          ctx.strokeStyle = isSyn ? 'rgba(165, 94, 234, 0.75)' : 'rgba(255, 77, 77, 0.75)';
           ctx.lineWidth = 3;
           
-          ctx.fillStyle = 'rgba(255, 77, 77, 0.035)';
+          ctx.fillStyle = isSyn ? 'rgba(165, 94, 234, 0.035)' : 'rgba(255, 77, 77, 0.035)';
           ctx.beginPath();
           ctx.arc(rx, ry, actualRadius, 0, Math.PI * 2);
           ctx.fill();
@@ -1023,7 +1024,7 @@ export class Player {
           ctx.arc(rx, ry, actualRadius, 0, Math.PI * 2);
           ctx.stroke();
           
-          ctx.strokeStyle = 'rgba(255, 168, 1, 0.5)';
+          ctx.strokeStyle = isSyn ? 'rgba(214, 162, 232, 0.5)' : 'rgba(255, 168, 1, 0.5)';
           ctx.lineWidth = 1.5;
           ctx.setLineDash([8, 12]);
           ctx.beginPath();
@@ -1033,6 +1034,7 @@ export class Player {
         }
       }
     }
+
 
     // 등급별 특수 아우라 그리기
     if (this.auraTier && this.auraTier > 0) {
