@@ -429,4 +429,21 @@ export function initRankingSystem(game) {
       }
     });
   }
+
+  // 9b. Debug Panel: Open Rank Registration Button
+  const dbgRegisterRank = document.getElementById('dbg-register-rank');
+  if (dbgRegisterRank) {
+    dbgRegisterRank.addEventListener('click', () => {
+      // Clear inputs
+      document.getElementById('rank-grade').value = '';
+      document.getElementById('rank-class').value = '';
+      document.getElementById('rank-name').value = '';
+      document.getElementById('rank-register-error').style.display = 'none';
+      
+      // Show registration modal
+      document.getElementById('rank-register-modal').classList.add('active');
+      
+      if (typeof sfx !== 'undefined' && sfx.playLevelUp) sfx.playLevelUp();
+    });
+  }
 }
