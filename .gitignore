@@ -13,3 +13,7 @@ desktop.ini
 
 # Logs
 *.log
+
+# Local database & modules
+server_rankings.json
+node_modules/

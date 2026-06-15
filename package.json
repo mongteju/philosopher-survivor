@@ -1,0 +1,14 @@
+{
+  "name": "philosopher-survivor",
+  "version": "1.0.0",
+  "description": "Educational Vampire Survivors-like RPG Web Game with Real-time Rankings",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}

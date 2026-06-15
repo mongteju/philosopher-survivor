@@ -19,7 +19,8 @@ const MOCK_RANKINGS = [
   { grade: 2, classGroup: 4, name: "원효", lineage: "buddhism", playTime: 390, date: "2026-06-12" }
 ];
 
-export function loadRankings() {
+// --- Local Storage Helpers (Fallback Cache) ---
+export function loadLocalRankings() {
   const data = localStorage.getItem(STORAGE_KEY);
   if (!data) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(MOCK_RANKINGS));
@@ -28,23 +29,21 @@ export function loadRankings() {
   try {
     return JSON.parse(data);
   } catch (e) {
-    console.error("Failed to parse rankings:", e);
+    console.error("Failed to parse local rankings:", e);
     return MOCK_RANKINGS;
   }
 }
 
-export function saveRankings(rankings) {
+export function saveLocalRankings(rankings) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(rankings));
 }
 
-// Add a ranking entry and sort ascending by playtime (clear time)
-export function addRanking(entry) {
-  const rankings = loadRankings();
+export function addLocalRanking(entry) {
+  const rankings = loadLocalRankings();
   rankings.push(entry);
   rankings.sort((a, b) => a.playTime - b.playTime);
-  saveRankings(rankings);
+  saveLocalRankings(rankings);
   
-  // Return the index of the newly added entry in the sorted list
   return rankings.findIndex(r => 
     r.grade === entry.grade && 
     r.classGroup === entry.classGroup && 
@@ -55,24 +54,95 @@ export function addRanking(entry) {
   );
 }
 
+export function deleteLocalRankingEntry(entry) {
+  const rankings = loadLocalRankings();
+  const updated = rankings.filter(r => !(
+    r.grade === entry.grade &&
+    r.classGroup === entry.classGroup &&
+    r.name === entry.name &&
+    r.playTime === entry.playTime &&
+    r.lineage === entry.lineage &&
+    r.date === entry.date
+  ));
+  saveLocalRankings(updated);
+}
+
+// --- Asynchronous Server API Helpers with Fallback ---
+export async function loadRankings() {
+  try {
+    const response = await fetch('/api/rankings');
+    if (!response.ok) throw new Error('Server returned non-ok status');
+    const rankings = await response.json();
+    saveLocalRankings(rankings); // Sync local storage cache
+    return rankings;
+  } catch (e) {
+    console.warn("Failed to load rankings from server. Using local storage fallback:", e);
+    return loadLocalRankings();
+  }
+}
+
+export async function addRanking(entry) {
+  try {
+    const response = await fetch('/api/rankings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entry)
+    });
+    if (!response.ok) throw new Error('Server failed to add ranking');
+    const rankings = await response.json();
+    saveLocalRankings(rankings); // Sync local storage cache
+    
+    return rankings.findIndex(r => 
+      r.grade === entry.grade && 
+      r.classGroup === entry.classGroup && 
+      r.name === entry.name && 
+      r.playTime === entry.playTime && 
+      r.lineage === entry.lineage &&
+      r.date === entry.date
+    );
+  } catch (e) {
+    console.warn("Failed to add ranking to server. Using local storage fallback:", e);
+    return addLocalRanking(entry);
+  }
+}
+
+export async function deleteRankingEntry(entry) {
+  try {
+    const response = await fetch('/api/rankings/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entry)
+    });
+    if (!response.ok) throw new Error('Server failed to delete ranking');
+    const rankings = await response.json();
+    saveLocalRankings(rankings); // Sync local storage cache
+  } catch (e) {
+    console.warn("Failed to delete ranking from server. Using local storage fallback:", e);
+    deleteLocalRankingEntry(entry);
+  }
+}
+
 // Global active filter state
 let activeFilter = 'all';
 
-export function renderRankings(game) {
+export async function renderRankings(game) {
   const listContainer = document.getElementById('ranking-list');
   if (!listContainer) return;
   
-  listContainer.innerHTML = '';
+  // Show loading indicator
+  listContainer.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 20px; font-size: 13px; font-family: var(--font-title);">랭킹 데이터를 불러오는 중...</div>';
   
-  let rankings = loadRankings();
+  let rankings = await loadRankings();
   
   // Filter rankings by lineage if not 'all'
   if (activeFilter !== 'all') {
     rankings = rankings.filter(r => r.lineage === activeFilter);
   }
   
+  listContainer.innerHTML = '';
+  
   if (rankings.length === 0) {
-    listContainer.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 20px; font-size: 13px;">등록된 랭킹 기록이 없습니다.</div>';
+    listContainer.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 20px; font-size: 13px; font-family: var(--font-title);">등록된 랭킹 기록이 없습니다.</div>';
     return;
   }
   
@@ -128,11 +198,13 @@ export function renderRankings(game) {
         deleteBtn.className = 'dbg-delete-rank-btn';
         deleteBtn.textContent = '❌ 삭제';
         deleteBtn.style.cssText = 'background: #ff4757; border: none; border-radius: 4px; color: white; padding: 4px 8px; font-size: 11px; margin-left: 10px; cursor: pointer; font-weight: bold;';
-        deleteBtn.addEventListener('click', (e) => {
+        deleteBtn.addEventListener('click', async (e) => {
           e.stopPropagation();
           if (confirm(`[개발자] 이 랭킹 항목을 삭제하시겠습니까?\n(${r.grade}학년 ${r.classGroup}반 ${r.name})`)) {
-            deleteRankingEntry(r);
-            renderRankings(game);
+            deleteBtn.disabled = true;
+            deleteBtn.textContent = '삭제 중...';
+            await deleteRankingEntry(r);
+            await renderRankings(game);
           }
         });
         rightDiv.appendChild(deleteBtn);
@@ -150,32 +222,19 @@ export function renderRankings(game) {
   });
 }
 
-export function deleteRankingEntry(entry) {
-  const rankings = loadRankings();
-  const updated = rankings.filter(r => !(
-    r.grade === entry.grade &&
-    r.classGroup === entry.classGroup &&
-    r.name === entry.name &&
-    r.playTime === entry.playTime &&
-    r.lineage === entry.lineage &&
-    r.date === entry.date
-  ));
-  saveRankings(updated);
-}
-
 export function initRankingSystem(game) {
   // Expose renderRankings globally for event triggers
   window.renderRankingsGlobal = () => renderRankings(game);
 
-  // 1. Create default rankings in localStorage if not exists
-  loadRankings();
+  // 1. Warm up local storage / cache
+  loadLocalRankings();
 
   // 2. Tab switching logic
   const tabs = ['all', 'idealism', 'empiricism', 'confucianism', 'taoism', 'buddhism'];
   tabs.forEach(tabId => {
     const tabBtn = document.getElementById(`rank-tab-${tabId}`);
     if (tabBtn) {
-      tabBtn.addEventListener('click', () => {
+      tabBtn.addEventListener('click', async () => {
         // Set active class
         tabs.forEach(t => {
           const btn = document.getElementById(`rank-tab-${t}`);
@@ -183,7 +242,7 @@ export function initRankingSystem(game) {
         });
         tabBtn.classList.add('active');
         activeFilter = tabId;
-        renderRankings(game);
+        await renderRankings(game);
         if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
       });
     }
@@ -265,7 +324,7 @@ export function initRankingSystem(game) {
   // 7. Rank Submission Button
   const rankSubmitBtn = document.getElementById('rank-submit-btn');
   if (rankSubmitBtn) {
-    rankSubmitBtn.addEventListener('click', () => {
+    rankSubmitBtn.addEventListener('click', async () => {
       const gradeVal = parseInt(document.getElementById('rank-grade').value.trim());
       const classVal = parseInt(document.getElementById('rank-class').value.trim());
       const nameVal = document.getElementById('rank-name').value.trim();
@@ -298,10 +357,19 @@ export function initRankingSystem(game) {
         playTime: Math.floor(game.realSurvivalTimer),
         date: dateStr
       };
+
+      // Disable button & show loading state to prevent double submit
+      rankSubmitBtn.disabled = true;
+      const originalText = rankSubmitBtn.textContent;
+      rankSubmitBtn.textContent = '등록 중...';
       
-      // Add ranking
+      // Add ranking (await server or fallback)
       game._newRankEntry = entry;
-      addRanking(entry);
+      await addRanking(entry);
+      
+      // Re-enable button
+      rankSubmitBtn.disabled = false;
+      rankSubmitBtn.textContent = originalText;
       
       // Close registration modal
       document.getElementById('rank-register-modal').classList.remove('active');
@@ -343,12 +411,20 @@ export function initRankingSystem(game) {
   // 9. Debug Panel: Reset Rankings Button
   const dbgResetRank = document.getElementById('dbg-reset-rank');
   if (dbgResetRank) {
-    dbgResetRank.addEventListener('click', () => {
+    dbgResetRank.addEventListener('click', async () => {
       if (confirm("[개발자] 모든 랭킹 데이터를 초기화하고 기본 더미 데이터로 복원하시겠습니까?")) {
-        localStorage.removeItem(STORAGE_KEY);
-        loadRankings();
+        try {
+          const response = await fetch('/api/rankings/reset', { method: 'POST' });
+          if (!response.ok) throw new Error('Reset failed');
+          const serverData = await response.json();
+          saveLocalRankings(serverData);
+        } catch (e) {
+          console.warn("Failed to reset ranking on server, reset local storage:", e);
+          localStorage.removeItem(STORAGE_KEY);
+          loadLocalRankings();
+        }
         alert("랭킹 데이터가 초기화되었습니다.");
-        renderRankings(game);
+        await renderRankings(game);
         if (typeof sfx !== 'undefined' && sfx.playLevelUp) sfx.playLevelUp();
       }
     });
