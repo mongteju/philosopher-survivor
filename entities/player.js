@@ -289,22 +289,49 @@ export class Player {
 
     // Apply Devotion Aura even on bypassArmor attacks!
     const auraRed = this.auraDamageReduction || 0;
-    const reduced = bypassArmor ? 
+    let reduced = bypassArmor ? 
       Math.floor(dmg * (1 - auraRed)) : 
       Math.max(1, Math.floor(dmg * (1 - this.armorReduction) * (1 - auraRed)));
 
-    this.hp = Math.max(0, this.hp - reduced);
-    if (activeGame && typeof activeGame.addDamageText === 'function') {
-      activeGame.addDamageText(this.x, this.y - 40, reduced, '#ff6b81', 16, false);
+    // Vajra Shield absorption
+    if (this.buddhismDevotionSynergy && this.vajraShield && this.vajraShield > 0) {
+      if (reduced <= this.vajraShield) {
+        this.vajraShield -= reduced;
+        if (activeGame && typeof activeGame.addDamageText === 'function') {
+          activeGame.addDamageText(this.x, this.y - 45, `🛡️ ${reduced} 흡수`, '#ffd200', 14, true);
+        }
+        reduced = 0;
+      } else {
+        reduced -= this.vajraShield;
+        if (activeGame && typeof activeGame.addDamageText === 'function') {
+          activeGame.addDamageText(this.x, this.y - 45, `🛡️ ${this.vajraShield} 흡수`, '#ffd200', 14, true);
+        }
+        this.vajraShield = 0;
+      }
+    }
+
+    if (reduced > 0) {
+      this.hp = Math.max(0, this.hp - reduced);
+      if (activeGame && typeof activeGame.addDamageText === 'function') {
+        activeGame.addDamageText(this.x, this.y - 40, reduced, '#ff6b81', 16, false);
+      }
     }
     
     this.isInvincible = true; this.invincibilityFlash = 800;
     setTimeout(() => { this.isInvincible = false; this.invincibilityFlash = 0; }, 800);
     
-    // Buddhism + Devotion Synergy: Vajra Shockwave on Hit
+    // Buddhism + Devotion Synergy: Vajra Shockwave & Shield on Hit
     if (this.buddhismDevotionSynergy && activeGame && activeGame.enemies) {
       const lvl = activeGame.activeAuraLevel || 1;
       const shkDmg = lvl * 80; // 상향 (레벨당 80)
+      
+      // Grant Vajra Shield (absorbs up to lvl * 25, capped at lvl * 50)
+      const maxShield = lvl * 50;
+      this.vajraShield = Math.min(maxShield, (this.vajraShield || 0) + lvl * 25);
+      if (activeGame && typeof activeGame.addDamageText === 'function') {
+        activeGame.addDamageText(this.x, this.y - 65, `금강막 생성! (+${lvl * 25})`, '#ffd200', 16, true);
+      }
+      
       activeGame.enemies.forEach(e => {
         const dist = Math.hypot(e.x - this.x, e.y - this.y);
         if (dist < 200 && e.hp > 0) {
@@ -569,6 +596,28 @@ export class Player {
       }
     } else {
       this.thornsDoTTimer = 0;
+    }
+
+    // Buddhism Devotion Synergy: Suction pull towards player center every frame
+    if (this.buddhismDevotionSynergy && activeGame && activeGame.enemies) {
+      const range = 130 * this.areaMultiplier;
+      activeGame.enemies.forEach(e => {
+        if (e.hp > 0) {
+          const dx = this.x - e.x;
+          const dy = this.y - e.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < range && dist > 15) {
+            // Apply suction pull towards the player (stronger suction for brawling)
+            const pullForce = 1.6 * (dt / 16.666); // 1.6 speed pull
+            e.x += (dx / dist) * pullForce;
+            e.y += (dy / dist) * pullForce;
+            
+            // Add a slight slow effect so they don't sprint away easily
+            e.slowMul = Math.min(e.slowMul || 1.0, 0.75); // 25% slow
+            e.slowTimer = Math.max(e.slowTimer || 0, 100);
+          }
+        }
+      });
     }
 
     const totalRegen = this.regenHp + (this.auraRegenBonus || 0);
@@ -1026,6 +1075,24 @@ export class Player {
       }
     } else {
       this._lastWaveTime = Date.now();
+    }
+
+    // Draw Vajra Shield around player body if active
+    if (this.buddhismDevotionSynergy && this.vajraShield && this.vajraShield > 0) {
+      ctx.save();
+      const pulse = 1 + Math.sin(Date.now() * 0.01) * 0.05;
+      ctx.strokeStyle = 'rgba(255, 210, 0, 0.7)';
+      ctx.lineWidth = 2;
+      ctx.shadowColor = '#ffd200';
+      ctx.shadowBlur = 8 + Math.sin(Date.now() * 0.01) * 3;
+      
+      ctx.beginPath();
+      ctx.arc(rx, ry, (this.size + 8) * pulse, 0, Math.PI * 2);
+      ctx.stroke();
+      
+      ctx.fillStyle = 'rgba(255, 210, 0, 0.08)';
+      ctx.fill();
+      ctx.restore();
     }
 
     // ─── Drawing Reason's Aura Glowing Red Ring of Fire ───────────────────

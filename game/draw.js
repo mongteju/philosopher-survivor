@@ -533,8 +533,9 @@ export function gameDraw() {
       const tierMuls = { normal: 1.0, rare: 1.25, unique: 1.55, epic: 1.9 };
       const tierMul = tierMuls[skillTier] || 1.0;
       const sizeM = this.player.areaMultiplier * (1 + (tierMul - 1) * 0.5);
-      const radius = (stats.radius || 70) * sizeM;
-      const rockOrbitAngle = -this.orbitAngle * 0.7;
+      const isSyn = this.player.buddhismDevotionSynergy;
+      const radius = isSyn ? 22 : (stats.radius || 70) * sizeM;
+      const rockOrbitAngle = isSyn ? -this.orbitAngle * 1.8 : -this.orbitAngle * 0.7;
       const prx = W / 2, pry = H / 2;
 
       for (let i = 0; i < count; i++) {
@@ -583,8 +584,9 @@ export function gameDraw() {
     if (lvl > 0) {
       const stats = metalBeadsData.stats[lvl - 1];
       const count = stats.count || 4;
-      const radius = (100 + lvl * 10) * this.player.areaMultiplier;
-      const beadOrbitAngle = this.orbitAngle * 1.2;
+      const isSyn = this.player.buddhismDevotionSynergy;
+      const radius = isSyn ? 30 : (100 + lvl * 10) * this.player.areaMultiplier;
+      const beadOrbitAngle = isSyn ? this.orbitAngle * 2.5 : this.orbitAngle * 1.2;
       const prx = W / 2, pry = H / 2;
 
       for (let i = 0; i < count; i++) {

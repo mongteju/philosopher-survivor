@@ -629,20 +629,21 @@ export function gameUpdate(dt) {
       const sizeM = this.player.areaMultiplier * (1 + (tierMul - 1) * 0.5);
       const dmgM = this.player.dmgMultiplier * tierMul * (1 + (this.player.auraDamageBonus || 0));
 
-      const radius = (stats.radius || 70) * sizeM;
+      const isSynergy = this.player.buddhismDevotionSynergy;
+      const radius = isSynergy ? 22 : (stats.radius || 70) * sizeM;
       let dmg = (stats.dmg || 30) * dmgM;
-      if (this.player.buddhismDevotionSynergy) {
+      if (isSynergy) {
         const synLvl = this.activeAuraLevel || 1;
-        dmg *= (1 + synLvl * 0.35); // 불교 고유 오라: 초근접 스킬 데미지 +35%/레벨
+        dmg *= (1 + synLvl * 0.35) * 0.8; // 불교 고유 오라: 초근접 스킬 데미지 +35%/레벨 (80% 너프 적용)
       }
-      const rockOrbitAngle = -this.orbitAngle * 0.7;
+      const rockOrbitAngle = isSynergy ? -this.orbitAngle * 1.8 : -this.orbitAngle * 0.7;
 
       this.enemies.forEach(e => {
         if (e.hp > 0) {
           if (!e.earthBarrierDmgTimers) {
             e.earthBarrierDmgTimers = {};
           }
-          const checkLimit = 20 + e.size;
+          const checkLimit = isSynergy ? (10 + e.size) : (20 + e.size); // 초근접 밀착 충돌 판정
           const checkLimitSq = checkLimit * checkLimit;
           for (let i = 0; i < count; i++) {
             // Check cooldown for this specific rock
@@ -654,12 +655,12 @@ export function gameUpdate(dt) {
             const dx = e.x - ox, dy = e.y - oy;
             if (dx * dx + dy * dy < checkLimitSq) {
               this.dealDamageToEnemy(e, dmg);
-              e.earthBarrierDmgTimers[i] = 400; // 0.4s cooldown per rock
+              e.earthBarrierDmgTimers[i] = isSynergy ? 120 : 400; // 시너지 시 0.12초 쿨타운
               
-              // Knockback
+              // Knockback (시너지 시 끌어당김, 일반 상태 시 밀쳐냄)
               if (e.type !== 'boss') {
                 const kbAngle = Math.atan2(e.y - py, e.x - px);
-                const kbDist = 12;
+                const kbDist = isSynergy ? -8 : 12; // 시너지 활성화 시 적을 안쪽으로 8만큼 끌어당김
                 e.x += Math.cos(kbAngle) * kbDist;
                 e.y += Math.sin(kbAngle) * kbDist;
               }
@@ -684,16 +685,21 @@ export function gameUpdate(dt) {
       const sizeM = this.player.areaMultiplier * (1 + (tierMul - 1) * 0.5);
       const dmgM = this.player.dmgMultiplier * tierMul * (1 + (this.player.auraDamageBonus || 0));
 
-      const radius = (100 + lvl * 10) * sizeM;
-      const dmg = (stats.dmg || 30) * dmgM;
-      const beadOrbitAngle = this.orbitAngle * 1.2;
+      const isSynergy = this.player.buddhismDevotionSynergy;
+      const radius = isSynergy ? 30 : (100 + lvl * 10) * sizeM;
+      let dmg = (stats.dmg || 30) * dmgM;
+      if (isSynergy) {
+        const synLvl = this.activeAuraLevel || 1;
+        dmg *= (1 + synLvl * 0.35) * 0.8; // 불교 고유 오라 시너지 데미지 배율 적용 (80% 너프 적용)
+      }
+      const beadOrbitAngle = isSynergy ? this.orbitAngle * 2.5 : this.orbitAngle * 1.2;
 
       this.enemies.forEach(e => {
         if (e.hp > 0) {
           if (!e.metalBeadsDmgTimers) {
             e.metalBeadsDmgTimers = {};
           }
-          const checkLimit = 24 + e.size;
+          const checkLimit = isSynergy ? (12 + e.size) : (24 + e.size); // 초근접 밀착 충돌 판정
           const checkLimitSq = checkLimit * checkLimit;
           for (let i = 0; i < count; i++) {
             if (e.metalBeadsDmgTimers[i] > 0) continue;
@@ -705,7 +711,7 @@ export function gameUpdate(dt) {
             if (dx * dx + dy * dy < checkLimitSq) {
               this.dealDamageToEnemy(e, dmg);
               this.spawnParticles(ox, oy, '#e67e22', 4, 6, -3); // 염주 알 마찰 불꽃
-              e.metalBeadsDmgTimers[i] = 300; // 0.3s cooldown per bead
+              e.metalBeadsDmgTimers[i] = isSynergy ? 100 : 300; // 시너지 시 0.1초 쿨타운
             }
           }
         }
@@ -884,7 +890,7 @@ export function fireWeapon(id, lvl, stats, awakening) {
   // Synergy adjustments
   const synLvl = this.activeAuraLevel || 1;
   if (this.player.buddhismDevotionSynergy) {
-    dmgM *= (1 + synLvl * 0.35); // 불교 고유 오라: 초근접 스킬 데미지 +35%/레벨
+    dmgM *= (1 + synLvl * 0.35) * 0.8; // 불교 고유 오라: 초근접 스킬 데미지 +35%/레벨 (80% 너프 적용)
   }
   if (this.player.confucianismUnholySynergy && ['lightning_strike', 'lightning_sword', 'lightning_beam', 'lightning_orb'].includes(id)) {
     dmgM *= (1 + synLvl * 0.25); // 유교 고유 오라: 번개 스킬 데미지 +25%/레벨
@@ -1355,6 +1361,19 @@ export function dealDamageToEnemy(e, dmg, proj, bypassInvincibility = false, isD
   if (!isDoT && this.player.auraLifesteal > 0) {
     this.player.heal(Math.ceil(finalDmg * this.player.auraLifesteal));
     this.spawnParticles(e.x, e.y, '#e84118', 4, 6, -3);
+  }
+
+  // Buddhism Devotion Synergy: Melee Life Steal for close-range hits (< 50px)
+  if (!isDoT && this.player.lineage === 'buddhism' && this.player.buddhismDevotionSynergy) {
+    const dist = Math.hypot(e.x - this.player.x, e.y - this.player.y);
+    if (dist < 50) {
+      const synLvl = this.activeAuraLevel || 1;
+      const healAmt = Math.max(1, Math.ceil(this.player.maxHp * 0.005 * synLvl)); // 0.5% max HP per close hit
+      this.player.heal(healAmt);
+      if (Math.random() < 0.25) {
+        this.spawnParticles(this.player.x, this.player.y, '#2ed573', 2, 4, -2);
+      }
+    }
   }
 
   // Trueshot Aura (public): Chain Lightning on Crit (now applies to ALL trueshot users)
