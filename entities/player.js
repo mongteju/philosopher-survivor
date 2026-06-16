@@ -635,6 +635,10 @@ export class Player {
       Player.spriteImageAristotle = new Image();
       Player.spriteImageAristotle.src = 'sprite/aristotle_clean.png';
     }
+    if (!Player.spriteImageIdealism) {
+      Player.spriteImageIdealism = new Image();
+      Player.spriteImageIdealism.src = 'sprite/idealism_spritesheet.png';
+    }
 
     const rx = this.x - camera.x + ctx.canvas.width / 2;
     const ry = this.y - camera.y + ctx.canvas.height / 2;
@@ -1231,8 +1235,29 @@ export class Player {
     const faceDir = (this.facing === 'left') ? -1 : 1;
     ctx.scale(faceDir, 1);
     
-    // 1. Draw back wings or floating particles for final stages
-    if (this.lineage === 'idealism' && evIdx === 5) {
+    if (this.lineage === 'idealism') {
+      const sx = evIdx * 128;
+      const sy = 0;
+      const sw = 128;
+      const sh = 128;
+      
+      const scale = 0.65;
+      const dw = 128 * scale;
+      const dh = 128 * scale;
+      const dx = -64 * scale;
+      const dy = 20 - 115 * scale;
+      
+      if (Player.spriteImageIdealism && Player.spriteImageIdealism.complete) {
+        ctx.drawImage(Player.spriteImageIdealism, sx, sy, sw, sh, dx, dy, dw, dh);
+      } else {
+        ctx.fillStyle = themeColor;
+        ctx.beginPath();
+        ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    } else {
+      // 1. Draw back wings or floating particles for final stages
+      if (this.lineage === 'idealism' && evIdx === 5) {
       // Sartre (Idealism 5): Spectacular Fire Wings
       ctx.save();
       ctx.fillStyle = 'rgba(255, 71, 87, 0.55)';
@@ -1919,6 +1944,7 @@ export class Player {
       ctx.restore();
     }
     ctx.restore(); // Weapon restore
+    } // End of else (non-idealism procedural drawing)
     
     ctx.restore(); // Character base restore
     ctx.restore(); // HP bar alignment restore (balance translation)
