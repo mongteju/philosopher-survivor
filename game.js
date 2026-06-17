@@ -505,7 +505,7 @@ class Game {
   getNearestEnemy() { return getNearestEnemy.call(this); }
   fireWeapon(id, lvl, stats, awakening) { fireWeapon.call(this, id, lvl, stats, awakening); }
   handleCombatCollisions() { handleCombatCollisions.call(this); }
-  dealDamageToEnemy(e, dmg, proj) { dealDamageToEnemy.call(this, e, dmg, proj); }
+  dealDamageToEnemy(e, dmg, proj, bypassInvincibility, isDoT) { dealDamageToEnemy.call(this, e, dmg, proj, bypassInvincibility, isDoT); }
   draw() { gameDraw.call(this); }
   drawStageBackground(cx, cy, w, h) { drawStageBackground.call(this, cx, cy, w, h); }
   initEvents() { gameEvents.call(this); }

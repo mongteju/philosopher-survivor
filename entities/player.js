@@ -203,6 +203,7 @@ export class Player {
     this.dialogueTimer = 4000 + Math.random() * 3000;
     this.dialogueDisplayTimer = 0;
     this.activeDialogue = "";
+    this.attackTimer = 0;
   }
   recalculateStats() {
     this.dmgMultiplier = 1;
@@ -384,6 +385,7 @@ export class Player {
       console.warn("[NaN Guard] Player knockback velocity was NaN! Safely reset to 0.");
     }
     if (this.invincibilityFlash > 0) this.invincibilityFlash -= dt;
+    if (this.attackTimer > 0) this.attackTimer -= dt;
     this.animTime = (this.animTime || 0) + dt;
 
     // Decay debuff timers
@@ -973,6 +975,7 @@ export class Player {
       
       // 7. THORNS AURA (초록색 가시나무 덩굴 + 가시덤불 이펙트)
       else if (auraKey === 'thorns') {
+        const thornsRadius = 180 * this.areaMultiplier;
         ctx.strokeStyle = 'rgba(29, 209, 161, 0.85)';
         ctx.shadowColor = '#1dd1a1';
         
@@ -987,7 +990,7 @@ export class Player {
         for (let i = 0; i < 16; i++) {
           const a = (Math.PI * 2 / 16) * i;
           const isSpike = i % 2 === 0;
-          const r = isSpike ? radius + 10 : radius - 5;
+          const r = isSpike ? thornsRadius + 10 : thornsRadius - 5;
           ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
         }
         ctx.closePath();
@@ -995,7 +998,7 @@ export class Player {
         
         // Concentric vine line
         ctx.beginPath();
-        ctx.arc(0, 0, radius, 0, Math.PI * 2);
+        ctx.arc(0, 0, thornsRadius, 0, Math.PI * 2);
         ctx.stroke();
         ctx.restore();
 
@@ -1009,7 +1012,7 @@ export class Player {
           for (let i = 0; i < 4; i++) {
             ctx.rotate(Math.PI / 2);
             ctx.beginPath();
-            ctx.arc(0, 0, radius + 14, 0, Math.PI * 0.35);
+            ctx.arc(0, 0, thornsRadius + 14, 0, Math.PI * 0.35);
             ctx.stroke();
           }
           ctx.restore();
@@ -1244,6 +1247,20 @@ export class Player {
       const scale = 0.65;
       const dw = 128 * scale;
       const dh = 128 * scale;
+      
+      // Calculate attack lunge & forward tilt rotation
+      let lungeX = 0;
+      let swingAngle = 0;
+      if (this.attackTimer > 0) {
+        const p = this.attackTimer / 180.0;
+        lungeX = Math.sin(p * Math.PI) * 14; // Lunge forward
+        swingAngle = Math.sin(p * Math.PI) * 0.35; // Tilt body forward
+      }
+      
+      ctx.save();
+      ctx.translate(lungeX, 0);
+      ctx.rotate(-swingAngle);
+      
       const dx = -64 * scale;
       const dy = 20 - 115 * scale;
       
@@ -1255,6 +1272,24 @@ export class Player {
         ctx.arc(0, 0, this.size, 0, Math.PI * 2);
         ctx.fill();
       }
+      
+      // Beautiful glowing sword slash overlay in front of player during attack
+      if (this.attackTimer > 0) {
+        const p = this.attackTimer / 180.0;
+        const alpha = Math.sin(p * Math.PI);
+        ctx.save();
+        ctx.strokeStyle = `rgba(255, 77, 77, ${alpha})`;
+        ctx.lineWidth = 4;
+        ctx.shadowColor = '#ff4d4d';
+        ctx.shadowBlur = 10;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.arc(10, 0, 24, -Math.PI / 4, Math.PI / 4);
+        ctx.stroke();
+        ctx.restore();
+      }
+      
+      ctx.restore();
     } else {
       // 1. Draw back wings or floating particles for final stages
       if (this.lineage === 'idealism' && evIdx === 5) {
@@ -1955,17 +1990,24 @@ export class Player {
     const hpPct = this.hp / this.maxHp;
     ctx.fillStyle = hpPct > 0.5 ? '#2ed573' : hpPct > 0.25 ? '#ffd200' : '#ff4757';
     ctx.fillRect(bx, by, bw * hpPct, bh);
-    // Name + Level overhead
+    // Name + Level overhead (offset higher for Idealism sprites to avoid covering head)
+    let nameOffset = 36;
+    let lvlOffset = 64;
+    if (this.lineage === 'idealism') {
+      nameOffset = 70;
+      lvlOffset = 98;
+    }
+
     ctx.textAlign = 'center';
     ctx.font = 'bold 13px Share Tech Mono, monospace';
     ctx.strokeStyle = 'rgba(0,0,0,0.95)'; ctx.lineWidth = 3;
     ctx.shadowColor = '#000'; ctx.shadowBlur = 6;
-    ctx.strokeText('Lv.' + this.level, rx + sway * 0.2, ry - 64);
+    ctx.strokeText('Lv.' + this.level, rx + sway * 0.2, ry - lvlOffset);
     ctx.fillStyle = '#ffc048';
-    ctx.fillText('Lv.' + this.level, rx + sway * 0.2, ry - 64);
+    ctx.fillText('Lv.' + this.level, rx + sway * 0.2, ry - lvlOffset);
     ctx.font = 'bold 20px Outfit, sans-serif';
     ctx.strokeStyle = 'rgba(0,0,0,0.95)'; ctx.lineWidth = 5;
-    ctx.strokeText(name, rx + sway * 0.2, ry - 36);
+    ctx.strokeText(name, rx + sway * 0.2, ry - nameOffset);
     // Set dynamic name color based on evolution stage
     let nameColor = '#fff';
     if (evIdx === 0) nameColor = '#ffffff';
@@ -1975,7 +2017,7 @@ export class Player {
     else if (evIdx === 5) nameColor = '#ffd200'; // 6차 노란색
     
     ctx.fillStyle = nameColor; ctx.shadowBlur = 0;
-    ctx.fillText(name, rx + sway * 0.2, ry - 36);
+    ctx.fillText(name, rx + sway * 0.2, ry - nameOffset);
 
     // ─── Overhead Debuff Visual Indicators ───
     // 1. Confused (Sophist failure)
@@ -2066,7 +2108,10 @@ export class Player {
       const rectH = 14 + padY * 2;
       
       const bubbleX = rx - rectW / 2;
-      const bubbleY = ry - this.size - 40 - rectH;
+      let bubbleY = ry - this.size - 40 - rectH;
+      if (this.lineage === 'idealism') {
+        bubbleY = ry - this.size - 80 - rectH;
+      }
       
       ctx.fillStyle = 'rgba(15, 18, 30, 0.88)';
       ctx.strokeStyle = themeColor; // Match player's evolution stage color!

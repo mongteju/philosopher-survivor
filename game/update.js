@@ -879,6 +879,7 @@ export function getNearestEnemy() {
 }
 
 export function fireWeapon(id, lvl, stats, awakening) {
+  this.player.attackTimer = 180;
   const skillTier = this.player.skillTiers[id] || 'normal';
   const tierMuls = { normal: 1.0, rare: 1.25, unique: 1.55, epic: 1.9 };
   const tierMul = tierMuls[skillTier] || 1.0;
@@ -1354,7 +1355,7 @@ export function dealDamageToEnemy(e, dmg, proj, bypassInvincibility = false, isD
   const finalDmg = Math.floor(dmg * baseMultiplier);
   e.hp -= finalDmg;
   
-  const dmgColor = isDoT ? '#1dd1a1' : ((e.type === 'boss' && e.isStunned) ? '#ff9f43' : (isCrit ? '#ffd200' : '#fff'));
+  const dmgColor = isDoT ? '#2ed573' : ((e.type === 'boss' && e.isStunned) ? '#ff9f43' : (isCrit ? '#ffd200' : '#fff'));
   const dmgSize = isDoT ? 14 : ((e.type === 'boss' && e.isStunned) ? 22 : (isCrit ? 20 : 14));
   this.addDamageText(e.x, e.y - e.size - 10, (e.type === 'boss' && e.isStunned ? "🔥 2x!! " : "") + finalDmg, dmgColor, dmgSize, !isDoT && (isCrit || (e.type === 'boss' && e.isStunned)));
   
