@@ -1975,11 +1975,6 @@ button.keyboard-selected,
 }
 /* Buggy duplicate overlay style removed to keep the readable skill card description styling */
 
-#true-ending-screen {
-  z-index: 1000 !important;
-  pointer-events: auto !important;
-}
-
 /* Card type badges with enlarged text */
 .card-type-badge {
   font-size: 12px;
