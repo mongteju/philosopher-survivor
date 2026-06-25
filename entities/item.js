@@ -5,8 +5,8 @@ export class XPFrag {
     this.size = Math.min(8, 4 + val * 0.5);
     this.hp = 1; this.magnet = false;
     this.vx = (Math.random() - 0.5) * 3; this.vy = (Math.random() - 0.5) * 3;
-    // Three-tier color scale based on XP value
-    this.color = val >= 20 ? '#ff7675' : (val >= 5 ? '#ffd200' : '#2ed573');
+    // High-visibility neon colors (Hot Pink & Neon Cyan) that stand out against all background colors
+    this.color = val >= 5 ? '#00f0ff' : '#ff007f';
   }
   update(dt, player) {
     const dx = player.x - this.x, dy = player.y - this.y;
@@ -29,29 +29,10 @@ export class XPFrag {
     const rx = this.x - camera.x + ctx.canvas.width / 2;
     const ry = this.y - camera.y + ctx.canvas.height / 2;
     ctx.save();
-    
-    // Draw vertical diamond crystal shape
     ctx.beginPath();
-    ctx.moveTo(rx, ry - this.size);
-    ctx.lineTo(rx + this.size * 0.75, ry);
-    ctx.lineTo(rx, ry + this.size);
-    ctx.lineTo(rx - this.size * 0.75, ry);
-    ctx.closePath();
-    
+    ctx.arc(rx, ry, this.size, 0, Math.PI * 2);
     ctx.fillStyle = this.color;
     ctx.fill();
-    
-    // Draw high-contrast black border to separate color from background
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 1.8;
-    ctx.stroke();
-    
-    // Add white reflection glint to make it look shiny and raise visibility
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.arc(rx - this.size * 0.2, ry - this.size * 0.2, this.size * 0.24, 0, Math.PI * 2);
-    ctx.fill();
-    
     ctx.restore();
   }
 }
