@@ -879,7 +879,6 @@ export function getNearestEnemy() {
 }
 
 export function fireWeapon(id, lvl, stats, awakening) {
-  this.player.attackTimer = 180;
   const skillTier = this.player.skillTiers[id] || 'normal';
   const tierMuls = { normal: 1.0, rare: 1.25, unique: 1.55, epic: 1.9 };
   const tierMul = tierMuls[skillTier] || 1.0;

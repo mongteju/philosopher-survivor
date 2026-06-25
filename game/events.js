@@ -1,5 +1,5 @@
 import { sfx } from '../audio.js';
-import { TIMELINE, EVOLUTION_STAGES } from '../db.js';
+import { TIMELINE, EVOLUTION_STAGES, PHILOSOPHY_DB } from '../db.js';
 
 
 export function updatePauseKeyboardSelection(btns) {
@@ -115,6 +115,19 @@ export function gameEvents() {
           dbg.style.display = isHidden ? 'block' : 'none';
           if (typeof sfx !== 'undefined' && sfx.playTick) sfx.playTick();
           console.log("[Secret] Debug panel toggled via secret command!");
+
+          // Auto-enable debug options when debug panel is opened
+          if (isHidden && this.player) {
+            this.player.isInvincible = true;
+            this.usedDebugCheat = true;
+            const dbgInvinc = document.getElementById('dbg-invinc');
+            if (dbgInvinc) dbgInvinc.textContent = '무적: ON';
+            this.addDamageText(this.player.x, this.player.y - 80, '무적 & 레벨업 제한 활성화!', '#ffd200', 16);
+          } else if (!isHidden && this.player) {
+            this.player.isInvincible = false;
+            const dbgInvinc = document.getElementById('dbg-invinc');
+            if (dbgInvinc) dbgInvinc.textContent = '무적: OFF';
+          }
 
           // Refresh the ranking board rendering to show/hide individual delete buttons
           if (typeof window.renderRankingsGlobal === 'function') {
@@ -621,19 +634,29 @@ export function gameEvents() {
 
   // Mobile pause button binding (only shown on touch devices during gameplay)
   const mobilePauseBtn = document.getElementById('mobile-pause-btn');
-  if (mobilePauseBtn && isTouchDevice) {
+  if (mobilePauseBtn) {
+    if (isTouchDevice) {
+      this._showMobilePauseOnStart = () => {
+        mobilePauseBtn.style.display = 'flex';
+      };
+    }
+    
+    let lastPauseToggle = 0;
+    const handlePauseToggle = (e) => {
+      const now = Date.now();
+      if (now - lastPauseToggle < 300) return;
+      lastPauseToggle = now;
+      if (this.isPlaying || this.isPaused) this.togglePause();
+    };
+
     mobilePauseBtn.addEventListener('touchstart', (e) => {
       e.preventDefault();
-      if (this.isPlaying || this.isPaused) this.togglePause();
+      handlePauseToggle(e);
     }, { passive: false });
-    mobilePauseBtn.addEventListener('click', () => {
-      if (this.isPlaying || this.isPaused) this.togglePause();
+
+    mobilePauseBtn.addEventListener('click', (e) => {
+      handlePauseToggle(e);
     });
-    // Show this button when game starts (hook into acceptTutorial flow)
-    const origAcceptTutorial = this.acceptTutorial.bind(this);
-    this._showMobilePauseOnStart = () => {
-      mobilePauseBtn.style.display = 'flex';
-    };
   }
 
   document.getElementById('pause-resume-btn').addEventListener('click', () => this.togglePause());
@@ -661,18 +684,108 @@ export function gameEvents() {
     }
   });
 
+  // Philosophy Encyclopedia (Pedia) rendering logic
+  const renderPedia = (tab = 'all') => {
+    const grid = document.getElementById('pedia-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
 
+    if (tab === 'boss') {
+      const bosses = [
+        { name: '1대 보스: 소피스트 (궤변론자)', era: '고대 그리스', desc: '상대주의와 궤변을 일삼으며 복제 분신을 소환해 교란시킵니다. (혼란 상태이상 부여)', icon: '💬' },
+        { name: '2대 보스: 아파테이아 수호자', era: '헬레니즘', desc: '정념이 없는 평온한 상태(아파테이아)를 지향하며 장엄한 경고 장벽과 함정을 설치합니다.', icon: '🛡️' },
+        { name: '3대 보스: 교조주의의 망령', era: '중세 시대', desc: '맹목적 교리를 강요하여 투사체를 유도 발사하고 화면을 어둡게 가리는 장막을 전개합니다.', icon: '👻' },
+        { name: '4대 보스: 편견의 거인 (4대 우상)', era: '근대 초기', desc: '종족, 동굴, 시장, 극장의 4대 우상을 활성화하여 플레이어를 감속시키고 강력한 충격파를 발출합니다.', icon: '🗿' },
+        { name: '5대 보스: 도덕의 심판관 (정언명령)', era: '근대 후기', desc: '정언명령의 도덕적 시험을 요구하여 통과 시 강력한 공격 기회를 주며 실패 시 치명적인 일격을 가합니다.', icon: '⚖️' },
+        { name: '6대 보스: 허무주의의 그림자 (니체)', era: '현대 사회', desc: '모든 가치를 부정하는 강력한 허무주의 블랙아웃 영역을 넓히고 영원회귀 탄막 패턴을 전개합니다.', icon: '🌑' }
+      ];
+      bosses.forEach(b => {
+        const card = document.createElement('div');
+        card.className = 'pedia-card unlocked';
+        card.innerHTML = `
+          <div class="pedia-card-title">
+            <span>${b.icon} ${b.name}</span>
+            <span class="pedia-card-era">${b.era}</span>
+          </div>
+          <div style="font-size: 12.5px; color: rgba(255,255,255,0.7); margin-top: 6px;">
+            ${b.desc}
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    } else {
+      const lineages = ['idealism', 'empiricism', 'confucianism', 'taoism', 'buddhism'];
+      lineages.forEach(lineage => {
+        if (tab !== 'all' && tab !== lineage) return;
+        
+        const skills = PHILOSOPHY_DB[lineage];
+        if (!skills) return;
+
+        const lineageNameKo = {
+          idealism: '이성주의',
+          empiricism: '경험주의',
+          confucianism: '유가',
+          taoism: '도가',
+          buddhism: '불교'
+        }[lineage];
+
+        skills.forEach(s => {
+          const card = document.createElement('div');
+          card.className = 'pedia-card unlocked';
+          
+          let typeText = s.type === 'weapon' ? '액티브' : '패시브';
+          if (s.maxLevel) typeText += ` (최대 Lv.${s.maxLevel})`;
+          
+          card.innerHTML = `
+            <div class="pedia-card-title">
+              <span>${s.icon} ${s.name}</span>
+              <span class="pedia-card-era">${lineageNameKo} | ${typeText}</span>
+            </div>
+            <div style="font-size: 12.5px; color: rgba(255,255,255,0.7); margin-top: 6px;">
+              ${s.desc}
+            </div>
+            ${s.quote ? `<div class="pedia-card-quote">"${s.quote}"</div>` : ''}
+          `;
+          grid.appendChild(card);
+        });
+      });
+    }
+  };
+
+  const pediaTabs = document.querySelectorAll('.pedia-tab');
+  pediaTabs.forEach(t => {
+    t.addEventListener('click', () => {
+      pediaTabs.forEach(btn => btn.classList.remove('active'));
+      t.classList.add('active');
+      const category = t.id.replace('tab-', '');
+      renderPedia(category);
+    });
+  });
 
   const pediaOpen = document.getElementById('pedia-open-btn');
-  if (pediaOpen) pediaOpen.addEventListener('click', () => { this.isPlaying = false; document.getElementById('pedia-screen').classList.add('active'); });
+  if (pediaOpen) {
+    pediaOpen.addEventListener('click', () => {
+      this.isPlaying = false;
+      document.getElementById('pedia-screen').classList.add('active');
+      const tabAll = document.getElementById('tab-all');
+      if (tabAll) {
+        tabAll.click();
+      } else {
+        renderPedia('all');
+      }
+    });
+  }
+
   const pediaClose = document.getElementById('pedia-close-btn');
-  if (pediaClose) pediaClose.addEventListener('click', () => { 
-    document.getElementById('pedia-screen').classList.remove('active'); 
-    this.resetFocus();
-    this.isPlaying = true; 
-    this.lastTime = performance.now(); 
-    requestAnimationFrame(t => this.loop(t)); 
-  });
+  if (pediaClose) {
+    pediaClose.addEventListener('click', () => {
+      document.getElementById('pedia-screen').classList.remove('active');
+      this.resetFocus();
+      this.isPlaying = true;
+      this.lastTime = performance.now();
+      requestAnimationFrame(t => this.loop(t));
+    });
+  }
 
   // Developer Debug Panel Bindings
   const dbgInvinc = document.getElementById('dbg-invinc');

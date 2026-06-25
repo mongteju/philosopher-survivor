@@ -3,6 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    if (window.innerWidth < 768 || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+      document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=0.5, maximum-scale=0.5, minimum-scale=0.5, user-scalable=no');
+    }
+  </script>
   <title>이세계 철학자 키우기</title>
   <meta name="description" content="이세계 철학자 키우기는 이데아의 불꽃, 중용의 얼음 송곳 등 다양한 철학적 무기와 패시브 스킬을 활용하여 무지와 편견을 물리치는 뱀파이어 서바이벌 장르의 RPG 웹게임입니다.">
   <script>
@@ -483,6 +488,9 @@
           <button id="tab-all" class="pedia-tab active">전체</button>
           <button id="tab-idealism" class="pedia-tab">이성주의</button>
           <button id="tab-empiricism" class="pedia-tab">경험주의</button>
+          <button id="tab-confucianism" class="pedia-tab">유가</button>
+          <button id="tab-taoism" class="pedia-tab">도가</button>
+          <button id="tab-buddhism" class="pedia-tab">불교</button>
           <button id="tab-boss" class="pedia-tab">보스/학습</button>
         </div>
 
