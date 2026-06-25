@@ -856,91 +856,124 @@ export function gameDraw() {
 export function drawStageBackground(camX, camY, W, H) {
   const ctx = this.ctx;
   const s = this.scroll;
+  const bgImg = this.stageBgImages ? this.stageBgImages[this.stageIndex] : null;
 
-  ctx.save();
-  if (this.stageIndex === 0) {
-    // 고대 그리스 - 숲
-    const grad = ctx.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0, '#1a3a1a'); grad.addColorStop(1, '#0d2010');
-    ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = 'rgba(34,85,34,0.25)';
-    for (let i = 0; i < 6; i++) {
-      const tx = ((i * 240 - s * 0.1) % (W + 200) + W + 200) % (W + 200) - 100;
-      ctx.beginPath(); ctx.moveTo(tx, H); ctx.lineTo(tx - 30, H * 0.4); ctx.lineTo(tx + 30, H * 0.4); ctx.closePath(); ctx.fill();
-      ctx.beginPath(); ctx.moveTo(tx, H * 0.55); ctx.lineTo(tx - 24, H * 0.25); ctx.lineTo(tx + 24, H * 0.25); ctx.closePath(); ctx.fill();
+  if (bgImg && bgImg.complete && bgImg.naturalWidth > 0) {
+    if (!bgImg.pattern) {
+      bgImg.pattern = ctx.createPattern(bgImg, 'repeat');
     }
-  } else if (this.stageIndex === 1) {
-    // 헬레니즘 - 바다
-    const grad = ctx.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0, '#0a1a3a'); grad.addColorStop(0.6, '#0a3060'); grad.addColorStop(1, '#051530');
-    ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
-    ctx.strokeStyle = 'rgba(0,180,255,0.15)'; ctx.lineWidth = 2;
-    for (let i = 0; i < 8; i++) {
-      const wy = H * 0.4 + i * 40 + Math.sin(s * 0.003 + i) * 15;
-      ctx.beginPath(); ctx.moveTo(0, wy);
-      for (let x = 0; x < W; x += 40) ctx.lineTo(x, wy + Math.sin((x + s * 0.5) * 0.02) * 12);
-      ctx.stroke();
+    const pattern = bgImg.pattern;
+    if (pattern) {
+      ctx.save();
+      
+      const zoom = this.cameraZoom || 1.0;
+      
+      // Calculate screen boundaries in the current zoomed context to fill exactly the visible screen area
+      const halfW = W / 2;
+      const halfH = H / 2;
+      const drawLeft = halfW - halfW / zoom;
+      const drawTop = halfH - halfH / zoom;
+      const drawWidth = W / zoom;
+      const drawHeight = H / zoom;
+
+      // Align pattern origin with world coordinate (0, 0)
+      const offsetX = ((-camX + halfW) % bgImg.width + bgImg.width) % bgImg.width;
+      const offsetY = ((-camY + halfH) % bgImg.height + bgImg.height) % bgImg.height;
+      
+      pattern.setTransform({ a: 1, b: 0, c: 0, d: 1, e: offsetX, f: offsetY });
+      
+      ctx.fillStyle = pattern;
+      ctx.fillRect(drawLeft, drawTop, drawWidth, drawHeight);
+      
+      ctx.restore();
+      return;
     }
-  } else if (this.stageIndex === 2) {
-    // 중세 - 사막
-    const grad = ctx.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0, '#2a1a0a'); grad.addColorStop(1, '#3d2510');
-    ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = 'rgba(180,120,60,0.15)';
-    for (let i = 0; i < 5; i++) {
-      const dx = ((i * 300 + s * 0.08) % (W + 300)) - 150;
-      ctx.beginPath(); ctx.ellipse(dx, H * 0.65, 150, 40, 0, 0, Math.PI * 2); ctx.fill();
-    }
-  } else if (this.stageIndex === 3) {
-    // 근대 초기 - 하늘
-    const grad = ctx.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0, '#101035'); grad.addColorStop(0.5, '#1a2060'); grad.addColorStop(1, '#0d1540');
-    ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = 'rgba(200,220,255,0.12)';
-    for (let i = 0; i < 5; i++) {
-      const cx = ((i * 350 + s * 0.06) % (W + 300)) - 100;
-      ctx.beginPath(); ctx.ellipse(cx, H * 0.3, 120, 40, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.ellipse(cx - 70, H * 0.35, 80, 30, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.ellipse(cx + 80, H * 0.28, 90, 30, 0, 0, Math.PI * 2); ctx.fill();
-    }
-  } else if (this.stageIndex === 4) {
-    // 근대 후기 - 우주
-    ctx.fillStyle = '#010208'; ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = '#fff';
-    for (let i = 0; i < 80; i++) {
-      const sx = (Math.sin(i * 127.1 + s * 0.001) * 0.5 + 0.5) * W;
-      const sy = (Math.cos(i * 311.7 + s * 0.0005) * 0.5 + 0.5) * H;
-      ctx.globalAlpha = 0.4 + Math.sin(i + s * 0.002) * 0.3;
-      ctx.beginPath(); ctx.arc(sx, sy, 1.2, 0, Math.PI * 2); ctx.fill();
-    }
-    ctx.globalAlpha = 1;
   } else {
-    // 현대 - 사이버
-    const isNietzschePhase1 = !!(this.stageIndex === 5 && this.currentBoss && !this.currentBoss.dragonActive && !this.uberMenschMode);
-    ctx.fillStyle = isNietzschePhase1 ? '#0a0a0f' : '#000208';
-    ctx.fillRect(0, 0, W, H);
-    ctx.strokeStyle = isNietzschePhase1 ? 'rgba(255,255,255,0.04)' : 'rgba(0,200,255,0.06)';
-    ctx.lineWidth = 1;
-    const cg = 60;
-    for (let x = 0; x < W + cg; x += cg) {
-      const gx = ((x - s * 0.3) % (W + cg) + W + cg) % (W + cg);
-      ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke();
-    }
-    for (let y = 0; y < H + cg; y += cg) {
-      const gy = ((y - s * 0.2) % (H + cg) + H + cg) % (H + cg);
-      ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
-    }
-    
-    // Performant and beautiful dark desaturated nihilistic vignette overlay (0ms layout invalidation)
-    if (isNietzschePhase1) {
-      const grad = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.max(W, H) * 0.85);
-      grad.addColorStop(0, 'rgba(10, 10, 15, 0.2)');
-      grad.addColorStop(1, 'rgba(0, 0, 0, 0.72)');
-      ctx.fillStyle = grad;
+    ctx.save();
+    if (this.stageIndex === 0) {
+      // 고대 그리스 - 숲
+      const grad = ctx.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0, '#1a3a1a'); grad.addColorStop(1, '#0d2010');
+      ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = 'rgba(34,85,34,0.25)';
+      for (let i = 0; i < 6; i++) {
+        const tx = ((i * 240 - s * 0.1) % (W + 200) + W + 200) % (W + 200) - 100;
+        ctx.beginPath(); ctx.moveTo(tx, H); ctx.lineTo(tx - 30, H * 0.4); ctx.lineTo(tx + 30, H * 0.4); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(tx, H * 0.55); ctx.lineTo(tx - 24, H * 0.25); ctx.lineTo(tx + 24, H * 0.25); ctx.closePath(); ctx.fill();
+      }
+    } else if (this.stageIndex === 1) {
+      // 헬레니즘 - 바다
+      const grad = ctx.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0, '#0a1a3a'); grad.addColorStop(0.6, '#0a3060'); grad.addColorStop(1, '#051530');
+      ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = 'rgba(0,180,255,0.15)'; ctx.lineWidth = 2;
+      for (let i = 0; i < 8; i++) {
+        const wy = H * 0.4 + i * 40 + Math.sin(s * 0.003 + i) * 15;
+        ctx.beginPath(); ctx.moveTo(0, wy);
+        for (let x = 0; x < W; x += 40) ctx.lineTo(x, wy + Math.sin((x + s * 0.5) * 0.02) * 12);
+        ctx.stroke();
+      }
+    } else if (this.stageIndex === 2) {
+      // 중세 - 사막
+      const grad = ctx.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0, '#2a1a0a'); grad.addColorStop(1, '#3d2510');
+      ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = 'rgba(180,120,60,0.15)';
+      for (let i = 0; i < 5; i++) {
+        const dx = ((i * 300 + s * 0.08) % (W + 300)) - 150;
+        ctx.beginPath(); ctx.ellipse(dx, H * 0.65, 150, 40, 0, 0, Math.PI * 2); ctx.fill();
+      }
+    } else if (this.stageIndex === 3) {
+      // 근대 초기 - 하늘
+      const grad = ctx.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0, '#101035'); grad.addColorStop(0.5, '#1a2060'); grad.addColorStop(1, '#0d1540');
+      ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = 'rgba(200,220,255,0.12)';
+      for (let i = 0; i < 5; i++) {
+        const cx = ((i * 350 + s * 0.06) % (W + 300)) - 100;
+        ctx.beginPath(); ctx.ellipse(cx, H * 0.3, 120, 40, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(cx - 70, H * 0.35, 80, 30, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(cx + 80, H * 0.28, 90, 30, 0, 0, Math.PI * 2); ctx.fill();
+      }
+    } else if (this.stageIndex === 4) {
+      // 근대 후기 - 우주
+      ctx.fillStyle = '#010208'; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#fff';
+      for (let i = 0; i < 80; i++) {
+        const sx = (Math.sin(i * 127.1 + s * 0.001) * 0.5 + 0.5) * W;
+        const sy = (Math.cos(i * 311.7 + s * 0.0005) * 0.5 + 0.5) * H;
+        ctx.globalAlpha = 0.4 + Math.sin(i + s * 0.002) * 0.3;
+        ctx.beginPath(); ctx.arc(sx, sy, 1.2, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    } else {
+      // 현대 - 사이버
+      const isNietzschePhase1 = !!(this.stageIndex === 5 && this.currentBoss && !this.currentBoss.dragonActive && !this.uberMenschMode);
+      ctx.fillStyle = isNietzschePhase1 ? '#0a0a0f' : '#000208';
       ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = isNietzschePhase1 ? 'rgba(255,255,255,0.04)' : 'rgba(0,200,255,0.06)';
+      ctx.lineWidth = 1;
+      const cg = 60;
+      for (let x = 0; x < W + cg; x += cg) {
+        const gx = ((x - s * 0.3) % (W + cg) + W + cg) % (W + cg);
+        ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke();
+      }
+      for (let y = 0; y < H + cg; y += cg) {
+        const gy = ((y - s * 0.2) % (H + cg) + H + cg) % (H + cg);
+        ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
+      }
+      
+      // Performant and beautiful dark desaturated nihilistic vignette overlay (0ms layout invalidation)
+      if (isNietzschePhase1) {
+        const grad = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.max(W, H) * 0.85);
+        grad.addColorStop(0, 'rgba(10, 10, 15, 0.2)');
+        grad.addColorStop(1, 'rgba(0, 0, 0, 0.72)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H);
+      }
     }
+    ctx.restore();
   }
-  ctx.restore();
 }
 
 function drawTaeguk(ctx, x, y, r, angle, isSyn = false) {

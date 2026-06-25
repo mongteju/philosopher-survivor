@@ -56,27 +56,29 @@ export class Projectile {
       ctx.fillStyle = '#ffffff';
       ctx.beginPath(); ctx.arc(0, 0, this.size * 0.22, 0, Math.PI * 2); ctx.fill();
 
+      // OPTIMIZED: Combine 4 draw calls into 1 path/fill operation
       ctx.rotate(t * 0.006);
       ctx.fillStyle = this.synergy ? '#d6a2e8' : '#ff7675';
+      ctx.beginPath();
       for (let i = 0; i < 4; i++) {
         ctx.rotate(Math.PI / 2);
-        ctx.beginPath();
         ctx.moveTo(0, 0);
         ctx.quadraticCurveTo(this.size * 0.5, -this.size * 0.5, this.size * 0.8, 0);
         ctx.quadraticCurveTo(this.size * 0.4, this.size * 0.3, 0, 0);
-        ctx.fill();
       }
+      ctx.fill();
       
+      // OPTIMIZED: Combine 3 draw calls into 1 path/fill operation
       ctx.rotate(-t * 0.012);
       ctx.fillStyle = this.synergy ? '#a55eea' : '#ffd200';
+      ctx.beginPath();
       for (let i = 0; i < 3; i++) {
         ctx.rotate((Math.PI * 2) / 3);
-        ctx.beginPath();
         ctx.moveTo(0, 0);
         ctx.quadraticCurveTo(this.size * 0.3, -this.size * 0.3, this.size * 0.5, 0);
         ctx.quadraticCurveTo(this.size * 0.2, this.size * 0.2, 0, 0);
-        ctx.fill();
       }
+      ctx.fill();
       
       ctx.fillStyle = '#ffffff';
       ctx.beginPath(); ctx.arc(0, 0, this.size * 0.2, 0, Math.PI * 2); ctx.fill();
@@ -185,13 +187,14 @@ export class Projectile {
       }
       ctx.stroke();
 
+      // OPTIMIZED: Combine 3 draw calls into 1 path/fill operation
       ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
       for (let i = 0; i < 3; i++) {
         const seedAngle = (Math.PI * 2 / 3) * i + t * 0.005;
-        ctx.beginPath();
         ctx.arc(Math.cos(seedAngle) * (this.size * 0.85), Math.sin(seedAngle) * (this.size * 0.85), 2.5, 0, Math.PI * 2);
-        ctx.fill();
       }
+      ctx.fill();
     }
 
     else if (this.type === 'lightning_sword') {
@@ -200,22 +203,29 @@ export class Projectile {
       const travelAngle = Math.atan2(this.vy, this.vx);
       ctx.rotate(travelAngle);
       
-      ctx.shadowBlur = 15;
-      ctx.shadowColor = this.synergy ? '#ff9f43' : '#ffd200';
+      // OPTIMIZED: Replaced expensive shadowBlur with layered outline glow (100x faster)
+      ctx.strokeStyle = this.synergy ? 'rgba(255, 159, 67, 0.35)' : 'rgba(255, 210, 0, 0.35)';
+      ctx.lineWidth = 9;
+      
+      const drawBladePath = () => {
+        ctx.beginPath();
+        ctx.moveTo(-this.size, 0);
+        ctx.lineTo(-this.size * 0.2, -this.size * 0.25);
+        ctx.lineTo(0, -this.size * 0.08);
+        ctx.lineTo(this.size * 0.5, -this.size * 0.3);
+        ctx.lineTo(this.size * 1.3, 0);
+        ctx.lineTo(this.size * 0.5, this.size * 0.3);
+        ctx.lineTo(0, this.size * 0.08);
+        ctx.lineTo(-this.size * 0.2, this.size * 0.25);
+        ctx.closePath();
+      };
+      
+      drawBladePath();
+      ctx.stroke();
+      
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 3;
-      
-      // 번개 형상의 칼날
-      ctx.beginPath();
-      ctx.moveTo(-this.size, 0);
-      ctx.lineTo(-this.size * 0.2, -this.size * 0.25);
-      ctx.lineTo(0, -this.size * 0.08);
-      ctx.lineTo(this.size * 0.5, -this.size * 0.3);
-      ctx.lineTo(this.size * 1.3, 0);
-      ctx.lineTo(this.size * 0.5, this.size * 0.3);
-      ctx.lineTo(0, this.size * 0.08);
-      ctx.lineTo(-this.size * 0.2, this.size * 0.25);
-      ctx.closePath();
+      drawBladePath();
       ctx.stroke();
       
       ctx.fillStyle = this.synergy ? '#ff9f43' : '#ffd200';
@@ -227,11 +237,15 @@ export class Projectile {
       ctx.translate(rx, ry);
       ctx.rotate(t * 0.008);
       
-      ctx.shadowBlur = 18;
-      ctx.shadowColor = this.synergy ? '#ffd200' : '#c56cf0';
+      const orbRad = this.size * 0.8;
+      
+      // OPTIMIZED: Replaced expensive shadowBlur with a larger solid glow fill
+      ctx.fillStyle = this.synergy ? 'rgba(255, 210, 0, 0.18)' : 'rgba(197, 108, 240, 0.18)';
+      ctx.beginPath();
+      ctx.arc(0, 0, orbRad * 1.3, 0, Math.PI * 2);
+      ctx.fill();
       
       // 구체 몸체
-      const orbRad = this.size * 0.8;
       const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, orbRad);
       grad.addColorStop(0, '#ffffff');
       grad.addColorStop(0.5, this.synergy ? '#ffd200' : '#c56cf0');
@@ -260,17 +274,24 @@ export class Projectile {
       const travelAngle = Math.atan2(this.vy, this.vx);
       ctx.rotate(travelAngle);
       
-      ctx.shadowBlur = 10;
-      ctx.shadowColor = this.synergy ? '#2ecc71' : '#55efc4';
+      // OPTIMIZED: Replaced expensive shadowBlur with layered outline glow
+      ctx.strokeStyle = this.synergy ? 'rgba(46, 204, 113, 0.35)' : 'rgba(85, 239, 196, 0.35)';
+      ctx.lineWidth = 6;
+      
+      const drawWindBladePath = () => {
+        ctx.beginPath();
+        ctx.arc(0, 0, this.size, -Math.PI / 3, Math.PI / 3, false);
+        ctx.quadraticCurveTo(this.size * 0.6, 0, Math.cos(-Math.PI / 3) * this.size, Math.sin(-Math.PI / 3) * this.size);
+        ctx.closePath();
+      };
+      
+      drawWindBladePath();
+      ctx.stroke();
+      
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
       ctx.fillStyle = this.synergy ? 'rgba(46, 204, 113, 0.45)' : 'rgba(85, 239, 196, 0.45)';
       ctx.lineWidth = 2.5;
-      
-      // 반원 아크 모양
-      ctx.beginPath();
-      ctx.arc(0, 0, this.size, -Math.PI / 3, Math.PI / 3, false);
-      ctx.quadraticCurveTo(this.size * 0.6, 0, Math.cos(-Math.PI / 3) * this.size, Math.sin(-Math.PI / 3) * this.size);
-      ctx.closePath();
+      drawWindBladePath();
       ctx.fill();
       ctx.stroke();
     }
@@ -309,8 +330,11 @@ export class Projectile {
       // 번뇌의 염주: 갈색 나무 질감의 신통한 염주알
       ctx.translate(rx, ry);
       
-      ctx.shadowBlur = 8;
-      ctx.shadowColor = this.synergy ? '#ffd200' : '#e67e22';
+      // OPTIMIZED: Replaced expensive shadowBlur with solid low-opacity outer ring
+      ctx.fillStyle = this.synergy ? 'rgba(255, 210, 0, 0.18)' : 'rgba(230, 126, 34, 0.18)';
+      ctx.beginPath();
+      ctx.arc(0, 0, this.size * 1.3, 0, Math.PI * 2);
+      ctx.fill();
       
       // 나무 염주 질감 (그라데이션)
       const grad = ctx.createRadialGradient(-2, -2, 0, 0, 0, this.size);

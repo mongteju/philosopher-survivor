@@ -175,6 +175,14 @@ class Game {
     this.menuSelectedIndex = -1; this.tutorialSelectedIndex = 0;
     this.pauseSelectedIndex = 0;
 
+    // Load stage background images
+    this.stageBgImages = [];
+    for (let i = 0; i < 6; i++) {
+      const img = new Image();
+      img.src = `layout/bg_stage${i}.png`;
+      this.stageBgImages.push(img);
+    }
+
     this.activeIdols = new Map();
     this.medievalDarkness = false;
     this.kantRule = null; this.kantTimer = 0;
