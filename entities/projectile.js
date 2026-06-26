@@ -180,6 +180,7 @@ export class Projectile {
       ctx.strokeStyle = this.synergy ? '#2ecc71' : '#54a0ff'; // blue/emerald wind inner
       ctx.lineWidth = 3;
       ctx.beginPath();
+      ctx.moveTo(0, 0); // Explicitly set starting point to prevent drawing artifacts
       for (let i = 0; i < 30; i++) {
         const angle = 0.2 * i;
         const r = (this.size * 0.8) * (i / 30);
@@ -187,14 +188,14 @@ export class Projectile {
       }
       ctx.stroke();
 
-      // OPTIMIZED: Combine 3 draw calls into 1 path/fill operation
+      // FIXED: Separate draw calls to prevent unintended line connections inside single path fill
       ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
       for (let i = 0; i < 3; i++) {
         const seedAngle = (Math.PI * 2 / 3) * i + t * 0.005;
+        ctx.beginPath();
         ctx.arc(Math.cos(seedAngle) * (this.size * 0.85), Math.sin(seedAngle) * (this.size * 0.85), 2.5, 0, Math.PI * 2);
+        ctx.fill();
       }
-      ctx.fill();
     }
 
     else if (this.type === 'lightning_sword') {

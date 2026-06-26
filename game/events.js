@@ -436,10 +436,12 @@ export function gameEvents() {
   const titleScr = document.getElementById('title-screen');
   if (titleScr) {
     titleScr.addEventListener('click', () => {
+      if (!titleScr.classList.contains('active')) return;
       enterFullscreen();
       this.showMenuScreen();
     });
     titleScr.addEventListener('touchstart', (e) => {
+      if (!titleScr.classList.contains('active')) return;
       e.preventDefault();
       enterFullscreen();
       this.showMenuScreen();
@@ -448,6 +450,8 @@ export function gameEvents() {
   const titleBtn = document.getElementById('title-start-btn');
   if (titleBtn) {
     titleBtn.addEventListener('click', () => {
+      const titleScr = document.getElementById('title-screen');
+      if (titleScr && !titleScr.classList.contains('active')) return;
       enterFullscreen();
       this.showMenuScreen();
     });
@@ -455,6 +459,8 @@ export function gameEvents() {
   const cardIdealism = document.getElementById('card-idealism');
   if (cardIdealism) {
     const selectIdealism = (e) => {
+      const menuScreen = document.getElementById('menu-screen');
+      if (menuScreen && !menuScreen.classList.contains('active')) return;
       if (e && e.type === 'touchstart') e.preventDefault();
       this.menuSelectedIndex = 0; 
       this.selectLineage('idealism'); 
@@ -475,6 +481,8 @@ export function gameEvents() {
   const cardEmpiricism = document.getElementById('card-empiricism');
   if (cardEmpiricism) {
     const selectEmpiricism = (e) => {
+      const menuScreen = document.getElementById('menu-screen');
+      if (menuScreen && !menuScreen.classList.contains('active')) return;
       if (e && e.type === 'touchstart') e.preventDefault();
       this.menuSelectedIndex = 1; 
       this.selectLineage('empiricism'); 
@@ -494,6 +502,8 @@ export function gameEvents() {
   const cardConfucianism = document.getElementById('card-confucianism');
   if (cardConfucianism) {
     const selectConfucianism = (e) => {
+      const menuScreen = document.getElementById('menu-screen');
+      if (menuScreen && !menuScreen.classList.contains('active')) return;
       if (e && e.type === 'touchstart') e.preventDefault();
       this.menuSelectedIndex = 2; 
       this.selectLineage('confucianism'); 
@@ -513,6 +523,8 @@ export function gameEvents() {
   const cardTaoism = document.getElementById('card-taoism');
   if (cardTaoism) {
     const selectTaoism = (e) => {
+      const menuScreen = document.getElementById('menu-screen');
+      if (menuScreen && !menuScreen.classList.contains('active')) return;
       if (e && e.type === 'touchstart') e.preventDefault();
       this.menuSelectedIndex = 3; 
       this.selectLineage('taoism'); 
@@ -532,6 +544,8 @@ export function gameEvents() {
   const cardBuddhism = document.getElementById('card-buddhism');
   if (cardBuddhism) {
     const selectBuddhism = (e) => {
+      const menuScreen = document.getElementById('menu-screen');
+      if (menuScreen && !menuScreen.classList.contains('active')) return;
       if (e && e.type === 'touchstart') e.preventDefault();
       this.menuSelectedIndex = 4; 
       this.selectLineage('buddhism'); 
@@ -562,6 +576,8 @@ export function gameEvents() {
   const startGameBtn = document.getElementById('start-game-btn');
   if (startGameBtn) {
     const handleStartGame = (e) => {
+      const menuScreen = document.getElementById('menu-screen');
+      if (menuScreen && !menuScreen.classList.contains('active')) return;
       if (e && e.type === 'touchstart') e.preventDefault();
       this.startGame();
     };
@@ -578,6 +594,8 @@ export function gameEvents() {
   const tutYesBtn = document.getElementById('tutorial-yes-btn');
   if (tutYesBtn) {
     const handleYes = (e) => {
+      const tutScreen = document.getElementById('tutorial-screen');
+      if (tutScreen && !tutScreen.classList.contains('active')) return;
       if (e && e.type === 'touchstart') e.preventDefault();
       this.acceptTutorial(true);
     };
@@ -594,6 +612,8 @@ export function gameEvents() {
   const tutNoBtn = document.getElementById('tutorial-no-btn');
   if (tutNoBtn) {
     const handleNo = (e) => {
+      const tutScreen = document.getElementById('tutorial-screen');
+      if (tutScreen && !tutScreen.classList.contains('active')) return;
       if (e && e.type === 'touchstart') e.preventDefault();
       this.acceptTutorial(false);
     };
@@ -607,7 +627,11 @@ export function gameEvents() {
     });
   }
 
-  document.getElementById('gacha-close-btn').addEventListener('click', () => this.resumeFromGacha());
+  document.getElementById('gacha-close-btn').addEventListener('click', () => {
+    const gachaScreen = document.getElementById('gacha-screen');
+    if (gachaScreen && !gachaScreen.classList.contains('active')) return;
+    this.resumeFromGacha();
+  });
   const spinBtn = document.getElementById('gacha-spin-btn');
   if (spinBtn) spinBtn.addEventListener('click', () => this.triggerGachaSpin());
   const upgradeBtn = document.getElementById('gacha-upgrade-btn');
@@ -796,12 +820,15 @@ export function gameEvents() {
     if (!this.isPlaying) return;
     // Ignore taps on UI overlay buttons (pause btn etc.)
     if (e.target && (e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.closest('.overlay-screen.active'))) return;
-    const touch = e.touches[0];
     
+    // Prevent browser zoom and scroll on screen double tap / drag
+    if (e.cancelable) e.preventDefault();
+    
+    const touch = e.touches[0];
     this.joystick.active = true; this.joystick.startX = touch.clientX; this.joystick.startY = touch.clientY;
     const jz = document.getElementById('joystick-zone');
     jz.style.display = 'flex'; jz.style.left = `${touch.clientX - 60}px`; jz.style.top = `${touch.clientY - 60}px`;
-  });
+  }, { passive: false });
   container.addEventListener('touchmove', e => {
     if (!this.joystick.active) return; e.preventDefault();
     const touch = e.touches[0];
@@ -812,11 +839,15 @@ export function gameEvents() {
     const handle = document.getElementById('joystick-handle');
     handle.style.transform = `translate(${(dx / Math.hypot(dx || 1, dy || 1)) * dist}px, ${(dy / Math.hypot(dx || 1, dy || 1)) * dist}px)`;
   }, { passive: false });
-  container.addEventListener('touchend', () => {
+  container.addEventListener('touchend', e => {
+    // Prevent double tap zoom behavior on end as well if needed
+    if (e.target && !(e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.closest('.overlay-screen.active'))) {
+      if (e.cancelable) e.preventDefault();
+    }
     this.joystick.active = false; this.joystick.strength = 0;
     document.getElementById('joystick-zone').style.display = 'none';
     document.getElementById('joystick-handle').style.transform = 'translate(0,0)';
-  });
+  }, { passive: false });
 
   this.canvas.addEventListener('click', () => {
     this.resetFocus();
@@ -830,4 +861,10 @@ export function gameEvents() {
       window.focus();
     }
   });
+
+  // Prevent double click browser zoom globally
+  window.addEventListener('dblclick', e => {
+    if (e.target && (e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.closest('.overlay-screen.active'))) return;
+    e.preventDefault();
+  }, { passive: false });
 }
