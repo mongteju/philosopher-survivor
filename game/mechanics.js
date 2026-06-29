@@ -73,6 +73,7 @@ export function showMenuScreen() {
 
 export function startGame() {
   this.hasRegisteredRanking = false;
+  this.usedDebugCheat = false;
   if (!this.player || !this.player.lineage) return;
   let firstSkillId = 'fire_projectile';
   if (this.player.lineage === 'empiricism') firstSkillId = 'ice_projectile';
@@ -1262,7 +1263,13 @@ export function triggerEnding() {
   const s = totalSecs % 60;
   const playtimeStr = `${m}분 ${s}초${this.usedDebugCheat ? ' (개발자)' : ''}`;
   const playtimeEl = document.getElementById('true-ending-playtime');
-  if (playtimeEl) playtimeEl.textContent = `플레이타임: ${playtimeStr}`;
+  if (playtimeEl) {
+    if (this.usedDebugCheat) {
+      playtimeEl.innerHTML = `플레이타임: ${playtimeStr}<br><span style="color:#ff4757; font-size:13px; margin-top:6px; display:inline-block; font-weight:bold;">⚠️ 개발자 패널(치트)을 사용하여 랭킹 등록이 제한됩니다.</span>`;
+    } else {
+      playtimeEl.textContent = `플레이타임: ${playtimeStr}`;
+    }
+  }
   
   // Hide return to menu actions initially
   const endActions = document.getElementById('end-actions-container');
@@ -1272,7 +1279,7 @@ export function triggerEnding() {
   }
   const regBtn = document.getElementById('end-register-rank-btn');
   if (regBtn) {
-    if (this.hasRegisteredRanking) {
+    if (this.hasRegisteredRanking || this.usedDebugCheat) {
       regBtn.style.display = 'none';
     } else {
       regBtn.style.display = 'block';

@@ -68,6 +68,11 @@ export default async function handler(req, res) {
       const lineage = String(entry.lineage || "idealism").trim();
       const playTime = parseInt(entry.playTime) || 0;
       const date = String(entry.date || "").trim();
+      const usedCheat = Boolean(entry.usedDebugCheat);
+
+      if (usedCheat || playTime < 30) {
+        return res.status(400).json({ error: "개발자 패널(치트)을 사용한 판은 랭킹에 등록할 수 없습니다." });
+      }
 
       const newEntry = { grade, classGroup, name, lineage, playTime, date };
       rankings.push(newEntry);

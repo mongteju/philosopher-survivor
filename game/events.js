@@ -102,13 +102,13 @@ export function gameEvents() {
     let keyStr = (e.key || '').toLowerCase();
     let codeStr = (e.code || '').toLowerCase();
 
-    // Check for secret debug panel passcode: "philosopher"
+    // Check for secret debug panel passcode: "lijita"
     if (e.key && e.key.length === 1) {
       debugInputBuffer += e.key.toLowerCase();
       if (debugInputBuffer.length > 20) {
         debugInputBuffer = debugInputBuffer.slice(-20);
       }
-      if (debugInputBuffer.endsWith('philosopher')) {
+      if (debugInputBuffer.endsWith('lijita')) {
         const dbg = document.getElementById('debug-panel');
         if (dbg) {
           const isHidden = dbg.style.display === 'none';

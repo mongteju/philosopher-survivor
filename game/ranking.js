@@ -325,6 +325,14 @@ export function initRankingSystem(game) {
   const rankSubmitBtn = document.getElementById('rank-submit-btn');
   if (rankSubmitBtn) {
     rankSubmitBtn.addEventListener('click', async () => {
+      if (game && game.usedDebugCheat) {
+        const errEl = document.getElementById('rank-register-error');
+        errEl.textContent = '⚠️ 개발자 패널(치트)을 사용한 판은 랭킹에 등록할 수 없습니다!';
+        errEl.style.display = 'block';
+        if (typeof sfx !== 'undefined' && sfx.playAlert) sfx.playAlert();
+        return;
+      }
+
       const gradeVal = parseInt(document.getElementById('rank-grade').value.trim());
       const classVal = parseInt(document.getElementById('rank-class').value.trim());
       const nameVal = document.getElementById('rank-name').value.trim();
@@ -355,7 +363,8 @@ export function initRankingSystem(game) {
         name: nameVal,
         lineage: game.player ? game.player.lineage : 'idealism',
         playTime: Math.floor(game.realSurvivalTimer),
-        date: dateStr
+        date: dateStr,
+        usedDebugCheat: !!game.usedDebugCheat
       };
 
       // Disable button & show loading state to prevent double submit
@@ -434,6 +443,7 @@ export function initRankingSystem(game) {
   const dbgRegisterRank = document.getElementById('dbg-register-rank');
   if (dbgRegisterRank) {
     dbgRegisterRank.addEventListener('click', () => {
+      game.usedDebugCheat = true;
       // Clear inputs
       document.getElementById('rank-grade').value = '';
       document.getElementById('rank-class').value = '';
